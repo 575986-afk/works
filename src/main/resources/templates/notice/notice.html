@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>공지사항 - WORKS</title>
+<link rel="stylesheet" th:href="@{/common/css/works.css}" />
+</head>
+<body>
+<!-- ===== Header ===== -->
+<div th:replace="~{ fragments/all :: header }"></div>
+
+<!-- ===== Sub banner + 고객센터 드롭다운 ===== -->
+<div th:replace="~{ fragments/all :: subBanner }"></div>
+<!-- ===== 주요 기능 ===== -->
+
+<main class="notice-container">
+  <h1 class="page-title">공지사항</h1>
+  <div class="notice-detail">
+	<div class="detail-title" th:text="${notice.noticeTitle}"></div>
+	<div class="detail-date" th:text="${#temporals.format(notice.createdDate, 'yyyy-MM-dd')}"></div>
+	<hr class="divider">
+	<div class="detail-body" th:utext="${notice.content}"></div>
+	<hr class="divider-bottom">
+	<a th:href="@{/user/notices}" class="back-link">← 목록으로</a>
+  </div>
+</main>
+
+<!-- footer -->
+<footer th:replace="~{ fragments/all :: footer }"></footer>
+</body>
+</html>
