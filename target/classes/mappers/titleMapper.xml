@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.sist.title.TitleMapper">
+	<!--직책조회-->
+    <select id="selectPosition" resultType="positionDomain">
+     select position_no AS positionNo,
+        position_name AS positionName,
+        priority,
+        company_no AS companyNo
+     from POSITION
+     where company_no=#{companyNo}
+     order by priority asc
+    </select>
+    
+    <!--직책우선순위수정-->
+    <update id="updatePositionPriority">
+     update POSITION
+     set priority=#{priority}
+     where position_no=#{positionNo} and company_no=#{companyNo}
+    </update>
+    
+    <!--직책명수정-->
+    <update id="updatePositionName">
+     update POSITION
+     set position_name=#{positionName}
+     where position_no=#{positionNo} and company_no=#{companyNo}
+    </update>
+    
+    <!--직책삭제-->
+    <delete id="deletePosition">
+     DELETE from POSITION where position_no=#{positionNo} and company_no=#{companyNo}
+    </delete>
+    
+    <!--직책추가-->
+    <insert id="insertPosition" parameterType="positionDTO">
+     INSERT INTO POSITION(position_no, position_name, priority, company_no)
+     VALUES ('P' || LPAD(SEQ_POSITION_NO.NEXTVAL, 6, '0'),
+      #{positionName}, #{priority}, #{companyNo})
+    </insert>
+    
+    <!-- 직책 사용 여부 확인 -->
+	<select id="countUserByPosition" resultType="int">
+	    SELECT COUNT(*)
+	    FROM TITLE
+	    WHERE position_no = #{positionNo}
+	</select>
+    
+    <!-- ================================================= -->
+    
+    <!--직급조회-->
+    <select id="selectRank" resultType="rankDomain">
+     select rank_no AS rankNo,
+        rank_name AS rankName,
+        priority,
+        company_no AS companyNo
+     from RANK
+     where company_no=#{companyNo}
+     order by priority asc
+    </select>
+    
+    <!--직급우선순위수정-->
+    <update id="updateRankPriority">
+     update RANK
+     set priority=#{priority}
+     where rank_no=#{rankNo} and company_no=#{companyNo}
+    </update>
+    
+    <!--직급명수정-->
+    <update id="updateRankName">
+     update RANK
+     set rank_name=#{rankName}
+     where rank_no=#{rankNo} and company_no=#{companyNo}
+    </update>
+    
+    <!--직급삭제-->
+    <delete id="deleteRank">
+     DELETE from RANK where rank_no=#{rankNo} and company_no=#{companyNo}
+    </delete>
+    
+    <!--직급추가-->
+    <insert id="insertRank" parameterType="rankDTO">
+     INSERT INTO RANK(rank_no, rank_name, priority, company_no)
+     VALUES ('RK' || LPAD(SEQ_RANK_NO.NEXTVAL, 6, '0'),
+      #{rankName}, #{priority}, #{companyNo})
+    </insert>
+    
+    <!-- 직급 사용 여부 확인 -->
+	<select id="countUserByRank" resultType="int">
+	    SELECT COUNT(*)
+	    FROM TITLE
+	    WHERE rank_no = #{rankNo}
+	</select>
+    
+</mapper>

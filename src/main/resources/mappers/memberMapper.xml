@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.sist.member.MemberMapper">
+	<!-- 조직 조회 -->
+    <select id="selectOrganization" resultType="organizationDomain">
+     SELECT
+     	g.organization_no AS organizationNo,
+        g.organization_name AS organizationName,
+        (
+			SELECT COUNT(*)
+            FROM ORGANIZATIONMEMBER gm
+            WHERE gm.organization_no = g.organization_no
+        ) AS memberCount
+     FROM ORGANIZATION g
+     WHERE g.company_no = #{companyNo}
+     ORDER BY g.organization_no
+    </select>
+    
+    <!-- 구성원 리스트 조회 -->
+    <select id="selectMemberList" resultType="memberDomain">
+     SELECT
+         u.user_no AS userNo,
+         u.user_name AS userName,
+         u.email AS email,
+         u.phonenumber AS phone,
+         u.account_status AS status,
+         u.PROFILEIMAGE AS profileImage,
+         p.position_no AS positionNo,
+         p.position_name AS positionName,
+         r.rank_no AS rankNo,
+         r.rank_name AS rankName,
+         om.organization_no AS organizationNo
+     FROM USERS u
+     LEFT JOIN TITLE t
+            ON u.user_no = t.user_no
+     LEFT JOIN RANK r
+            ON t.rank_no = r.rank_no
+     LEFT JOIN POSITION p
+            ON t.position_no = p.position_no
+     LEFT JOIN ORGANIZATIONMEMBER om
+            ON u.user_no = om.orgmember_no
+     WHERE u.company_no = #{companyNo}
+     <if test="organizationNo != null and organizationNo != 'ALL'">
+         AND om.organization_no = #{organizationNo}
+     </if>
+    </select>
+    
+    <!-- 회사 이름과 구성원 수 조회 -->
+    <select id="selectCompanyMemberCount" resultType="int">
+	 SELECT COUNT(*)
+	 FROM USERS
+	 WHERE company_no = #{companyNo}
+	</select>
+	
+	<!-- 구성원 상세 조회 -->
+	<select id="selectMemberDetail" resultType="memberDomain">
+	    SELECT
+	        u.user_no AS userNo,
+	        u.user_name AS userName,
+	        u.email AS email,
+	        u.phonenumber AS phone,
+	        u.account_status AS status,
+	        u.workplace AS workplace,
+	        u.jobtask AS jobtask,
+	        r.rank_name AS rankName,
+	        p.position_name AS positionName,
+	        (
+	            SELECT LISTAGG(o.organization_name, ', ')
+	                   WITHIN GROUP (ORDER BY o.organization_no)
+	            FROM ORGANIZATION o
+	            JOIN ORGANIZATIONMEMBER om
+	                ON o.organization_no = om.organization_no
+	            WHERE om.orgmember_no = u.user_no
+	        ) AS organizationName
+	    FROM USERS u
+	    JOIN TITLE t
+	        ON u.user_no = t.user_no
+	    LEFT JOIN RANK r
+	        ON t.rank_no = r.rank_no
+	    LEFT JOIN POSITION p
+	        ON t.position_no = p.position_no
+	    WHERE u.company_no = #{companyNo}
+	      AND u.user_no = #{userNo}
+	</select>
+	
+	<!-- 아이디 확인 -->
+	<select id="selectUserById" resultType="memberDomain">
+	    SELECT
+	        user_no AS userNo,
+	        user_id AS userId,
+           user_name AS userName,
+           email AS email,
+           company_no AS companyNo
+	    FROM USERS
+	    WHERE user_id = #{userId}
+	</select>
+	
+	<!-- rank 조회-->
+	<select id="selectRankList" resultType="rankDomain">
+	    SELECT
+	        rank_no AS rankNo,
+	        rank_name AS rankName,
+	        priority
+	    FROM RANK
+	    ORDER BY priority
+	</select>
+	<!-- position 조회-->
+	<select id="selectPositionList" resultType="positionDomain">
+	    SELECT
+	        position_no AS positionNo,
+	        position_name AS positionName,
+	        priority
+	    FROM POSITION
+	    ORDER BY priority
+	</select>
+	
+	<!-- 구성원 정보 등록 -->
+	<update id="updateUserForMember">
+	    UPDATE USERS
+	    SET
+	        company_no = #{companyNo},
+	        workplace = #{workplace},
+	        jobtask = #{jobtask}
+	    WHERE user_no = #{userNo}
+	</update>
+	<!-- 직급/직책 등록 -->
+	<insert id="insertMemberTitle">
+	    INSERT INTO TITLE (
+	        user_no,
+	        rank_no,
+	        position_no
+	    )
+	    VALUES (
+	        #{userNo},
+	        #{rankNo},
+	        #{positionNo}
+	    )
+	</insert>
+	<!-- 조직 등록 -->
+	<insert id="insertMemberOrganization">
+	    INSERT INTO ORGANIZATIONMEMBER (
+	        organization_no,
+	        orgmember_no
+	    )
+	    VALUES (
+	        #{organizationNo},
+	        #{userNo}
+	    )
+	</insert>
+	
+	<!-- 구성원 정보 수정 -->
+	<!-- 구성원 기본 정보 수정 -->
+	<update id="updateUsers">
+	    UPDATE USERS
+	    SET
+	        workplace = #{workplace},
+	        jobtask = #{jobtask}
+	    WHERE user_no = #{userNo}
+	</update>
+
+	<!-- 직급/직책 정보 수정 -->
+	<update id="updateMemberTitle">
+	    UPDATE TITLE
+	    SET
+	        rank_no = #{rankNo},
+	        position_no = #{positionNo}
+	    WHERE user_no = #{userNo}
+	</update>
+
+	<!-- 기존 소속 조직 삭제 -->
+	<delete id="deleteMemberOrganizations">
+	    DELETE FROM ORGANIZATIONMEMBER
+	    WHERE orgmember_no = #{userNo}
+	</delete>
+
+	<!-- 다중 소속 조직 일괄 등록 -->
+	<insert id="insertMemberOrganizations">
+	    INSERT ALL
+	    <foreach collection="organizationNos" item="orgNo">
+	        INTO ORGANIZATIONMEMBER (
+	            organization_no,
+	            orgmember_no
+	        ) VALUES (
+	            #{orgNo},
+	            #{userNo}
+	        )
+	    </foreach>
+	    SELECT * FROM DUAL
+	</insert>
+	
+	<!-- 구성원 삭제 -->
+	<delete id="deleteMember">
+	    DELETE FROM USERS
+	    WHERE user_no = #{userNo}
+	    	AND company_no = #{companyNo}
+	</delete>
+    
+</mapper>

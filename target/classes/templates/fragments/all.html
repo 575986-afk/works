@@ -1,0 +1,56 @@
+<!-- ===== Header ===== -->
+<header class="top-nav" th:fragment="header"> 
+  <a class="logo" th:href="@{/}">
+    <span class="logo-mark">W</span>
+    <span>WORKS</span>
+  </a>
+  <nav class="nav-links">
+    <a th:href="@{/login}">로그인</a>
+    <a th:href="@{/signupChk}">회원가입</a>
+  </nav>
+</header>
+
+<!-- ===== Sub banner===== -->
+<div class="sub-banner" th:fragment="subBanner">
+  <div>협업이 쉬워지는 프로젝트 공간, <span class="brand-name">WORKS</span></div>
+
+  <div style="position:relative;">
+    <div class="support-toggle" id="supportToggle" onclick="toggleSupport()">
+      <span>고객센터</span>
+      <span class="arrow">▾</span>
+    </div>
+    <div class="support-dropdown" id="supportDropdown">
+      <a th:href="@{/user/notices}">공지사항</a>
+      <a th:href="@{/user/inquiry}">1:1문의</a>
+    </div>
+  </div>
+  
+  <script>
+  function toggleSupport() {
+    document.getElementById('supportToggle').classList.toggle('open');
+    document.getElementById('supportDropdown').classList.toggle('show');
+  }
+
+  document.addEventListener('click', function (e) {
+    const toggle = document.getElementById('supportToggle');
+    const dropdown = document.getElementById('supportDropdown');
+    
+    if (!toggle.contains(e.target) && !dropdown.contains(e.target)) {
+      toggle.classList.remove('open');
+      dropdown.classList.remove('show');
+    }
+  });
+</script>
+  
+</div>
+
+<!-- footer -->
+<footer th:fragment="footer">
+<div class="footer-left">
+    <span class="copyright">© WORKS</span>
+    <a href="/policy/privacy">개인정보처리방침</a>
+    <span class="divider">|</span>
+    <a href="/policy/terms">이용약관</a>
+  </div>
+</footer>
+

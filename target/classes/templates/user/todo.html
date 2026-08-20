@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>할 일 관리</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- FontAwesome (아이콘) -->
+<link rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" th:href="@{/common/css/todo.css}">
+<script th:src="@{/common/js/todo.js}"></script>
+</head>
+<body>
+	<div th:replace="~{ fragments/todo :: user-header }"></div>
+	<div
+		class="flex flex-1 bg-white text-gray-800 font-sans overflow-hidden">
+		<!-- ==========================================
+         1. 좌측 사이드바 (메뉴)
+         ========================================== -->
+		<aside
+			class="w-64 border-r border-gray-200 flex flex-col shrink-0 h-screen">
+			<div class="p-4">
+				<!-- 할 일 쓰기 버튼 -->
+				<button id="openTodoModalBtn"
+					class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-md mb-6 transition">
+					할일 쓰기</button>
+
+				<!-- 메뉴 리스트 -->
+				<ul class="space-y-1 text-sm">
+					<li class="text-xs font-semibold text-gray-400 mb-2 px-3">내 할일</li>
+
+					<!-- 1. 전체 할일: URL에 담당자(representativeUserNo)와 요청자(userNo) 파라미터가 모두 없을 때 파란색 -->
+					<li><a th:href="@{todo}"
+						class="flex items-center gap-2 px-3 py-2 rounded"
+						th:classappend="${param.representativeUserNo == null and param.userNo == null} ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-100'">
+							<i class="fa-regular fa-circle-check"></i> 전체 할일
+					</a></li>
+
+					<!-- 2. 담당 할일: URL에 담당자(representativeUserNo) 파라미터가 있을 때 파란색 -->
+					<li><a
+						th:href="@{todo(representativeUserNo=${session.userNo})}"
+						class="flex items-center gap-2 px-3 py-2 rounded"
+						th:classappend="${param.representativeUserNo != null} ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-100'">
+							<i class="fa-regular fa-user"></i> 담당 할일
+					</a></li>
+
+					<!-- 3. 요청 할일: URL에 요청자(userNo) 파라미터가 있을 때 파란색 -->
+					<li><a th:href="@{todo(userNo=${session.userNo})}"
+						class="flex items-center gap-2 px-3 py-2 rounded"
+						th:classappend="${param.userNo != null} ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-100'">
+							<i class="fa-solid fa-user-pen"></i> 요청 할일
+					</a></li>
+				</ul>
+			</div>
+			<div
+				class="mt-auto p-4 text-[10px] text-gray-400 border-t border-gray-100">
+				<a th:href="@{/}">© NAVER Cloud Corp.</a>
+			</div>
+
+		</aside>
+
+		<!-- ==========================================
+         2. 중앙/우측 메인 콘텐츠 영역
+         ========================================== -->
+		<div class="flex-1 flex flex-col min-w-0">
+
+			<!-- 하단 영역 (목록 + 우측 상세) -->
+			<div class="flex-1 flex overflow-hidden">
+
+				<!-- 2-1. 중앙 리스트 영역 -->
+				<main class="flex-1 flex flex-col bg-white overflow-y-auto">
+
+					<!-- 리스트 컨트롤 (전체선택 & 삭제 & 카운트) -->
+					<div
+						class="flex items-center gap-4 px-8 py-4 border-b border-gray-100">
+						<input type="checkbox" id="selectAll"
+							class="square-checkbox shrink-0">
+						<!-- id="deleteTodoBtn" 추가 -->
+						<button id="deleteTodoBtn"
+							class="text-sm font-medium text-gray-400 border border-gray-200 px-3 py-1.5 rounded-md hover:bg-gray-50 hover:text-gray-600 transition">삭제</button>
+						<div class="text-sm text-gray-600 font-medium ml-2">
+							<span class="text-blue-600 font-bold"
+								th:text="|미완료 ${incompleteCount}|">미완료 4</span> / <span
+								th:text="|전체 ${totalCount}|">전체 4</span>
+						</div>
+					</div>
+
+					<!-- 빠른 생성 (Quick Add) 바 -->
+			<!-- 		<div class="px-8 py-4 flex gap-3 items-center">
+						<div class="flex-1 relative">
+							<input type="text" placeholder="새로운 할 일을 생성해보세요."
+								class="w-full border border-gray-200 rounded-md px-4 py-2 text-sm pr-10 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+							<button
+								class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+								<i class="fa-regular fa-calendar"></i>
+							</button>
+						</div>
+						<button
+							class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-md text-sm transition">
+							저장</button>
+					</div> -->
+
+					<!-- 할일 리스트 묶음 -->
+					<div class="px-8 pb-8">
+						<!-- 할일 아이템 반복 영역 -->
+						<div class="flex flex-col">
+
+							<!-- 아이템 1 (todo-item 클래스 추가됨) -->
+							<div th:each="todo : ${todoList}"
+								class="todo-item group flex items-start gap-3 py-3.5 border-b border-transparent hover:bg-gray-50/50 cursor-pointer rounded-lg px-2 -mx-2 transition"
+								th:data-no="${todo.todoNo}" th:data-title="${todo.title}"
+								th:data-content="${todo.content}"
+								th:data-end-date="${todo.endDate != null ? #dates.format(todo.endDate, 'yyyy. MM. dd.') : '기한 없음'}"
+								th:data-representatives="${todo.representativeUserNames != null ? todo.representativeUserNames : '지정되지 않음'}"
+								th:data-requester="${todo.userName}"
+								th:data-status="${todo.status}">
+
+
+								<input type="checkbox"
+									class="item-checkbox square-checkbox mt-0.5 shrink-0">
+								<input type="checkbox" class="circle-checkbox mt-0.5 shrink-0"
+									th:checked="${todo.status == '1'}">
+
+								<div class="flex-1 min-w-0">
+									<h3
+										class="text-[14px] font-semibold text-gray-800 mb-1 leading-tight"
+										th:text="${todo.title}">제목</h3>
+
+									<p class="text-[12px] text-gray-500"
+										th:with="repList=${todo.representativeUserNames != null ? #strings.listSplit(todo.representativeUserNames, ',') : {}}"
+										th:text="|기한 : ${todo.endDate != null ? #dates.format(todo.endDate, 'yyyy-MM-dd') : '기한 없음'} · 담당자 : ${#lists.isEmpty(repList) ? '미정' : (#lists.size(repList) > 1 ? repList[0] + ' 외 ' + (#lists.size(repList) - 1) + '명' : repList[0])}|">
+									</p>
+								</div>
+
+							</div>
+
+						</div>
+					</div>
+				</main>
+
+				<!-- 2-2. 우측 빈 화면 (기본 상태) -->
+				<aside id="detailEmptyPanel"
+					class="flex w-[450px] bg-white border-l border-gray-100 flex-col items-center justify-center p-8 shrink-0">
+					<div class="text-gray-200 mb-4">
+						<i class="fa-solid fa-file-lines text-6xl"></i>
+					</div>
+					<h3 class="text-base font-bold text-gray-800 mb-2">선택된 할 일이
+						없습니다.</h3>
+					<p class="text-sm text-gray-400">할 일을 선택하면 할 일의 상세 내용을 확인할 수
+						있습니다.</p>
+				</aside>
+
+				<!-- 2-3. 우측 상세 정보 패널 (숨김 상태로 시작) -->
+				<aside id="detailPanel"
+					class="hidden w-[450px] bg-white border-l border-gray-100 flex-col shrink-0 h-full overflow-y-auto">
+					<div class="p-7">
+						<!-- 상단 헤더 -->
+						<div class="flex items-center justify-between mb-4 text-gray-500">
+							<span id="detailStatusText" class="text-[13px] font-bold">미완료된
+								할 일</span>
+							<button id="editTodoBtn"
+								class="hover:text-gray-700 transition-colors">
+								<i class="fa-regular fa-pen-to-square"></i>
+							</button>
+						</div>
+
+						<!-- 타이틀 및 내용 -->
+						<div class="mb-5">
+							<!-- id="detailTitle" 추가 -->
+							<h2 id="detailTitle" class="text-xl font-bold text-gray-900 mb-2"></h2>
+							<!-- id="detailContent" 추가 -->
+							<p id="detailContent" class="text-[14px] text-gray-500"></p>
+						</div>
+
+						<hr class="border-gray-100 my-6">
+
+						<!-- 속성(기한, 요청자, 담당자) -->
+						<div class="flex flex-col gap-4 mb-7">
+							<div class="flex items-center text-[14px]">
+								<span class="w-16 text-gray-500 font-medium">기한</span>
+								<!-- id="detailEndDate" 추가 -->
+								<span id="detailEndDate" class="text-gray-800"></span>
+							</div>
+							<div class="flex items-center text-[14px]">
+								<span class="w-16 text-gray-500 font-medium">요청자</span>
+								<!-- (참고) 작성자 이름도 쿼리에서 가져와서 처리하시면 됩니다 -->
+								<span id="detailRequester"
+									class="bg-blue-50 text-blue-600 px-3 py-1 rounded-md text-xs font-semibold">요청자</span>
+							</div>
+							<div class="flex items-center text-[14px]">
+								<span class="w-16 text-gray-500 font-medium">담당자</span>
+								<!-- id="detailRepresentatives" 추가 -->
+								<span id="detailRepresentatives"
+									class="bg-gray-100 text-gray-600 px-3 py-1 rounded-md text-xs font-semibold"></span>
+							</div>
+						</div>
+
+						<!-- 완료하기 버튼 -->
+						<form id="statusChangeForm" th:action="@{/modifyTodoStatus}"
+							method="post" class="w-full mb-8">
+
+							<!-- 컨트롤러로 보낼 할 일 번호 -->
+							<input type="hidden" name="todoNo" id="detailTodoNoInput"
+								value="">
+
+							<!-- 컨트롤러로 보낼 상태 값 (JS에서 동적으로 변경됨) -->
+							<input type="hidden" name="status" id="detailStatusInput"
+								value="">
+
+							<!-- 완료하기 버튼 (JS에서 텍스트와 색상이 동적으로 변경됨) -->
+							<button type="submit" id="detailActionBtn"
+								class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-lg transition shadow-sm">
+								완료하기</button>
+						</form>
+
+						<!-- 작업 내역 영역 -->
+						<div class="bg-gray-50 rounded-xl p-6 border border-gray-100">
+							<h3 class="text-[14px] font-bold text-gray-800 mb-5">
+								작업 내역 <span class="text-blue-600 font-bold">6</span>
+							</h3>
+
+							<div class="flex flex-col gap-4">
+								<!-- 작업 내역 1 -->
+								<div class="border-b border-gray-200/60 pb-4">
+									<p class="text-[11.5px] text-gray-400 mb-1">2026. 7. 16. 오후
+										03:35</p>
+									<p class="text-[13.5px] text-gray-700">
+										이원석님이 할 일을 <span class="font-bold text-gray-900">미완료</span>로
+										변경했습니다.
+									</p>
+								</div>
+								<!-- 작업 내역 2 -->
+								<div class="border-b border-gray-200/60 pb-4">
+									<p class="text-[11.5px] text-gray-400 mb-1">2026. 7. 16. 오후
+										03:35</p>
+									<p class="text-[13.5px] text-gray-700">
+										이원석님이 할 일을 <span class="font-bold text-gray-900">완료</span>했습니다.
+									</p>
+								</div>
+								<!-- 작업 내역 3 -->
+								<div class="border-b border-gray-200/60 pb-4">
+									<p class="text-[11.5px] text-gray-400 mb-1">2026. 7. 16. 오후
+										03:35</p>
+									<p class="text-[13.5px] text-gray-700">
+										이원석님이 이원석님을 담당자에서 <span class="font-bold text-gray-900">제외</span>했습니다.
+									</p>
+								</div>
+								<!-- 작업 내역 4 -->
+								<div>
+									<p class="text-[11.5px] text-gray-400 mb-1">2026. 7. 16. 오후
+										03:35</p>
+									<p class="text-[13.5px] text-gray-700">
+										이원석님이 최유정님을 담당자로 <span class="font-bold text-gray-900">추가</span>했습니다.
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</aside>
+
+			</div>
+		</div>
+	</div>
+	<!-- ==========================================
+     할 일 쓰기 팝업 모달
+     ========================================== -->
+	<div id="todoModal"
+		class="fixed inset-0 z-50 hidden bg-black/40 flex items-center justify-center p-4">
+		<form id="todoForm" th:action="@{/addTodo}" method="POST"
+			class="bg-white rounded-xl shadow-xl w-full max-w-[600px] flex flex-col overflow-hidden">
+
+			<!-- 헤더 -->
+			<div
+				class="flex justify-between items-center px-6 py-4 border-b border-gray-100">
+				<h2 class="text-[16px] font-bold text-gray-800">할 일 쓰기</h2>
+				<button id="closeTodoModalBtn"
+					class="text-gray-400 hover:text-gray-600 transition">
+					<i class="fa-solid fa-xmark text-xl"></i>
+				</button>
+			</div>
+
+			<!-- 바디 -->
+			<div class="px-8 py-6 space-y-6">
+
+				<!-- 제목 -->
+				<div class="flex items-center">
+					<label class="w-24 text-[14px] font-bold text-gray-700 shrink-0">제목</label>
+					<input type="text" id="modalTitleInput" placeholder="제목을 입력해주세요."
+						name="title"
+						class="flex-1 border border-blue-400 rounded-md px-3 py-2.5 text-[14px] focus:outline-none focus:ring-1 focus:ring-blue-500">
+				</div>
+
+				<!-- 내용 -->
+				<div class="flex items-start">
+					<label
+						class="w-24 text-[14px] font-bold text-gray-700 shrink-0 mt-3">내용</label>
+					<textarea id="modalContentInput" rows="4" placeholder="내용을 입력해주세요."
+						name="content"
+						class="flex-1 border border-gray-200 rounded-md px-3 py-2.5 text-[14px] focus:outline-none focus:border-blue-400 resize-none"></textarea>
+				</div>
+
+				<!-- 기한 -->
+				<div class="flex items-center">
+					<label class="w-24 text-[14px] font-bold text-gray-700 shrink-0">기한</label>
+
+					<!-- 폼 전송용 hidden input (todoDTO의 endDate 필드와 매핑) -->
+					<input type="hidden" id="todoEndDate" name="endDate" value="">
+
+					<div
+						class="flex text-[13px] rounded-md border border-gray-200 overflow-hidden"
+						id="deadlineButtons">
+						<!-- 버튼들에 type="button"과 data-date-type 속성, date-btn 클래스 추가 -->
+						<button type="button" data-date-type="none"
+							class="date-btn px-5 py-2 bg-blue-600 text-white font-medium transition-colors">없음</button>
+						<button type="button" data-date-type="today"
+							class="date-btn px-4 py-2 bg-white text-gray-600 hover:bg-gray-50 border-l border-gray-200 transition-colors">오늘</button>
+						<button type="button" data-date-type="tomorrow"
+							class="date-btn px-4 py-2 bg-white text-gray-600 hover:bg-gray-50 border-l border-gray-200 transition-colors">내일</button>
+						<button type="button" data-date-type="nextWeek"
+							class="date-btn px-4 py-2 bg-white text-gray-600 hover:bg-gray-50 border-l border-gray-200 transition-colors">다음
+							주</button>
+
+						<!-- 네이티브 달력 인풋으로 변경 -->
+						<input type="date" id="customDateInput"
+							class="px-4 py-1.5 bg-white text-gray-600 border-l border-gray-200 cursor-pointer hover:bg-gray-50 focus:outline-none min-w-[130px] text-center">
+					</div>
+				</div>
+
+				<!-- 요청자 -->
+				<div class="flex items-center">
+					<label
+						class="w-24 text-[14px] font-bold text-gray-700 shrink-0 flex items-center gap-1">
+						요청자 <i class="fa-regular fa-circle-question text-gray-300 text-xs"></i>
+					</label>
+					<div class="flex items-center gap-2">
+						<span th:text="${session.user.userName}"
+							class="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-600 rounded-md text-[13px] font-medium border border-blue-100">
+							요청자명
+							<button class="hover:text-blue-800">
+								<i class="fa-solid fa-xmark text-[10px]"></i>
+							</button>
+						</span>
+					</div>
+				</div>
+
+				<!-- 담당자 -->
+				<div class="flex items-start">
+					<label
+						class="w-24 text-[14px] font-bold text-gray-700 shrink-0 mt-2 flex items-center gap-1">
+						담당자 <i class="fa-regular fa-circle-question text-gray-300 text-xs"></i>
+					</label>
+					<div class="flex-1 flex flex-col gap-2">
+						<!-- 입력창 & 주소록 버튼 -->
+						<div
+							class="flex border border-gray-200 rounded-md overflow-hidden">
+							<input type="text" placeholder="주소록에서 이름, 부서, 이메일 검색"
+								readonly="readonly"
+								class="flex-1 px-3 py-2 text-[14px] focus:outline-none">
+							<!-- 요청하신 타임리프 주소록 이벤트 -->
+							<button type="button"
+								th:onclick="|openAddressPopup('@{/popupAddr}')|"
+								class="px-5 py-2 bg-white text-gray-600 border-l border-gray-200 hover:bg-gray-50 text-[13px] font-medium">
+								주소록</button>
+						</div>
+						<!-- 선택된 담당자 표시 영역 -->
+						<div id="repListContainer"
+							class="flex items-center gap-2 border border-gray-100 p-2 rounded-md bg-gray-50/50 flex-wrap min-h-[40px]">
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 푸터 -->
+			<div class="flex justify-end gap-2 px-6 py-4">
+				<!-- 닫기 버튼들은 폼이 제출되지 않도록 type="button" 명시 -->
+				<button type="button" id="cancelTodoModalBtn"
+					class="px-6 py-2 border border-gray-200 bg-white text-gray-600 rounded-md text-[14px] font-medium hover:bg-gray-50 transition">취소</button>
+
+				<!-- 4. 저장 버튼을 submit 타입으로 변경 -->
+				<button type="submit"
+					class="px-6 py-2 bg-[#8baaf3] hover:bg-blue-500 text-white rounded-md text-[14px] font-medium transition">저장</button>
+			</div>
+		</form>
+	</div>
+</body>
+</html>

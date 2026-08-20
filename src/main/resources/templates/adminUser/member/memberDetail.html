@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>구성원 상세</title>
+
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- FontAwesome 아이콘 CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- axios CDN -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<link rel="stylesheet" th:href="@{/css/common.css}">
+<link rel="stylesheet" th:href="@{/css/addMemberForm.css}">
+
+<style type="text/css">
+* {
+    box-sizing: border-box;
+}
+body{
+    background: #ffffff;
+    font-family: "맑은 고딕", sans-serif;
+    margin: 0;
+}
+#wrap{
+    width:100%;
+    margin:0;
+}
+#container{
+    display:flex;
+    min-height: calc(100vh - 56px);
+}
+
+/* ---- 메인 ---- */
+#main{
+    flex:1;
+    background:#fff;
+}
+.pageContainer{
+    width:100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding:35px 20px;
+}
+.breadcrumb{
+    font-size:12px;
+    color:#9ca3af;
+    margin-bottom:15px;
+}
+.pageHeader{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+.pageTitle{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin:0;
+}
+.pageTitle h2{
+    font-size:24px;
+    font-weight:700;
+    color:#1f2937;
+    margin:0;
+}
+.pageTitle a{
+    font-size:13px;
+    color:#64748b;
+    text-decoration:none;
+}
+.pageTitle a:hover{
+    color:#2563eb;
+}
+.divider{
+    width:1px;
+    height:18px;
+    background:#d1d5db;
+}
+.contentBox{
+    width:100%;
+}
+.memberBtnArea button{
+    margin-left:8px;
+    font-size:13px;
+}
+
+/* ---- 프로필 영역 ---- */
+.profileArea {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 15px 0 25px 0;
+}
+.profileImage {
+    width: 72px;
+    height: 72px;
+    background: #f1f5f9;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 38px;
+    color: #cbd5e1;
+    border: 1px solid #e2e8f0;
+}
+.profileInfo h3 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 6px 0;
+    color: #111827;
+}
+.profileInfo p {
+    font-size: 13px;
+    color: #9ca3af;
+    margin: 0 0 6px 0;
+}
+.profileInfo .statusText {
+    font-size: 13px;
+    color: #2563eb;
+    font-weight: 500;
+}
+
+/* ---- 상세 정보 테이블 영역 ---- */
+.infoArea {
+    padding-top: 15px;
+}
+.sectionSubTitle {
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+.detailTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+.detailTable th {
+    width: 110px;
+    height: 42px;
+    text-align: left;
+    background: transparent;
+    font-size: 13px;
+    color: #374151;
+    font-weight: 600;
+    padding-right: 10px;
+}
+.detailTable td {
+    height: 42px;
+    border: none;
+    font-size: 13px;
+    color: #1f2937;
+}
+</style>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script th:src="@{/js/addMemberForm.js}"></script>
+<script type="text/javascript">
+$(function(){
+    let isIdChecked = false; // 아이디 확인 완료 여부 플래그
+
+    // 사이드바 토글 동작
+    $(".sidebarMenu").click(function(){
+        $(this).next(".submenu").slideToggle(200);
+        $(this).find(".arrow").toggleClass("rotate");
+    });
+    
+    // 계정 삭제 버튼 클릭 시 팝업 띄우기
+    $("#deleteMember").click(function(){
+        const userNo = $(this).data("user-no");
+        $("#deleteTargetUserId").val(userNo);
+        $("#deleteAccountModal").addClass("active");
+    });
+
+    // 취소 버튼 클릭 시 팝업 닫기 및 체크 상태 초기화
+    $(document).on("click", "#closeDeleteModal", function(){
+        $("#deleteAccountModal").removeClass("active");
+        $(".del-chk").prop("checked", false);
+        $("#confirmDeleteBtn").prop("disabled", true);
+    });
+
+    // 체크박스 모두 선택 시 삭제 버튼 활성화
+    $(document).on("change", ".del-chk", function(){
+        const total = $(".del-chk").length;
+        const checked = $(".del-chk:checked").length;
+        $("#confirmDeleteBtn").prop("disabled", total !== checked);
+    });
+
+    // 최종 삭제 버튼 클릭 시 Controller로 Form 제출
+    $(document).on("click", "#confirmDeleteBtn", function(){
+        if(!$(this).prop("disabled")) {
+            $("#deleteForm").submit();
+        }
+    });
+    
+    // 구성원 수정 버튼 클릭
+    $("#openEditMemberBtn").click(function () {
+        const userNo = $(this).data("user-no");
+
+        axios.get("/adminUser/member/addMemberForm", { params: { userNo: userNo } })
+            .then(function (response) {
+                $("#addMemberFormArea").html(response.data);
+                $("#memberAddModal").show();
+                isIdChecked = true; // 수정 모드일 때는 아이디 확인 패스
+            })
+            .catch(function (error) {
+                console.error(error);
+                alert("수정 폼을 불러오는데 실패했습니다.");
+            });
+    });
+
+    // 모달 내 닫기, 취소 버튼 클릭 이벤트
+    $(document).on("click", ".modalClose, .cancelBtn", function(){
+        $("#addMemberFormArea").empty();
+        isIdChecked = false;
+    });
+
+    // 아이디 입력값이 변경되면 아이디 확인 상태 초기화
+    $(document).on("input", "#memberId", function() {
+        isIdChecked = false;
+        $("#userNo").val("");
+        $("#idCheckMsg").text("").css("color", "");
+    });
+
+});
+</script>
+</head>
+<body>
+<!-- 헤더 -->
+<div th:replace="~{fragments/header :: headerFragment}"></div>
+
+<div id="container">
+    <div th:replace="~{fragments/sidebar :: sidebarFragment}"></div>
+    <div id="main">
+        <div class="pageContainer">
+            <div class="breadcrumb">
+                메인 &gt; 구성원 &gt; 구성원 &gt; 구성원 정보
+            </div>
+            <div class="contentBox">
+                <div class="pageHeader">
+                    <div class="pageTitle">
+                        <h2>구성원 정보</h2>
+                        <span class="divider"></span>
+                        <a th:href="@{/adminUser/member/member}">이전으로 돌아가기</a>
+                    </div>
+                    <div class="memberBtnArea">
+                        <button id="deleteMember"
+                                class="btn btn-danger"
+                                th:data-user-no="${member.userNo}">
+                            계정 삭제
+                        </button>
+                        <button id="openEditMemberBtn"
+                                class="btn btn-primary"
+                                th:data-user-no="${member.userNo}">
+                            구성원 수정
+                        </button>
+                    </div>
+                </div>
+                <div class="profileArea">
+                    <div class="profileImage">
+                        <!-- 프로필 이미지가 존재하는 경우 -->
+				        <img th:if="${member.profileImage != null and !#strings.isEmpty(member.profileImage)}"
+				             th:src="@{'/upload/profile/' + ${member.profileImage}}" 
+				             alt="프로필 이미지" 
+				             style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+				        <!-- 프로필 이미지가 없는 경우 기본 아이콘 출력 -->
+				        <i th:unless="${member.profileImage != null and !#strings.isEmpty(member.profileImage)}" 
+				           class="fa-solid fa-user"></i>
+                    </div>
+                    <div class="profileInfo">
+					    <h3 th:text="${member.userName}">홍길동</h3>
+					    <p th:text="${(member.rankName ?: '-') + ' / ' + (member.positionName ?: '-') + ' / ' + (member.organizationName ?: '-') + ' / ' + (member.email ?: '-')}">
+					        직책 / 조직 1 / 직급 / test1@practice-6.by-works.net
+					    </p>
+					    <span class="statusText" th:text="${member.status ?: '-'}">사용중</span>
+					</div>
+                </div>
+
+                <hr class="my-3" />
+
+                <div class="infoArea">
+                    <div class="sectionSubTitle">원직 회사·소속</div>
+                    <table class="detailTable">
+                        <tr>
+                            <th>소속 조직</th>
+                            <td style="width:40%;" th:text="${member.organizationName}">조직 1</td>
+                            <th></th>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <th>email</th>
+                            <td th:text="${member.email}"></td>
+                            <th></th>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <th>조직/직책</th>
+                            <td>
+                                <i class="fa-solid fa-user-group text-primary me-1"></i> 
+                                <span th:text="${member.organizationName + ' / ' + member.positionName}">조직 1 / 사원</span>
+                            </td>
+                            <th style="width:110px;">직급</th>
+                            <td th:text="${member.rankName}">아르바이트</td>
+                        </tr>
+                        <tr>
+                            <th>담당 업무</th>
+                            <td th:text="${member.jobtask}">개발</td>
+                            <th>휴대폰</th>
+                            <td th:text="${member.phone}">010-1234-5678</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div id="addMemberFormArea"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 삭제 모달 -->
+<div th:replace="~{fragments/deleteModal :: deleteModal}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

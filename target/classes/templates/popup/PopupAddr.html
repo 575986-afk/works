@@ -1,0 +1,170 @@
+<!-- Thymeleaf 네임스페이스 추가 -->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주소록</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+      <script th:src="@{/common/js/popupaddressBook.js}"></script>
+    <style>
+        html, body { height: 100%; margin: 0; }
+    </style>
+</head>
+<body class="bg-gray-50 flex flex-col font-sans text-gray-800">
+
+    <!-- 상단 헤더 영역 -->
+    <header class="bg-white h-16 border-b border-gray-200 flex items-center justify-between px-6 shrink-0">
+        <h1 class="text-lg font-bold cursor-pointer hover:text-blue-600" 
+        onclick="location.href=location.pathname">주소록</h1>
+        <div class="relative w-72" id="searchContainer">
+        <!-- id="searchInput" 및 autocomplete="off" 추가 -->
+        <input type="text" id="searchInput" autocomplete="off" placeholder="연락처 검색 (이름, 조직, 그룹 등)" 
+               class="w-full bg-gray-100 border border-gray-200 rounded-full py-1.5 pl-4 pr-10 focus:outline-none focus:bg-white focus:ring-1 focus:ring-blue-500 text-sm">
+        <i class="fa-solid fa-search absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+        
+        <!-- 검색 결과 창 (초기에는 hidden) -->
+        <div id="searchResults" class="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg hidden max-h-80 overflow-y-auto z-50">
+            <!-- AJAX 결과가 여기에 렌더링 됩니다. -->
+        </div>
+    </div>
+    </header>
+
+    <!-- 메인 컨텐츠 영역 -->
+    <main class="flex flex-1 overflow-hidden">
+        
+        <!-- 좌측 사이드바 생략 (이전 코드와 동일) ... -->
+        <aside class="w-64 bg-white border-r border-gray-200 flex flex-col shrink-0">
+                <div class="flex p-4 border-b border-gray-100">
+                <button th:onclick="|location.href='?type=favorite'|" 
+                class="flex-1 flex flex-col items-center justify-center gap-1 text-gray-500 hover:text-gray-800">
+                    <i class="fa-regular fa-star text-lg"></i>
+                    <span class="text-xs">즐겨찾기</span>
+                </button>
+                <button th:onclick="|location.href='?type=group'|" class="flex-1 flex flex-col items-center justify-center gap-1 text-gray-500 hover:text-gray-800 border-l border-gray-100">
+                    <i class="fa-solid fa-users text-lg"></i>
+                    <span class="text-xs">그룹</span>
+                </button>
+            </div>
+
+			<div class="flex-1 overflow-y-auto py-2">
+				<!-- 조직도 Tree -->
+				<div class="px-2">
+					<!-- 1. 조직도 버튼 -->
+					<div onclick="toggleMenu(this)"
+						class="flex items-center gap-2 px-2 py-1.5 hover:bg-gray-100 rounded cursor-pointer text-gray-700">
+						<!-- 아이콘에 회전 애니메이션을 위한 클래스(transition-transform duration-200) 추가 -->
+						<i
+							class="fa-solid fa-caret-down text-gray-400 transition-transform duration-200"></i>
+						<span>조직도</span>
+					</div>
+
+					<!-- 조직도 하위 영역 -->
+					<div class="pl-4">
+						<!-- 2. 연습 버튼 -->
+						<div onclick="toggleMenu(this)"
+							class="flex items-center gap-2 px-2 py-1.5 bg-blue-50 text-blue-600 rounded cursor-pointer font-medium mt-1">
+							<!-- 아이콘에 회전 애니메이션 클래스 추가 -->
+							<i
+								class="fa-solid fa-caret-down transition-transform duration-200"></i>
+							<i class="fa-regular fa-building"></i> <span th:text="${company}">회사명</span>
+						</div>
+
+						<!-- 연습 하위 영역 -->
+						<div class="pl-6 mt-1">
+                    <div class="pl-6 mt-1">
+                    <div th:each="organization : ${organizations}" 
+                         th:id="'org-' + ${organization.organizationNo}"
+                         th:data-no="${organization.organizationNo}"
+                         onclick="location.href='?organizationNo=' + this.getAttribute('data-no')"
+                         class="flex items-center gap-2 px-2 py-1.5 hover:bg-gray-100 rounded cursor-pointer text-gray-600">
+                        <i class="fa-solid fa-user-group text-gray-400"></i> 
+                        <span th:text="${organization.organizationName}"></span>
+                    </div>
+                </div>
+					</div>
+                
+                <!-- 4. 반복되는 Group (커스텀 그룹) - data 속성 활용 -->
+                <div th:each="group : ${groups}"
+                     th:data-no="${group.groupsNo}"
+                     onclick="location.href='?groupsNo=' + this.getAttribute('data-no')"
+                     class="flex items-center gap-2 px-2 py-1.5 hover:bg-gray-100 rounded cursor-pointer text-gray-600 mt-1">
+                    <i class="fa-solid fa-users-line text-gray-400"></i> 
+                    <span th:text="${group.groupsName}">그룹</span>
+                </div>
+						
+					</div>
+				</div>
+			</div>
+
+			<!-- Footer text in sidebar -->
+            <div class="p-4 text-[10px] text-gray-400 border-t border-gray-100">
+                © NAVER Cloud Corp.
+            </div>
+        </aside>
+
+ <!-- 우측 리스트 영역 -->
+<section class="flex-1 bg-white flex flex-col relative">
+    
+    <!-- 리스트 헤더 -->
+    <div class="flex items-center justify-between px-6 py-3 border-b border-gray-200">
+        <div class="flex items-center gap-3">
+            <!-- 전체 선택 체크박스 (id 추가) -->
+            <input type="checkbox" id="checkAllBtn" class="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-pointer">
+            <!-- 회사명/부서명 클릭 시에도 전체 선택되도록 label로 묶음 -->
+            <label for="checkAllBtn" class="text-sm font-bold text-gray-800 cursor-pointer select-none" id="a_company">
+                <span th:text="${company}">연습</span> 
+                <span class="text-blue-500" th:text="${totalCount}">3</span>
+            </label>
+        </div>
+    </div>
+
+    <!-- 사원 리스트 목록 -->
+    <div class="overflow-y-auto flex-1 p-6 space-y-4">
+        
+        <div th:if="${#lists.isEmpty(users)}" class="text-center text-gray-500 py-10">
+            등록된 사원이 없습니다.
+        </div>
+
+        <div th:each="user : ${users}" class="flex items-center gap-4">
+            <!-- 개별 체크박스: class="user-checkbox" 추가, value에 userNo 매핑, data-name에 이름 매핑 -->
+            <input type="checkbox" class="user-checkbox w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500 cursor-pointer"
+                   th:value="${user.userNo}" 
+                   th:data-name="${user.userName}">
+            
+            <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg"
+                 th:classappend="${user.profileImage != null ? user.profileImage : 'bg-gray-400'}"
+                 th:text="${#strings.substring(user.userName, 0, 1)}">이</div>
+            
+            <div class="flex flex-col">
+                <span class="text-sm font-bold text-gray-800" th:text="${user.userName}">이름</span>
+                <span class="text-xs text-gray-500 mt-0.5" th:text="|${user.rankName != null ? user.rankName : ''} ${user.organizaionName != null ? user.organizaionName : ''} ${user.email != null ? user.email : ''}|">메일</span>
+            </div>
+        </div>
+
+    </div>
+    
+    <!-- 하단 버튼 영역 (저장/취소) -->
+    <div class="px-6 py-4 border-t border-gray-200 flex justify-between items-center bg-gray-50 shrink-0">
+        
+        <!-- 선택된 사원 이름 미리보기 영역 -->
+        <div id="selected-preview" class="flex items-center gap-1.5 overflow-hidden">
+            <!-- JS를 통해 동적으로 배지가 추가됩니다 -->
+        </div>
+
+        <div class="flex gap-2 shrink-0 ml-4">
+            <button type="button" id="cancelBtn" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded shadow-sm hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                취소
+            </button>
+            <button type="button" id="saveUsersBtn" class="px-4 py-2 text-sm font-medium text-white bg-blue-500 border border-transparent rounded shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1">
+                저장
+            </button>
+        </div>
+    </div>
+</section>
+    </main>
+
+</body>
+</html>

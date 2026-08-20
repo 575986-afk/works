@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>공지사항 - WORKS</title>
+<link rel="stylesheet" th:href="@{/common/css/works.css}" />
+<script th:src="@{/common/js/works.js}"></script>
+</head>
+<body>
+<!-- ===== Header ===== -->
+<div th:replace="~{ fragments/all :: header }"></div>
+
+<!-- ===== Sub banner + 고객센터 드롭다운 ===== -->
+<div th:replace="~{ fragments/all :: subBanner }"></div>
+<!-- ===== 주요 기능 ===== -->
+
+<main class="notice-container">
+  <h1 class="page-title">1:1 문의하기</h1>
+
+  <!-- notice-list 클래스 대신 폼 전용 래퍼 사용 -->
+  <div class="inquiry-wrap">
+    <form action="/inquiryProcess" method="post" class="inquiry-form" enctype="multipart/form-data">
+      
+      <!-- 제목 영역 -->
+      <div class="form-group">
+        <label class="form-label">제목 <span class="required">*</span></label>
+        <input type="text" name="title" class="input-title" placeholder="제목을 입력해주세요.">
+      </div>
+
+      <!-- 문의 내용 영역 -->
+      <div class="form-group">
+        <label class="form-label">문의 내용 <span class="required">*</span></label>
+        <textarea name="content" class="input-content" placeholder="문의 내용을 입력해주세요."></textarea>
+        <p class="help-text">· 개인정보보호를 위해 휴대폰 번호 등 개인정보 입력은 지양해주세요.</p>
+      </div>
+
+      <!-- 파일 첨부 영역 -->
+      <div class="form-group">
+        <label class="form-label">파일 첨부</label>
+        <div class="file-wrap">
+          <!-- 화면에 보여지는 가짜 파일 경로 창 -->
+          <input type="text" class="input-file-name" readonly>
+          <!-- 클릭 시 숨겨진 file input을 작동시키는 라벨 버튼 -->
+          <label for="file-upload" class="btn-file-attach">파일 첨부하기</label>
+          <!-- 실제 파일 첨부 input (숨김 처리) -->
+          <input type="file" id="file-upload" name="uploadFile" style="display: none;">
+        </div>
+      </div>
+
+      <!-- 제출 버튼 영역 -->
+      <div class="submit-wrap">
+        <button type="submit" class="btn-submit">문의하기</button>
+      </div>
+
+    </form>
+  </div>
+</main>
+
+<!-- footer -->
+<footer th:replace="~{ fragments/all :: footer }"></footer>
+</body>
+</html>

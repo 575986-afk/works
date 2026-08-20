@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div class="authWrap">
+    <table class="authTable">
+        <colgroup>
+            <col style="width: 25%;">
+            <col style="width: 75%;">
+        </colgroup>
+        <tbody>
+            <tr th:each="auth : ${authList}">
+                <td class="authCategory" th:text="${auth.supercategory}">기본환경</td>
+                <td class="authMenuList">
+                    <th:block th:each="menu, stat : ${auth.menuList}">
+                        <span th:text="${menu.menuName}">회사 정보</span>
+                        <br th:if="${!stat.last}"/>
+                    </th:block>
+                </td>
+            </tr>
+            <th:block th:if="${#lists.isEmpty(authList)}">
+                <tr>
+                    <td class="authCategory">기본환경</td>
+                    <td class="authMenuList">
+                        회사 정보
+                    </td>
+                </tr>
+                <tr>
+                    <td class="authCategory">구성원</td>
+                    <td class="authMenuList">
+                        구성원 관리<br>
+                        조직 관리<br>
+                        그룹 관리<br>
+                        직책/직급 관리
+                    </td>
+                </tr>
+                <tr>
+                    <td class="authCategory">보안</td>
+                    <td class="authMenuList">
+                        관리자 권한
+                    </td>
+                </tr>
+                <tr>
+                    <td class="authCategory">서비스</td>
+                    <td class="authMenuList">
+                        캘린더
+                    </td>
+                </tr>
+                <tr>
+                    <td class="authCategory">감사</td>
+                    <td class="authMenuList">
+                        로그인<br>
+                        캘린더<br>
+                        할 일<br>
+                        주소록
+                    </td>
+                </tr>
+            </th:block>
+        </tbody>
+    </table>
+</div>
+</html>

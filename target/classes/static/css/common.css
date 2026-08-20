@@ -1,0 +1,132 @@
+@charset "UTF-8";
+/* ---- 사이드바 ---- */
+#sidebar {
+    width: 280px;
+    background: #ffffff;
+    border-right: 1px solid #e2e8f0;
+    padding: 24px 0;
+    flex-shrink: 0;
+}
+.sidebarSection {
+    padding: 0 20px;
+    margin-bottom: 32px;
+}
+.sidebarTitle {
+    font-size: 12px;
+    font-weight: 700;
+    color: #8a94a6;
+    margin-bottom: 14px;
+    letter-spacing: 0.5px;
+}
+.sidebarItemGroup {
+    margin-bottom: 6px;
+}
+.sidebarMenu {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #2d3748;
+    font-size: 15px;
+    font-weight: 600;
+    transition: background 0.15s;
+    user-select: none;
+}
+.sidebarMenu:hover {
+    background: #f1f5f9;
+}
+.sidebarMenuLeft {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.sidebarMenuLeft i {
+    width: 20px;
+    text-align: center;
+    font-size: 17px;
+    color: #4a5568;
+    flex-shrink: 0;
+}
+.sidebarMenu .arrow {
+    font-size: 10px;
+    color: #a0aec0;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+.sidebarMenu .arrow.rotate {
+    transform: rotate(180deg);
+}
+.submenu {
+    display: none;
+    list-style: none;
+    padding-left: 46px;
+    margin: 6px 0 10px 0;
+}
+.submenu li a {
+    display: block;
+    padding: 7px 0;
+    font-size: 14px;
+    color: #718096;
+    text-decoration: none;
+    transition: color 0.15s;
+}
+.submenu li a:hover {
+    color: #1a202c;
+    font-weight: 600;
+}
+
+/* ---- 헤더 영역 ---- */
+#header{
+    height:56px;
+    background:#0d233a;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 20px;
+    color:white;
+}
+.headerLeft{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:18px;
+    font-weight: 700;
+    color: white;
+    text-decoration: none;
+    cursor: pointer;
+}
+.headerLeft:hover{
+	color: white;
+}
+.adminLogo{
+	color: #00b4d8;
+    font-size:12px;
+    font-weight:900;
+}
+.groupName{
+    font-size:13px;
+    font-weight:600;
+    opacity:.8;
+}
+.searchInputBox{
+    display:none;
+    position:relative;
+}
+.searchInputBox input{
+    height:28px;
+    width:200px;
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:0 35px 0 12px;
+    font-size:13px;
+    outline:none;
+}
+.searchInputBox i{
+    position:absolute;
+    right:12px;
+    top:7px;
+    cursor:pointer;
+    color:#666;
+}

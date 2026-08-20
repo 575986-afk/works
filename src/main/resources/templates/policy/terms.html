@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>공지사항 - WORKS</title>
+<link rel="stylesheet" th:href="@{/common/css/works.css}" />
+</head>
+<body>
+<!-- ===== Header ===== -->
+<div th:replace="~{ fragments/all :: header }"></div>
+<!-- ===== Sub banner + 고객센터 드롭다운 ===== -->
+<div th:replace="~{ fragments/all :: subBanner }"></div>
+<!-- ===== 주요 기능 ===== -->
+
+<main class="notice-container">
+	<h1 class="page-title">이용약관</h1>
+	<div class="terms-list">
+	    <img th:src="@{/common/images/terms.png}" id="terms"/>
+  </div>
+</main>
+
+<!-- footer -->
+<footer th:replace="~{ fragments/all :: footer }"></footer>
+</body>
+</html>

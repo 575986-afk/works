@@ -1,0 +1,564 @@
+<!-- 상세보기 전용 스타일 -->
+<style type="text/css">
+.groupDetailModalOverlay {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 9999;
+}
+
+.groupDetailCard {
+    width: 100%;
+    max-width: 680px;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    max-height: 90vh; /* 화면 높이 초과 방지 */
+    display: flex;
+    flex-direction: column;
+}
+
+.cardHeader { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px 10px 24px; }
+.cardHeader h3 { font-size: 20px; font-weight: 700; margin: 0; color: #1f2937; }
+.closeBtn { color: #9ca3af; font-size: 22px; text-decoration: none; cursor: pointer; }
+.closeBtn:hover { color: #4b5563; }
+
+.groupProfileBox { display: flex; align-items: center; padding: 10px 24px 20px 24px; gap: 20px; }
+.groupAvatar {
+    width: 70px; height: 70px; border-radius: 50%; background: #e5e7eb;
+    display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 32px;
+}
+.groupMeta { display: flex; flex-direction: column; gap: 2px; }
+.groupMetaTitle { font-size: 18px; font-weight: 700; color: #111827; display: flex; align-items: center; gap: 6px; }
+.groupMetaCount { font-size: 13px; color: #2563eb; font-weight: 600; }
+.groupMetaDesc { font-size: 13px; color: #6b7280; }
+
+.groupTabArea { border-bottom: 1px solid #e5e7eb; padding: 0 24px; margin-bottom: 20px; }
+.groupTab {
+    display: inline-block; padding: 10px 0; font-size: 14px; font-weight: 700;
+    color: #2563eb; border-bottom: 2px solid #2563eb;
+}
+
+.memberActionBar { display: flex; justify-content: space-between; align-items: center; padding: 0 24px; margin-bottom: 16px; }
+.searchBoxWrapper { position: relative; width: 280px; }
+.searchBoxWrapper input { width: 100%; height: 38px; border: 1px solid #d1d5db; border-radius: 6px; padding: 0 35px 0 12px; font-size: 13px; }
+.searchBoxWrapper i { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; }
+
+.memberListBox { border: 1px solid #e5e7eb; border-radius: 8px; margin: 0 24px; max-height: 360px; overflow-y: auto; }
+.memberItem { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #f3f4f6; }
+.memberItem:last-child { border-bottom: none; }
+.memberInfo { display: flex; align-items: center; gap: 12px; }
+.memberAvatar { width: 40px; height: 40px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 18px; }
+.memberNameGroup { display: flex; flex-direction: column; }
+.memberName { font-size: 14px; font-weight: 700; color: #1f2937; }
+.memberSub { font-size: 12px; color: #9ca3af; }
+.memberRight { display: flex; align-items: center; gap: 12px; }
+.leaderBadge { font-size: 13px; color: #2563eb; font-weight: 600; }
+
+.dropdown-toggle::after { display: none; }
+.threeDotsBtn { background: none; border: none; color: #9ca3af; padding: 4px 8px; font-size: 16px; cursor: pointer; }
+.threeDotsBtn:hover { color: #4b5563; }
+
+.cardFooter { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; margin-top: 15px; border-top: 1px solid #f3f4f6; }
+
+.customModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:10000; }
+.customModalContent { 
+    width:520px; 
+    margin:0 auto; 
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+    background:#fff; 
+    border-radius:12px; 
+    overflow:hidden; 
+    box-shadow:0 10px 30px rgba(0,0,0,.2); 
+}
+.customModalHeader { height:60px; padding:0 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e5e7eb; }
+.customModalHeader h3 { margin:0; font-size:20px; }
+.modalClose { border:none; background:none; font-size:28px; cursor:pointer; color:#9ca3af; }
+.modalClose:hover { color:#4b5563; }
+.customModalBody { padding:20px; }
+</style>
+
+<div class="groupDetailModalOverlay" id="groupDetailModalOverlay">
+    <div class="groupDetailCard">
+        <div class="cardHeader">
+            <h3>그룹 상세보기</h3>
+            <a href="javascript:void(0);" class="closeBtn closeDetailModalBtn">&times;</a>
+        </div>
+
+        <div class="groupProfileBox">
+            <div class="groupAvatar"><i class="fa-solid fa-users"></i></div>
+            <div class="groupMeta">
+                <div class="groupMetaTitle">
+                    <span th:text="${groupDetail?.groupName}">그룹명</span>
+                    <i class="fa-solid fa-bullhorn"></i>
+                </div>
+                <div class="groupMetaCount" th:text="'전체 ' + ${groupDetail?.memberCount ?: 0} + '명'">전체 0명</div>
+                <div class="groupMetaDesc" th:text="${groupDetail?.groupDesc}">그룹 설명</div>
+            </div>
+        </div>
+
+        <div class="groupTabArea">
+            <span class="groupTab">그룹 마스터/멤버</span>
+        </div>
+
+        <div class="memberActionBar">
+            <div class="searchBoxWrapper">
+                <input type="text" id="detailMemberSearchKey" placeholder="그룹 멤버 검색">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+            <button type="button" id="openChangeLeaderModalBtn" class="btn btn-sm btn-outline-secondary">그룹 마스터 변경</button>
+        </div>
+
+        <div class="memberListBox">
+            <div class="memberItem" th:each="member : ${memberList}">
+                <div class="memberInfo">
+                    <div class="memberAvatar"><i class="fa-solid fa-user"></i></div>
+                    <div class="memberNameGroup">
+                        <span class="memberName" th:text="${member?.userName}">이름</span>
+                        <span class="memberSub" th:text="${member?.positionName + ' / ' + member?.rankName + '  ' + (member?.email ?: '')}">
+						    직책/직급  이메일
+						</span>
+                    </div>
+                </div>
+
+                <div class="memberRight">
+                    <span class="leaderBadge" th:if="${member.isLeader == 1}">그룹 마스터</span>
+                    
+                    <div class="dropdown">
+                        <button class="threeDotsBtn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item text-danger btnDeleteMember" 
+                                   href="#" 
+                                   th:data-userno="${member?.userNo}">삭제</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div id="scrollSentinel" style="height: 10px;"></div>
+        </div>
+
+        <div class="cardFooter">
+            <div>
+                <button type="button" class="btn btn-outline-danger btn-sm" id="btnDeleteGroup" th:data-groupno="${groupDetail?.groupNo}">그룹 삭제</button>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button type="button" id="openEditMemberModalBtn" class="btn btn-outline-secondary btn-sm">멤버 수정</button>
+                
+                <button type="button"
+				        id="openEditGroupBtn"
+				        class="btn btn-outline-secondary btn-sm"
+				        th:data-groupno="${groupDetail?.groupNo}"
+				        th:data-groupname="${groupDetail?.groupName}"
+				        th:data-groupdesc="${groupDetail?.groupDesc}"
+				        th:data-groupleaderno="${groupDetail?.userNo}">
+				    그룹/마스터 수정
+				</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="addGroupFormArea"></div>
+
+<div id="changeLeaderModal" class="customModal">
+    <div class="customModalContent" style="width: 480px; border-radius: 12px;">
+        <div class="customModalHeader" style="border-bottom: none; padding: 24px 24px 12px 24px;">
+            <h3 style="font-size: 18px; font-weight: 700; color: #111827;">그룹 마스터 변경</h3>
+            <button type="button" class="modalClose closeLeaderModal">&times;</button>
+        </div>
+        
+        <div class="customModalBody" style="padding: 0 24px 24px 24px;">
+            <div style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; margin-top: 8px;">
+                <div style="background: #fafafa; padding: 10px 16px; border-bottom: 1px solid #e5e7eb; font-size: 12px; color: #6b7280; font-weight: 600;">
+                    새로운 그룹 마스터를 선택해 주세요
+                </div>
+                
+                <div class="leaderSelectListBox" style="max-height: 280px; overflow-y: auto;">
+                    <label class="leaderSelectItem" 
+                         th:each="member : ${memberList}" 
+                         style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #f3f4f6; cursor: pointer;">
+                        
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <input type="radio" name="leaderUserNo" class="leader-member-radio" th:value="${member?.userNo}" th:checked="${member.isLeader == 1}" style="width: 16px; height: 16px;">
+                            <div style="width: 38px; height: 38px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 18px;">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 14px; font-weight: 700; color: #111827;">
+                                    <span th:text="${member?.userName}">이름</span>
+                                    <span th:if="${member?.isLeader == 1}" style="font-size: 11px; color: #2563eb; font-weight: 600; margin-left: 4px;">(현재 마스터)</span>
+                                </div>
+                                <div style="font-size:12px; color:#9ca3af;"
+								     th:text="${member?.positionName + ' / ' + member?.rankName  + '  ' + (member?.email ?: '')}">
+								    직책/직급  이메일
+								</div>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end align-items-center mt-3" style="padding-top: 8px;">
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary closeLeaderModal" style="font-size: 13px; padding: 6px 16px; border-color: #d1d5db; color: #374151;">취소</button>
+                    <button type="button" id="saveLeaderChangeBtn" class="btn btn-primary" style="font-size: 13px; padding: 6px 16px; background-color: #3b82f6; border-color: #3b82f6;">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 그룹 멤버 수정 모달 -->
+<div id="editMemberModal" class="customModal">
+    <div class="customModalContent" style="width: 480px; border-radius: 12px;">
+        <div class="customModalHeader" style="border-bottom: none; padding: 24px 24px 12px 24px;">
+            <h3 style="font-size: 18px; font-weight: 700; color: #111827;">그룹 멤버 수정</h3>
+            <button type="button" class="modalClose closeMemberModal">&times;</button>
+        </div>
+        
+        <div class="customModalBody" style="padding: 0 24px 24px 24px;">
+            <div class="d-flex gap-2 mb-3">
+			    <input type="text"
+			           id="selectedMemberPreview"
+			           class="form-control"
+			           placeholder="주소록에서 그룹 멤버를 선택해 주세요"
+			           readonly
+			           style="font-size:13px; height:38px; border-color:#d1d5db;">
+			    <button type="button"
+			            id="openAddressBookBtn"
+			            class="btn btn-outline-secondary"
+			            style="font-size:13px; white-space:nowrap; width:75px; height:38px;">
+			        주소록
+			    </button>
+			</div>
+
+            <div style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+                <div style="background: #fafafa; padding: 10px 16px; border-bottom: 1px solid #e5e7eb; font-size: 12px; color: #6b7280; font-weight: 600;">
+                    <label style="cursor: pointer; display: flex; align-items: center; gap: 8px; margin: 0;">
+                        <input type="checkbox" id="selectAllEditMember" style="width: 14px; height: 14px;"> 전체 선택
+                    </label>
+                </div>
+                
+                <div class="editMemberListBox" style="max-height: 280px; overflow-y: auto;">
+                    <div class="editMemberItem" 
+                         th:each="member : ${memberList}" 
+                         th:data-userno="${member?.userNo}"
+                         style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #f3f4f6;">
+                        
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <input type="checkbox" class="edit-member-chk" th:value="${member?.userNo}" style="width: 14px; height: 14px;">
+                            <div style="width: 38px; height: 38px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 18px;">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 14px; font-weight: 700; color: #111827;" th:text="${member?.userName}">이름</div>
+                                <div style="font-size:12px; color:#9ca3af;"
+								     th:text="${member?.positionName + ' / ' + member?.rankName  + '  ' + (member?.email ?: '')}">
+								    직책/직급  이메일
+								</div>
+                            </div>
+                        </div>
+                        
+                        <i class="fa-solid fa-xmark btnRemoveEditMember" style="color: #ef4444; cursor: pointer; font-size: 16px; padding: 4px;"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-3" style="padding-top: 8px;">
+                <div style="font-size: 13px; color: #374151;">
+                    전체 <span id="modalMemberCount" style="color: #2563eb; font-weight: 700;" th:text="${#lists.size(memberList)}">0</span>명
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary closeMemberModal" style="font-size: 13px; padding: 6px 16px; border-color: #d1d5db; color: #374151;">취소</button>
+                    <button type="button" id="saveMemberEditBtn" class="btn btn-primary" style="font-size: 13px; padding: 6px 16px; background-color: #3b82f6; border-color: #3b82f6;">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function(){
+    let originalMemberListHtml = "";
+
+    // 검색
+    $(document).on("keyup", "#detailMemberSearchKey", function() {
+        var value = $(this).val().toLowerCase().trim();
+        
+        $(".memberListBox .memberItem").filter(function() {
+            var text = $(this).find(".memberNameGroup").text().toLowerCase();
+            $(this).toggle(text.indexOf(value) > -1);
+        });
+    });
+    
+    // 상세보기 모달 닫기
+    $(document).on("click", ".closeDetailModalBtn", function(e){
+        e.preventDefault();
+        $("#detailModalArea").empty();
+    });
+
+    $(document).on("click", "#groupDetailModalOverlay", function(e){
+        if (e.target === this) {
+            $("#detailModalArea").empty();
+        }
+    });
+
+    // 그룹 마스터 변경 모달
+    $(document).on("click", "#openChangeLeaderModalBtn", function(){
+        $("#changeLeaderModal").show();
+    });
+
+    $(document).on("click", ".closeLeaderModal", function(){
+        $("#changeLeaderModal").hide();
+    });
+
+    $(document).off("click", "#saveLeaderChangeBtn").on("click", "#saveLeaderChangeBtn", function(e){
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        
+        const selectedLeaderNo = $("input[name='leaderUserNo']:checked").val();
+        if(!selectedLeaderNo) {
+            alert("그룹 마스터를 선택해 주세요.");
+            return;
+        }
+        const groupNo = $("#btnDeleteGroup").data("groupno");
+
+        const params = new URLSearchParams();
+        params.append("groupNo", groupNo);
+        params.append("userNo", selectedLeaderNo);
+
+        axios.post("/adminUser/member/changeGroupLeader", params)
+        .then(function(res){
+            alert("그룹 마스터가 변경되었습니다.");
+            location.reload();
+        })
+        .catch(function(err){
+            console.error("그룹 마스터 변경 실패:", err);
+            alert("그룹 마스터 변경 중 오류가 발생했습니다.");
+        });
+    });
+
+    // 구성원 삭제
+    $(document).off("click", ".btnDeleteMember").on("click", ".btnDeleteMember", function(e){
+        e.preventDefault();
+        
+        const $targetItem = $(this).closest(".memberItem");
+        const userNo = $(this).data("userno");
+        const groupNo = $("#btnDeleteGroup").data("groupno");
+
+        if(confirm("해당 구성원을 그룹에서 삭제하시겠습니까?")) {
+            const params = new URLSearchParams();
+            params.append("userNo", userNo);
+            params.append("groupNo", groupNo);
+
+            axios.post("/adminUser/member/deleteGroupMember", params)
+            .then(function(res){
+                alert("삭제되었습니다.");
+                $targetItem.remove();
+                
+                const remainingCount = $(".memberListBox .memberItem").length;
+                $(".groupMetaCount").text("전체 " + remainingCount + "명");
+            })
+            .catch(function(err){
+                console.error("삭제 중 오류:", err);
+                alert("구성원 삭제 처리 중 오류가 발생했습니다.");
+            });
+        }
+    });
+
+    // 그룹 삭제
+    $(document).on("click", "#btnDeleteGroup", function(){
+        var groupNo = $(this).data("groupno");
+
+        if(confirm("정말로 이 그룹을 삭제하시겠습니까?")) {
+            const params = new URLSearchParams();
+            params.append("groupNo", groupNo);
+
+            axios.post("/adminUser/member/deleteGroup", params)
+            .then(function(res){
+                location.reload();
+            })
+            .catch(function(err){
+                console.error("삭제 중 오류:", err);
+            });
+        }
+    });
+
+    // 멤버 수정 모달
+    function updateModalMemberCount() {
+        const count = $(".editMemberItem").length;
+        $("#modalMemberCount").text(count);
+    }
+
+    $(document).on("click", "#openEditMemberModalBtn", function(){
+        originalMemberListHtml = $(".editMemberListBox").html();
+        $("#selectAllEditMember").prop("checked", false);
+        $("#editMemberModal").show();
+        updateModalMemberCount();
+    });
+
+    $(document).on("click", ".closeMemberModal", function(){
+        if(originalMemberListHtml) {
+            $(".editMemberListBox").html(originalMemberListHtml);
+            $("#selectAllEditMember").prop("checked", false);
+        }
+        updateModalMemberCount();
+        $("#editMemberModal").hide();
+    });
+
+    $(document).on("change", "#selectAllEditMember", function(){
+        $(".edit-member-chk").prop("checked", $(this).prop("checked"));
+    });
+
+    $(document).on("change", ".edit-member-chk", function(){
+        const total = $(".edit-member-chk").length;
+        const checked = $(".edit-member-chk:checked").length;
+        $("#selectAllEditMember").prop("checked", total === checked && total > 0);
+    });
+
+    $(document).on("click", ".btnRemoveEditMember", function(){
+        $(this).closest(".editMemberItem").remove();
+        updateModalMemberCount();
+    });
+
+    $(document).on("click", "#saveMemberEditBtn", function(){
+        const groupNo = $("#btnDeleteGroup").data("groupno");
+        const remainingUserNos = [];
+        $(".editMemberItem").each(function(){
+            remainingUserNos.push($(this).data("userno"));
+        });
+        const params = new URLSearchParams();
+        params.append("groupNo", groupNo);
+        remainingUserNos.forEach(function(userNo){
+            params.append("userNo", userNo);
+        });
+
+        axios.post("/adminUser/member/changeGroupMember", params)
+            .then(function(response){
+                alert("그룹 멤버가 수정되었습니다.");
+                location.reload();
+            })
+            .catch(function(error){
+                console.error("멤버 수정 실패:", error);
+                alert("그룹 멤버 수정 중 오류가 발생했습니다.");
+            });
+    });
+	
+	// 모달 닫기 / 취소 버튼 이벤트
+	$(document).on("click", "#addGroupFormArea .modalClose, #addGroupFormArea .closeBtn, #addGroupFormArea .cancelBtn, #addGroupFormArea button:contains('취소')", function(e){
+	    e.preventDefault();
+	    $("#addGroupFormArea").empty();
+	});
+	
+	// 그룹/마스터 수정 모달 열기 (통합 및 마스터 ID 완벽 바인딩)
+	$(document).off("click", "#openEditGroupBtn").on("click", "#openEditGroupBtn", function() {
+	    const $this = $(this);
+	    const groupNo = $this.data("groupno") || $("#btnDeleteGroup").data("groupno");
+	    const groupName = $this.data("groupname") || "";
+	    const groupDesc = $this.data("groupdesc") || "";
+	     
+	    const $leaderItem = $(".memberListBox .memberItem").filter(function() {
+	        return $(this).find(".leaderBadge").length > 0;
+	    });
+	    
+	    const groupLeaderNo = $this.data("groupleaderno") || $leaderItem.find(".btnDeleteMember").data("userno") || "";
+	    const masterName = $leaderItem.find(".memberName").text() || "";
+	    const masterSub = $leaderItem.find(".memberSub").text() || "";
+
+	    axios.get("/adminUser/member/addGroupForm", { params: { groupNo: groupNo } })
+	    .then(function(response) {
+	        const $area = $("#addGroupFormArea");
+	        $area.html(response.data);
+	
+	        // 1) input 태그 값 세팅
+	        $area.find("#groupNo").val(groupNo);
+	        $area.find("#groupNameInput").val(groupName).trigger("input");
+	        $area.find("#groupDescInput").val(groupDesc).trigger("input");
+	         
+	        // 2) 타이틀 및 버튼 변경
+	        $area.find("#modalTitle").text("그룹 수정");
+	        $area.find("#btnSaveGroup").text("수정");
+	
+	        // 3) 마스터 정보 세팅 (window 전역변수 + form 내부 hidden 값 전체 동시 업데이트)
+	        if (groupLeaderNo) {
+	            const leaderStr = String(groupLeaderNo);
+	            window.selectedMasterId = leaderStr; 
+	            
+	            // 모달 내부 input 태그가 존재할 경우 값 세팅 (Form 검사 통과용)
+	            $area.find("#userNo, #masterUserNo, #selectedMasterId, #initialMasterUserNo").val(leaderStr);
+
+	            $area.find("#selectedMasterName").text(masterName);
+	            $area.find("#selectedMasterSub").text(masterSub);
+	            $area.find("#emptyMasterText").hide();
+	            $area.find("#selectedMasterItem").css("display", "flex");
+	        } else {
+	            window.selectedMasterId = "";
+	            $area.find("#userNo, #masterUserNo, #selectedMasterId, #initialMasterUserNo").val("");
+	            $area.find("#selectedMasterItem").hide();
+	            $area.find("#emptyMasterText").show();
+	        }
+	
+	        // 4) 모달 출력
+	        $area.find("#groupAddEditModal").show();
+	    })
+	    .catch(function(error) {
+	        console.error("수정 폼 로드 실패:", error);
+	        alert("수정 폼을 불러오는 중 오류가 발생했습니다.");
+	    });
+	});
+	
+	// 무한 스크롤 구현 영역
+    let currentPage = 1;
+    let isFetching = false;
+    const listContainer = document.querySelector('.memberListBox');
+    const sentinel = document.getElementById('scrollSentinel');
+
+    if (sentinel && listContainer) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !isFetching) {
+                    loadMoreMembers();
+                }
+            });
+        }, {
+            root: listContainer,
+            threshold: 0.1
+        });
+
+        observer.observe(sentinel);
+    }
+
+    function loadMoreMembers() {
+        isFetching = true;
+        currentPage++;
+        const groupNo = $("#btnDeleteGroup").data("groupno");
+
+        axios.get("/adminUser/member/getMemberList", {
+            params: { groupNo: groupNo, page: currentPage }
+        })
+        .then(function(res){
+            if (res.data && res.data.length > 0) {
+                $("#scrollSentinel").before(res.data);
+                isFetching = false;
+            } else {
+                observer.disconnect();
+            }
+        })
+        .catch(function(err){
+            console.error("멤버 데이터 추가 로드 실패:", err);
+            isFetching = false;
+        });
+    }
+});
+</script>

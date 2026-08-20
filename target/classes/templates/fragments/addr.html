@@ -1,0 +1,241 @@
+<!-- Header -->
+<header class="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 shrink-0 z-50 relative" th:fragment="user-header">
+    
+    <!-- 로고 및 검색창 -->
+    <div class="flex items-center gap-6">
+        <!-- 1. 주소록 로고 (클릭 시 주소록 홈으로 이동) -->
+        <a th:href="@{/addressBook}" class="flex items-center gap-2 text-teal-500 font-bold text-lg hover:opacity-80">
+            <i class="fa-solid fa-address-book"></i>
+            <span class="text-gray-800">주소록</span>
+        </a>
+        
+        <!-- 2. 검색창 -->
+        <div class="relative w-96">
+            <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            <!-- autocomplete="off" 추가 -->
+            <input type="text" id="searchInput" autocomplete="off" placeholder="연락처, 태그 검색" class="w-full bg-gray-100 border-none rounded-full py-1.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-100 text-sm">
+            
+            <!-- 검색창 드롭다운 (AJAX 결과 렌더링 영역, 스크롤 추가) -->
+            <div id="searchDropdown" class="hidden absolute top-full left-0 mt-2 w-full bg-white border border-gray-200 rounded-md shadow-lg text-gray-500 text-sm z-50 max-h-80 overflow-y-auto">
+                <div class="p-4 text-center">최근 검색어가 없습니다.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 오른쪽: 유틸리티 메뉴 -->
+    <div class="flex items-center gap-4 text-gray-600 text-lg">
+        
+        <!-- 앱 런처 (점 9개) -->
+        <div class="relative">
+            <button id="appLauncherBtn" class="hover:text-gray-800 focus:outline-none pt-1">
+                <i class="fa-solid fa-grip"></i>
+            </button>
+            <div id="appLauncherDropdown" class="hidden absolute top-full right-0 mt-3 w-72 bg-white border border-gray-200 rounded-lg shadow-xl p-4 z-50">
+                <div class="grid grid-cols-3 gap-y-4 gap-x-2 text-center">
+                    <a th:href="@{/home}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
+                        <i class="fa-solid fa-house text-blue-500 text-2xl mb-2"></i>
+                        <span class="text-xs text-gray-700">홈</span>
+                    </a>
+                    <a th:href="@{/message}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
+                        <i class="fa-solid fa-comment text-green-500 text-2xl mb-2"></i>
+                        <span class="text-xs text-gray-700">메시지</span>
+                    </a>
+                    <a th:href="@{/calendar}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
+                        <i class="fa-solid fa-calendar text-indigo-500 text-2xl mb-2"></i>
+                        <span class="text-xs text-gray-700">캘린더</span>
+                    </a>
+                    <a th:href="@{/addressBook}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
+                        <i class="fa-solid fa-address-book text-teal-500 text-2xl mb-2"></i>
+                        <span class="text-xs text-gray-700">주소록</span>
+                    </a>
+                    <a th:href="@{/todo}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
+                        <i class="fa-solid fa-circle-check text-purple-500 text-2xl mb-2"></i>
+                        <span class="text-xs text-gray-700">할 일</span>
+                    </a>
+                    <a th:if="${session.user != null and session.user.role != null and session.user.role >= '50'}"
+                    th:href="@{/admin}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
+                        <i class="fa-solid fa-user-tie text-gray-500 text-2xl mb-2"></i>
+                        <span class="text-xs text-gray-700">Admin</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 구분선 -->
+        <div class="w-px h-4 bg-gray-300 mx-1"></div>
+
+        <!-- 종 (알림) -->
+        <div class="relative">
+            <button id="notiBtn" class="hover:text-gray-800 focus:outline-none pt-1">
+                <i class="fa-regular fa-bell"></i>
+            </button>
+            <div id="notiDropdown" class="hidden absolute top-full right-0 mt-3 w-80 bg-white border border-gray-200 rounded-lg shadow-xl p-4 z-50">
+                <div class="text-center text-gray-500 text-sm py-4">새로운 알림이 없습니다.</div>
+            </div>
+        </div>
+
+        <!-- ? (고객센터) -->
+        <a th:href="@{/user/notices}" class="hover:text-gray-800 pt-1">
+            <i class="fa-regular fa-circle-question"></i>
+        </a>
+
+        <!-- 톱니바퀴 (환경설정) -->
+        <a th:href="@{/settings}" class="hover:text-gray-800 pt-1">
+            <i class="fa-solid fa-gear"></i>
+        </a>
+
+        <!-- 프로필 (에러 방지 ?. 적용) -->
+        <div class="relative ml-2">
+            <button id="profileBtn" class="w-8 h-8 rounded-full bg-blue-400 text-white flex items-center justify-center font-bold text-sm focus:outline-none"
+            		th:classappend="${session.user?.profileImage != null ? session.user?.profileImage : 'bg-gray-400'}"
+                    th:text="${session.user?.userName != null ? #strings.substring(session.user?.userName, 0, 1) : 'U'}">
+            </button>
+            <div id="profileDropdown" class="hidden absolute top-full right-0 mt-3 w-64 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden">
+                <div class="p-4 flex items-center gap-3 border-b border-gray-100 bg-gray-50">
+                    <div class="w-11 h-11 rounded-full bg-blue-400 text-white flex items-center justify-center font-bold text-lg"
+                    th:classappend="${session.user?.profileImage != null ? session.user?.profileImage : 'bg-gray-400'}"
+                    th:text="${session.user?.userName != null ? #strings.substring(session.user?.userName, 0, 1) : 'U'}"
+                    >U</div>
+                    <div class="font-bold text-gray-800 text-base" th:text="${session.user?.userName != null ? session.user?.userName : '로그인 필요'}">이름</div>
+                </div>
+                <div class="p-2">
+                    <button class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2">
+                        <i class="fa-solid fa-plus border border-gray-400 rounded-full p-0.5 text-[10px]"></i>상태 설정
+                    </button>
+                    <button class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2">
+                        <i class="fa-solid fa-bell-slash text-gray-500"></i>알림 일시 정지
+                    </button>
+                </div>
+                <div class="border-t border-gray-100 p-2">
+                    <a th:href="@{/logout}" class="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-md flex items-center gap-2 font-medium">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>로그아웃
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+<!-- 드롭다운 토글 및 AJAX 검색 연동 스크립트 -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const searchDropdown = document.getElementById('searchDropdown');
+    
+    const appLauncherBtn = document.getElementById('appLauncherBtn');
+    const appLauncherDropdown = document.getElementById('appLauncherDropdown');
+    
+    const notiBtn = document.getElementById('notiBtn');
+    const notiDropdown = document.getElementById('notiDropdown');
+    
+    const profileBtn = document.getElementById('profileBtn');
+    const profileDropdown = document.getElementById('profileDropdown');
+
+    // 앱 런처 클릭
+    appLauncherBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isHidden = appLauncherDropdown.classList.contains('hidden');
+        closeAllDropdowns();
+        if (isHidden) appLauncherDropdown.classList.remove('hidden');
+    });
+
+    // 알림 클릭
+    notiBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isHidden = notiDropdown.classList.contains('hidden');
+        closeAllDropdowns();
+        if (isHidden) notiDropdown.classList.remove('hidden');
+    });
+
+    // 프로필 클릭
+    profileBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isHidden = profileDropdown.classList.contains('hidden');
+        closeAllDropdowns();
+        if (isHidden) profileDropdown.classList.remove('hidden');
+    });
+
+    // 바깥 영역 클릭 시 모든 드롭다운 닫기
+    document.addEventListener('click', () => {
+        closeAllDropdowns();
+    });
+
+    // 드롭다운 내부 클릭 시 닫히지 않도록 이벤트 전파 막기
+    [searchDropdown, appLauncherDropdown, notiDropdown, profileDropdown].forEach(dropdown => {
+        dropdown.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    });
+
+    function closeAllDropdowns() {
+        searchDropdown.classList.add('hidden');
+        appLauncherDropdown.classList.add('hidden');
+        notiDropdown.classList.add('hidden');
+        profileDropdown.classList.add('hidden');
+    }
+
+    // ==========================================
+    // AJAX 검색창 자동완성 로직 연동
+    // ==========================================
+    if (typeof $ !== 'undefined') {
+        let searchTimeout;
+
+        // 검색창 클릭 시 드롭다운 오픈
+        $(searchInput).on('click', function(e) {
+            e.stopPropagation();
+            closeAllDropdowns();
+            $(searchDropdown).removeClass('hidden');
+        });
+
+        // 검색창 입력 이벤트
+        $(searchInput).on('input', function() {
+            clearTimeout(searchTimeout); 
+            const keyword = $(this).val().trim();
+
+            if (keyword.length === 0) {
+                $(searchDropdown).html('<div class="p-4 text-center text-gray-500">최근 검색어가 없습니다.</div>');
+                return;
+            }
+
+            // 0.3초 디바운스 적용
+            searchTimeout = setTimeout(function() {
+                $.ajax({
+                    url: '/address/main/search', // Controller 매핑 주소 확인
+                    type: 'GET',
+                    data: { keyword: keyword },
+                    success: function(response) {
+                        $(searchDropdown).empty();
+                        
+                        if (response && response.length > 0) {
+                            let html = '<ul class="py-2 m-0">';
+                            
+                            response.forEach(function(item) {
+                                // addressBook.js의 addFromSearch 함수가 있다면 호출(주소록 페이지), 없다면 단순 파라미터 이동
+                                html += `
+                                    <li class="px-4 py-2 hover:bg-gray-50 cursor-pointer flex flex-col border-b border-gray-100 last:border-0"
+                                        onclick="if(typeof window.addFromSearch === 'function'){ window.addFromSearch('${item.userNo}', '${item.userName}'); } else { location.href='/addressBook?keyword=${item.userName}' }">
+                                        <div class="flex justify-between items-center">
+                                            <span class="font-bold text-sm text-gray-800">${item.userName}</span>
+                                            <span class="text-xs px-2 py-0.5 bg-blue-50 text-blue-600 rounded">${item.organizaionName || item.groupsName || '-'}</span>
+                                        </div>
+                                        <div class="text-xs text-gray-500 mt-1">${item.phoneNumber || item.email || ''}</div>
+                                    </li>
+                                `;
+                            });
+                            
+                            html += '</ul>';
+                            $(searchDropdown).html(html);
+                        } else {
+                            $(searchDropdown).html('<div class="p-4 text-sm text-center text-gray-500">일치하는 결과가 없습니다.</div>');
+                        }
+                    },
+                    error: function() {
+                        $(searchDropdown).html('<div class="p-4 text-sm text-center text-red-500">검색 중 오류가 발생했습니다.</div>');
+                    }
+                });
+            }, 300); 
+        });
+    }
+});
+</script>
+</header>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard</title>
+
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- FontAwesome 아이콘 CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<link rel="stylesheet" th:href="@{/css/common.css}">
+<style type="text/css">
+* {
+    box-sizing: border-box;
+}
+body{
+    background: #ffffff;
+    font-family: "맑은 고딕", sans-serif;
+    margin: 0;
+}
+#wrap{
+    width:100%;
+    margin:0;
+}
+#container{
+    display:flex;
+    min-height: calc(100vh - 56px);
+}
+
+/* ---- 메인 영역 레이아웃 ---- */
+#main{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+.contentContainer {
+    max-width: 1180px;
+    width: 100%;
+    margin: 0 auto;
+}
+#topSection {
+    background: #ffffff;
+    padding: 80px 40px 150px;
+}
+#welcome{
+    margin-bottom: 52px;
+}
+#welcome h2{
+    font-size: 32px;
+    color: #2d3748;
+}
+#welcome h2 span{
+    font-weight: bold;
+    font-size: 32px;
+    color: #2d3748;
+}
+#menuArea{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 28px;
+    row-gap: 44px;
+}
+.menuCard{
+    background: #f8fafc;
+    border-radius: 14px;
+    height: 165px;
+    padding: 28px 32px;
+    box-shadow: none;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.15s;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-decoration: none;
+    color: inherit;
+}
+.menuCard:hover{
+    background: #edf2f7;
+    transform: translateY(-3px);
+}
+.menuTitle{
+    font-size: 19.5px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #2d3748;
+}
+.menuContent{
+    color: #718096;
+    font-size: 14.5px;
+    line-height: 1.5;
+}
+#bottomSection {
+    flex: 1;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    padding: 50px 40px 60px;
+}
+#bottomContainer {
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+}
+#memberBox{
+    width: 350px;
+    height: 142px;
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 24px 30px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+#memberBox h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #4a5568;
+    margin: 0;
+}
+.memberCount{
+    font-size: 28px;
+    font-weight: 800;
+    color: #1a202c;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+.memberCount span {
+    font-size: 38px;
+}
+#noticeBox{
+    width: 350px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.noticeItem{
+    height: 64px;
+    background: #ffffff;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 26px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.noticeItem:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+}
+.noticeTitle{
+    font-size: 16px;
+    font-weight: 700;
+    color: #2d3748;
+}
+.more{
+    font-size: 15px;
+    font-weight: bold;
+    color: #2d3748;
+}
+
+</style>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script type="text/javascript">
+$(function(){
+    // 사이드바 토글 동작
+    $(".sidebarMenu").click(function(){
+        $(this).next(".submenu").slideToggle(200);
+        $(this).find(".arrow").toggleClass("rotate");
+    });
+});
+</script>
+</head>
+<body>
+<!-- 헤더 -->
+<div th:replace="~{fragments/header :: headerFragment}"></div>
+
+<div id="container">
+    <!-- 사이드바 -->
+    <div th:replace="~{fragments/sidebar :: sidebarFragment}"></div>
+
+    <!-- 메인 영역 -->
+	<div id="main">
+	    <div id="topSection">
+	        <div class="contentContainer">
+	            <div id="welcome">
+	                <h2><span th:text="${adminName}"></span>님, 안녕하세요.</h2>
+	            </div>
+	
+	            <div id="menuArea">
+	                <a th:href="@{/adminUser/company/info}" class="menuCard">
+	                    <span class="menuTitle">회사 정보</span>
+	                    <span class="menuContent">회사 정보 설정</span>
+	                </a>
+	                <a th:href="@{/adminUser/member/organization}" class="menuCard">
+	                    <span class="menuTitle">조직</span>
+	                    <span class="menuContent">조직 생성/수정/삭제, 조직별 정보 및 기능 관리</span>
+	                </a>
+	                <a th:href="@{/adminUser/member/group}" class="menuCard">
+	                    <span class="menuTitle">그룹</span>
+	                    <span class="menuContent">그룹 생성/수정/삭제, 그룹별 정보 및 기능 관리</span>
+	                </a>
+	                <a th:href="@{/adminUser/member/member}" class="menuCard">
+	                    <span class="menuTitle">구성원</span>
+	                    <span class="menuContent">구성원 추가/수정/삭제, 구성원별 정보 및 상태 관리</span>
+	                </a>
+	                <a th:href="@{/adminUser/security/authority}" class="menuCard">
+	                    <span class="menuTitle">관리자 권한</span>
+	                    <span class="menuContent">Admin 메뉴별 관리자 권한 관리, 최고 관리자 위임</span>
+	                </a>
+	                <a th:href="@{/adminUser/service/calendar}" class="menuCard">
+	                    <span class="menuTitle">회사 캘린더</span>
+	                    <span class="menuContent">회사 구성원 전체가 공유하는 일정 관리</span>
+	                </a>
+	            </div>
+	        </div>
+	    </div>
+
+	    <div id="bottomSection">
+	        <div class="contentContainer">
+	            <div id="bottomContainer">
+	                <!-- 구성원 현황 카드 -->
+	                <div id="memberBox">
+	                    <h4>구성원 현황</h4>
+	                    <div class="memberCount">
+	                        <span th:text="${memberCount}"></span> 명
+	                    </div>
+	                </div>
+
+	                <!-- 공지사항 및 1:1 문의 버튼 -->
+	                <div id="noticeBox">
+					    <div class="noticeItem" th:href="@{/user/notices}">
+					        <span class="noticeTitle">공지사항</span>
+					        <i class="fa-solid fa-chevron-right more"></i>
+					    </div>
+					    <div class="noticeItem" th:href="@{/user/inquiry}">
+					        <span class="noticeTitle">1:1 문의</span>
+					        <i class="fa-solid fa-chevron-right more"></i>
+					    </div>
+					</div>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+</div>
+</body>
+</html>

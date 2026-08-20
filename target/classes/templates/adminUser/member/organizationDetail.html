@@ -1,0 +1,543 @@
+<!-- 상세보기 전용 스타일 -->
+<style type="text/css">
+.orgDetailCard {
+    width: 100%;
+    max-width: 680px;
+    margin: 20px auto;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+.cardHeader { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px 10px 24px; }
+.cardHeader h3 { font-size: 20px; font-weight: 700; margin: 0; color: #1f2937; }
+.closeBtn { color: #9ca3af; font-size: 22px; text-decoration: none; cursor: pointer; }
+.closeBtn:hover { color: #4b5563; }
+
+.orgProfileBox { display: flex; align-items: center; padding: 10px 24px 20px 24px; gap: 20px; }
+.orgAvatar {
+    width: 70px; height: 70px; border-radius: 50%; background: #e5e7eb;
+    display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 32px;
+}
+.orgMeta { display: flex; flex-direction: column; gap: 2px; }
+.orgMetaTitle { font-size: 18px; font-weight: 700; color: #111827; display: flex; align-items: center; gap: 6px; }
+.orgMetaCount { font-size: 13px; color: #2563eb; font-weight: 600; }
+.orgMetaDesc { font-size: 13px; color: #6b7280; }
+
+.orgTabArea { border-bottom: 1px solid #e5e7eb; padding: 0 24px; margin-bottom: 20px; }
+.orgTab {
+    display: inline-block; padding: 10px 0; font-size: 14px; font-weight: 700;
+    color: #2563eb; border-bottom: 2px solid #2563eb;
+}
+
+.memberActionBar { display: flex; justify-content: space-between; align-items: center; padding: 0 24px; margin-bottom: 16px; }
+.searchBoxWrapper { position: relative; width: 280px; }
+.searchBoxWrapper input { width: 100%; height: 38px; border: 1px solid #d1d5db; border-radius: 6px; padding: 0 35px 0 12px; font-size: 13px; }
+.searchBoxWrapper i { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; }
+
+.memberListBox { border: 1px solid #e5e7eb; border-radius: 8px; margin: 0 24px; max-height: 400px; overflow-y: auto; }
+.memberItem { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #f3f4f6; }
+.memberItem:last-child { border-bottom: none; }
+.memberInfo { display: flex; align-items: center; gap: 12px; }
+.memberAvatar { width: 40px; height: 40px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 18px; }
+.memberNameGroup { display: flex; flex-direction: column; }
+.memberName { font-size: 14px; font-weight: 700; color: #1f2937; }
+.memberSub { font-size: 12px; color: #9ca3af; }
+.memberRight { display: flex; align-items: center; gap: 12px; }
+.leaderBadge { font-size: 13px; color: #2563eb; font-weight: 600; }
+
+.dropdown-toggle::after { display: none; }
+.threeDotsBtn { background: none; border: none; color: #9ca3af; padding: 4px 8px; font-size: 16px; cursor: pointer; }
+.threeDotsBtn:hover { color: #4b5563; }
+
+.cardFooter { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; margin-top: 15px; border-top: 1px solid #f3f4f6; }
+
+/* 모달 중앙 정렬 CSS 적용 */
+.customModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:10000; }
+.customModalContent { 
+    width:520px; 
+    margin:0 auto; 
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%); /* 수직 중앙 정렬 */
+    background:#fff; 
+    border-radius:12px; 
+    overflow:hidden; 
+    box-shadow:0 10px 30px rgba(0,0,0,.2); 
+}
+.customModalHeader { height:60px; padding:0 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e5e7eb; }
+.customModalHeader h3 { margin:0; font-size:20px; }
+.modalClose { border:none; background:none; font-size:28px; cursor:pointer; color:#9ca3af; }
+.modalClose:hover { color:#4b5563; }
+.customModalBody { padding:20px; }
+</style>
+
+<!-- 상세보기 카드 본문 -->
+<div class="orgDetailCard">
+    <div class="cardHeader">
+        <h3>조직 상세보기</h3>
+        <a href="javascript:void(0);" class="closeBtn closeDetailModalBtn">&times;</a>
+    </div>
+
+    <div class="orgProfileBox">
+        <div class="orgAvatar"><i class="fa-solid fa-users"></i></div>
+        <div class="orgMeta">
+            <div class="orgMetaTitle">
+                <span th:text="${organizationDetail.organizationName}">조직명</span>
+                <i class="fa-solid fa-bullhorn"></i>
+            </div>
+            <div class="orgMetaCount" th:text="'전체 ' + ${organizationDetail.memberCount} + '명'">전체 0명</div>
+            <div class="orgMetaDesc" th:text="${organizationDetail.organizationDesc}">조직 설명</div>
+        </div>
+    </div>
+
+    <div class="orgTabArea">
+        <span class="orgTab">조직장/멤버</span>
+    </div>
+
+    <div class="memberActionBar">
+        <div class="searchBoxWrapper">
+            <input type="text" id="detailMemberSearchKey" placeholder="조직 멤버 검색">
+            <i class="fa-solid fa-magnifying-glass"></i>
+        </div>
+        <!-- 조직장 변경 버튼 ID 부여 -->
+        <button type="button" id="openChangeLeaderModalBtn" class="btn btn-sm btn-outline-secondary">조직장 변경</button>
+    </div>
+
+    <div class="memberListBox">
+        <div class="memberItem" th:each="member : ${memberList}">
+            <div class="memberInfo">
+                <div class="memberAvatar"><i class="fa-solid fa-user"></i></div>
+                <div class="memberNameGroup">
+                    <span class="memberName" th:text="${member.userName}">이름</span>
+                    <span class="memberSub" th:text="${member?.positionName + ' / ' + member?.rankName + '  ' + (member?.email ?: '')}">
+					    직책/직급  이메일
+					</span>
+                </div>
+            </div>
+
+            <div class="memberRight">
+                <span class="leaderBadge" th:if="${member.isLeader == 1}">조직장</span>
+                
+                <div class="dropdown">
+                    <button class="threeDotsBtn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item text-danger btnDeleteMember" 
+                               href="#" 
+                               th:data-userno="${member.userNo}">삭제</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div id="orgMemberScrollSentinel" style="height: 10px;"></div>
+    </div>
+
+    <div class="cardFooter">
+        <div>
+            <button type="button" class="btn btn-outline-danger btn-sm" id="btnDeleteOrganization" th:data-organizationno="${organizationDetail.organizationNo}">조직 삭제</button>
+        </div>
+        <div style="display:flex; gap:8px;">
+            <button type="button" id="openEditMemberModalBtn" class="btn btn-outline-secondary btn-sm">멤버 수정</button>
+            <button type="button" id="openEditOrganizationBtn"
+            		 class="btn btn-outline-secondary btn-sm"
+            		 th:data-organizationno="${organizationDetail?.organizationNo}"
+			        th:data-organizationname="${organizationDetail?.organizationName}"
+			        th:data-organizationdesc="${organizationDetail?.organizationDesc}"
+			        th:data-organizationleaderno="${organizationDetail?.userNo}">조직 수정</button>
+        </div>
+    </div>
+</div>
+
+<!-- 동적으로 로드될 조직 수정 모달 폼 영역 -->
+<div id="addOrganizationFormArea"></div>
+
+<!-- 조직장 변경 모달 -->
+<div id="changeLeaderModal" class="customModal">
+    <div class="customModalContent" style="width: 480px; border-radius: 12px;">
+        <div class="customModalHeader" style="border-bottom: none; padding: 24px 24px 12px 24px;">
+            <h3 style="font-size: 18px; font-weight: 700; color: #111827;">조직장 변경</h3>
+            <button type="button" class="modalClose closeLeaderModal">&times;</button>
+        </div>
+        
+        <div class="customModalBody" style="padding: 0 24px 24px 24px;">
+            <div style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; margin-top: 8px;">
+                <div style="background: #fafafa; padding: 10px 16px; border-bottom: 1px solid #e5e7eb; font-size: 12px; color: #6b7280; font-weight: 600;">
+                    새로운 조직장을 선택해 주세요
+                </div>
+                
+                <div class="leaderSelectListBox" style="max-height: 280px; overflow-y: auto;">
+                    <label class="leaderSelectItem" 
+                         th:each="member : ${memberList}" 
+                         style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #f3f4f6; cursor: pointer;">
+                        
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <input type="radio" name="leaderUserNo" class="leader-member-radio" th:value="${member.userNo}" th:checked="${member.isLeader == 1}" style="width: 16px; height: 16px;">
+                            <div style="width: 38px; height: 38px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 18px;">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 14px; font-weight: 700; color: #111827;">
+                                    <span th:text="${member.userName}">이름</span>
+                                    <span th:if="${member?.isLeader == 1}" style="font-size: 11px; color: #2563eb; font-weight: 600; margin-left: 4px;">(현재 조직장)</span>
+                                </div>
+                                <div style="font-size:12px; color:#9ca3af;"
+								     th:text="${member?.positionName + ' / ' + member?.rankName  + '  ' + (member?.email ?: '')}">
+								    직책/직급  이메일
+								</div>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end align-items-center mt-3" style="padding-top: 8px;">
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary closeLeaderModal" style="font-size: 13px; padding: 6px 16px; border-color: #d1d5db; color: #374151;">취소</button>
+                    <button type="button" id="saveLeaderChangeBtn" class="btn btn-primary" style="font-size: 13px; padding: 6px 16px; background-color: #3b82f6; border-color: #3b82f6;">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 조직 멤버 수정 모달 -->
+<div id="editMemberModal" class="customModal">
+    <div class="customModalContent" style="width: 480px; border-radius: 12px;">
+        <div class="customModalHeader" style="border-bottom: none; padding: 24px 24px 12px 24px;">
+            <h3 style="font-size: 18px; font-weight: 700; color: #111827;">조직 멤버 수정</h3>
+            <button type="button" class="modalClose closeMemberModal">&times;</button>
+        </div>
+        
+        <div class="customModalBody" style="padding: 0 24px 24px 24px;">
+            <div class="d-flex gap-2 mb-3">
+                <input type="text" class="form-control" placeholder="조직 멤버를 추가해 주세요" style="font-size: 13px; height: 38px; border-color: #d1d5db;">
+                <button type="button" class="btn btn-outline-secondary" style="font-size: 13px; white-space: nowrap; width: 75px; height: 38px;">주소록</button>
+            </div>
+
+            <div style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+                <div style="background: #fafafa; padding: 10px 16px; border-bottom: 1px solid #e5e7eb; font-size: 12px; color: #6b7280; font-weight: 600;">
+                    <label style="cursor: pointer; display: flex; align-items: center; gap: 8px; margin: 0;">
+                        <input type="checkbox" id="selectAllEditMember" style="width: 14px; height: 14px;"> 전체 선택
+                    </label>
+                </div>
+                
+                <div class="editMemberListBox" style="max-height: 280px; overflow-y: auto;">
+                    <div class="editMemberItem" 
+                         th:each="member : ${memberList}" 
+                         th:data-userno="${member.userNo}"
+                         style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #f3f4f6;">
+                        
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <input type="checkbox" class="edit-member-chk" th:value="${member.userNo}" style="width: 14px; height: 14px;">
+                            <div style="width: 38px; height: 38px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 18px;">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 14px; font-weight: 700; color: #111827;" th:text="${member.userName}">이름</div>
+                                <div style="font-size:12px; color:#9ca3af;"
+								     th:text="${member?.positionName + ' / ' + member?.rankName  + '  ' + (member?.email ?: '')}">
+								    직책/직급  이메일
+								</div>
+                            </div>
+                        </div>
+                        
+                        <i class="fa-solid fa-xmark btnRemoveEditMember" style="color: #ef4444; cursor: pointer; font-size: 16px; padding: 4px;"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-3" style="padding-top: 8px;">
+                <div style="font-size: 13px; color: #374151;">
+                    전체 <span id="modalMemberCount" style="color: #2563eb; font-weight: 700;" th:text="${#lists.size(memberList)}">0</span>명
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary closeMemberModal" style="font-size: 13px; padding: 6px 16px; border-color: #d1d5db; color: #374151;">취소</button>
+                    <button type="button" id="saveMemberEditBtn" class="btn btn-primary" style="font-size: 13px; padding: 6px 16px; background-color: #3b82f6; border-color: #3b82f6;">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function(){
+    let originalMemberListHtml = "";
+
+ 	// 검색
+    $(document).on("keyup", "#detailMemberSearchKey", function() {
+        var value = $(this).val().toLowerCase().trim();
+        
+        $(".memberListBox .memberItem").filter(function() {
+            var text = $(this).find(".memberNameGroup").text().toLowerCase();
+            $(this).toggle(text.indexOf(value) > -1);
+        });
+    });
+    
+    // 상세보기 모달
+    $(document).on("click", ".closeDetailModalBtn", function(e){
+        e.preventDefault();
+        $("#detailModalArea").empty();
+    });
+
+    $(document).on("click", "#groupDetailModalOverlay", function(e){
+        if (e.target === this) {
+            $("#detailModalArea").empty();
+        }
+    });
+    
+    // 조직장 변경 모달
+    $(document).on("click", "#openChangeLeaderModalBtn", function(){
+        $("#changeLeaderModal").show();
+    });
+
+    $(document).on("click", ".closeLeaderModal", function(){
+        $("#changeLeaderModal").hide();
+    });
+
+    $(document).off("click", "#saveLeaderChangeBtn").on("click", "#saveLeaderChangeBtn", function(e){
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        
+        const selectedLeaderNo = $("input[name='leaderUserNo']:checked").val();
+        if(!selectedLeaderNo) {
+            alert("조직장을 선택해 주세요.");
+            return;
+        }
+        const organizationNo = $("#btnDeleteOrganization").data("organizationno");
+
+        const params = new URLSearchParams();
+        params.append("organizationNo", organizationNo);
+        params.append("userNo", selectedLeaderNo);
+
+        axios.post("/adminUser/member/changeOrganizationLeader", params)
+        .then(function(res){
+            alert("조직장이 변경되었습니다.");
+            location.reload();
+        })
+        .catch(function(err){
+            console.error("조직장 변경 실패:", err);
+            alert("조직장 변경 중 오류가 발생했습니다.");
+        });
+    });
+
+    // 구성원 및 조직 삭제
+    $(document).off("click", ".btnDeleteMember").on("click", ".btnDeleteMember", function(e){
+        e.preventDefault();
+        
+        const $targetItem = $(this).closest(".memberItem");
+        const userNo = $(this).data("userno");
+        const organizationNo = $("#btnDeleteOrganization").data("organizationno");
+
+        if(confirm("해당 구성원을 조직에서 삭제하시겠습니까?")) {
+            const params = new URLSearchParams();
+            params.append("userNo", userNo);
+            params.append("organizationNo", organizationNo);
+
+            axios.post("/adminUser/member/deleteOrganizationMember", params)
+            .then(function(res){
+                alert("삭제되었습니다.");
+                $targetItem.remove();
+                
+                const remainingCount = $(".memberListBox .memberItem").length;
+                $(".orgMetaCount").text("전체 " + remainingCount + "명");
+            })
+            .catch(function(err){
+                console.error("삭제 중 오류:", err);
+                alert("구성원 삭제 처리 중 오류가 발생했습니다.");
+            });
+        }
+    });
+
+    //조직 삭제
+    $(document).on("click", "#btnDeleteOrganization", function(){
+        var organizationNo = $(this).data("organizationno");
+
+        if(confirm("정말로 이 조직을 삭제하시겠습니까?")) {
+            const params = new URLSearchParams();
+            params.append("organizationNo", organizationNo);
+
+            axios.post("/adminUser/member/deleteOrganization", params)
+            .then(function(res){
+                location.reload();
+            })
+            .catch(function(err){
+                console.error("삭제 중 오류:", err);
+            });
+        }
+    });
+
+    // 멤버 수정 모달
+    function updateModalMemberCount() {
+        const count = $(".editMemberItem").length;
+        $("#modalMemberCount").text(count);
+    }
+
+    $(document).on("click", "#openEditMemberModalBtn", function(){
+        originalMemberListHtml = $(".editMemberListBox").html();
+        $("#selectAllEditMember").prop("checked", false);
+        $("#editMemberModal").show();
+        updateModalMemberCount();
+    });
+
+    $(document).on("click", ".closeMemberModal", function(){
+        if(originalMemberListHtml) {
+            $(".editMemberListBox").html(originalMemberListHtml);
+            $("#selectAllEditMember").prop("checked", false);
+        }
+        updateModalMemberCount();
+        $("#editMemberModal").hide();
+    });
+
+    $(document).on("change", "#selectAllEditMember", function(){
+        $(".edit-member-chk").prop("checked", $(this).prop("checked"));
+    });
+
+    $(document).on("change", ".edit-member-chk", function(){
+        const total = $(".edit-member-chk").length;
+        const checked = $(".edit-member-chk:checked").length;
+        $("#selectAllEditMember").prop("checked", total === checked && total > 0);
+    });
+
+    $(document).on("click", ".btnRemoveEditMember", function(){
+        $(this).closest(".editMemberItem").remove();
+        updateModalMemberCount();
+    });
+
+    $(document).on("click", "#saveMemberEditBtn", function(){
+        const organizationNo = $("#btnDeleteOrganization").data("organizationno");
+        const remainingUserNos = [];
+        $(".editMemberItem").each(function(){
+            remainingUserNos.push($(this).data("userno"));
+        });
+        const params = new URLSearchParams();
+        params.append("organizationNo", organizationNo);
+        remainingUserNos.forEach(function(userNo){
+            params.append("userNo", userNo);
+        });
+
+        axios.post("/adminUser/member/changeOrganizationMember", params)
+            .then(function(response){
+                alert("조직 멤버가 수정되었습니다.");
+                location.reload();
+            })
+            .catch(function(error){
+                console.error("멤버 수정 실패:", error);
+                alert("조직 멤버 수정 중 오류가 발생했습니다.");
+            });
+    });
+    
+ 	// 모달 닫기 / 취소 버튼 이벤트
+	$(document).on("click", "#addOrganizationFormArea .modalClose, #addOrganizationFormArea .closeBtn, #addOrganizationFormArea .cancelBtn, #addOrganizationFormArea button:contains('취소')", function(e){
+	    e.preventDefault();
+	    $("#addOrganizationFormArea").empty();
+	});
+ 	
+	// 조직 수정 모달 열기
+	$(document).off("click", "#openEditOrganizationBtn").on("click", "#openEditOrganizationBtn", function() {
+	    const $this = $(this);
+	    const organizationNo = $this.data("organizationno") || $("#btnDeleteOrganization").data("organizationno");
+	    const organizationName = $this.data("organizationname") || "";
+	    const organizationDesc = $this.data("organizationdesc") || "";
+	     
+	    const $leaderItem = $(".memberListBox .memberItem").filter(function() {
+	        return $(this).find(".leaderBadge").length > 0;
+	    });
+	    
+	    const organizationLeaderNo = $this.data("organizationleaderno") || $leaderItem.find(".btnDeleteMember").data("userno") || "";
+	    const masterName = $leaderItem.find(".memberName").text() || "";
+	    const masterSub = $leaderItem.find(".memberSub").text() || "";
+
+	    axios.get("/adminUser/member/addOrganizationForm", { params: { organizationNo: organizationNo } })
+	    .then(function(response) {
+	        const $area = $("#addOrganizationFormArea");
+	        $area.html(response.data);
+	
+	        $area.find("#organizationNo").val(organizationNo);
+	        $area.find("#organizationNameInput").val(organizationName).trigger("input");
+	        $area.find("#organizationDescInput").val(organizationDesc).trigger("input");
+	         
+	        $area.find("#modalTitle").text("조직 수정");
+	        $area.find("#btnSaveOrganization").text("수정");
+	
+	        if (organizationLeaderNo) {
+	            const leaderStr = String(organizationLeaderNo);
+	            window.selectedMasterId = leaderStr; 
+	            
+	            $area.find("#userNo, #masterUserNo, #selectedMasterId, #initialMasterUserNo").val(leaderStr);
+
+	            $area.find("#selectedMasterName").text(masterName);
+	            $area.find("#selectedMasterSub").text(masterSub);
+	            $area.find("#emptyMasterText").hide();
+	            $area.find("#selectedMasterItem").css("display", "flex");
+	        } else {
+	            window.selectedMasterId = "";
+	            $area.find("#userNo, #masterUserNo, #selectedMasterId, #initialMasterUserNo").val("");
+	            $area.find("#selectedMasterItem").hide();
+	            $area.find("#emptyMasterText").show();
+	        }
+	
+	        $area.find("#organizationAddEditModal").show();
+	    })
+	    .catch(function(error) {
+	        console.error("수정 폼 로드 실패:", error);
+	        alert("수정 폼을 불러오는 중 오류가 발생했습니다.");
+	    });
+	});
+	
+	// 조직 멤버 목록 무한 스크롤
+	let orgMemberPage = 1;
+	let isOrgMemberFetching = false;
+
+	const memberContainer = document.querySelector(".memberListBox");
+	const memberSentinel = document.getElementById("orgMemberScrollSentinel");
+
+	if (memberSentinel && memberContainer) {
+	    const orgMemberObserver = new IntersectionObserver((entries) => {
+	        entries.forEach(entry => {
+	            if (entry.isIntersecting && !isOrgMemberFetching) {
+	                loadMoreOrgMembers();
+	            }
+	        });
+	    }, {
+	        root: memberContainer,
+	        threshold: 0.1
+	    });
+
+	    orgMemberObserver.observe(memberSentinel);
+	}
+
+	function loadMoreOrgMembers() {
+	    isOrgMemberFetching = true;
+	    orgMemberPage++;
+
+	    const organizationNo = $("#btnDeleteOrganization").data("organizationno");
+	    const searchKey = $.trim($("#detailMemberSearchKey").val());
+
+	    axios.get("/adminUser/member/getOrganizationMemberList", {
+	        params: { 
+	            organizationNo: organizationNo,
+	            page: orgMemberPage,
+	            keyword: searchKey
+	        }
+	    })
+	    .then(function(res){
+	        if (res.data && res.data.length > 0) {
+	            $("#orgMemberScrollSentinel").before(res.data);
+	            isOrgMemberFetching = false;
+	        } else {
+	            orgMemberObserver.disconnect();
+	        }
+	    })
+	    .catch(function(err){
+	        console.error("조직 멤버 추가 로드 실패:", err);
+	        isOrgMemberFetching = false;
+	    });
+	}
+ 	
+});
+</script>

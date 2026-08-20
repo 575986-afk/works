@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.sist.user.address.AddressMapper">
+
+    <!-- 1. 회사명 단일 조회 (팝업 코드 이식) -->
+    <select id="selectCompany" parameterType="String" resultType="String">
+        SELECT COMPANY_NAME FROM COMPANY WHERE COMPANY_NO = #{companyNo}
+    </select>
+
+    <!-- 2. 주소록 사원 목록 조회 (팝업의 동적 조건 로직 병합) -->
+    <select id="selectAddressList" parameterType="addressRangeDTO" resultType="addressUserDomain">
+        SELECT U.USER_NO userNo, 
+               U.USER_NAME userName, 
+               U.EMAIL email, 
+               U.PROFILEIMAGE profileImage, 
+               R.RANK_NAME rankName, 
+               P.POSITION_NAME positionName, 
+               O.ORGANIZATION_NAME organizaionName, 
+               C.company_Name companyName,
+               (SELECT COUNT(1) 
+				FROM ADDRBOOKMARK AB 
+				WHERE AB.TARGET_NO = U.USER_NO 
+				AND AB.USER_NO = #{userNo}) AS isBookmarked
+               
+        FROM USERS U
+        LEFT JOIN TITLE T ON U.USER_NO = T.USER_NO
+        LEFT JOIN RANK R ON T.RANK_NO = R.RANK_NO
+        LEFT JOIN POSITION P ON T.POSITION_NO = P.POSITION_NO
+        LEFT JOIN ORGANIZATION O ON U.USER_NO = O.USER_NO
+        LEFT JOIN COMPANY C ON C.COMPANY_NO = U.COMPANY_NO
+        
+        <!-- 기본 조건: 같은 회사 직원만 조회 -->
+        WHERE U.COMPANY_NO = #{companyNo}
+        
+        <!-- 본인 제외 -->
+        AND U.USER_NO != #{userNo}
+        
+        <!-- keyword -->
+        <if test="keyword != null and keyword != ''">
+    	<bind name="keyword" value="'%' + keyword + '%'" />
+            AND ( u.USER_NAME LIKE #{keyword} 
+       OR u.PHONENUMBER LIKE #{keyword} 
+       
+      
+       OR u.USER_NO IN (
+           SELECT om.ORGMEMBER_NO 
+           FROM ORGANIZATIONMEMBER om
+           JOIN ORGANIZATION org ON om.ORGANIZATION_NO = org.ORGANIZATION_NO
+           WHERE org.ORGANIZATION_NAME LIKE #{keyword}
+       )
+       
+      
+       OR u.USER_NO IN (
+           SELECT gm.GRP_MEMBER_NO 
+           FROM GROUPSMEMBER gm
+           JOIN GROUPS grp ON gm.GROUPS_NO = grp.GROUPS_NO
+           WHERE grp.GROUPS_NAME LIKE #{keyword}
+       )
+       )
+        </if>
+        
+        <if test="organizationNo != null">
+            AND U.USER_NO IN (
+                SELECT ORGMEMBER_NO 
+                FROM ORGANIZATIONMEMBER 
+                WHERE ORGANIZATION_NO = #{organizationNo}
+            )
+        </if>
+        
+        <!-- 단일 그룹(groupsNo) 클릭 시 -->
+        <if test="groupsNo != null">
+            AND U.USER_NO IN (
+                SELECT GRP_MEMBER_NO 
+                FROM GROUPSMEMBER 
+                WHERE GROUPS_NO = #{groupsNo}
+            )
+        </if>
+        
+        <!-- 좌측 상단 카테고리(type) 클릭 시 -->
+        <if test="type != null and type != ''">
+            <choose>
+                <!-- 즐겨찾기 클릭 시 -->
+                <when test="type == 'favorite'">
+                    AND U.USER_NO IN (
+                        SELECT TARGET_NO 
+                        FROM ADDRBOOKMARK 
+                        WHERE USER_NO = #{userNo}
+                    )
+                </when>
+                
+                <!-- 그룹 클릭 시 -->
+                <when test="type == 'group'">
+                    AND U.USER_NO IN (
+                        SELECT GRP_MEMBER_NO 
+                        FROM GROUPSMEMBER 
+                        WHERE GROUPS_NO IN (
+                            SELECT GROUPS_NO 
+                            FROM groupsMember 
+                            WHERE grp_member_NO = #{userNo}
+                        )
+                    )
+                </when>
+            </choose>
+        </if>
+    </select>
+	
+    <!-- 3. 로그인 사용자의 그룹 목록 조회 (기존 유지) -->
+    <select id="selectGroup" parameterType="String" resultType="addressGroupsDomain">
+        SELECT GROUPS_NO groupsNo, GROUPS_NAME groupsName
+        FROM GROUPS
+        WHERE GROUPS_NO IN
+        (SELECT GROUPS_NO
+        FROM GROUPSMEMBER
+        WHERE GRP_MEMBER_NO = #{ userNo })
+    </select>
+	
+    <!-- 4. 로그인 사용자의 조직 목록 조회 (기존 유지) -->
+    <select id="selectOrganization" parameterType="String" resultType="addressOrganizationDomain">
+        SELECT ORGANIZATION_NO organizationNo, ORGANIZATION_NAME organizationName
+        FROM ORGANIZATION
+        WHERE COMPANY_NO = #{ companyNo }
+    </select>
+    
+    <!-- 5. 사원 검색 기능 (팝업 로직 이식) -->
+    <select id="getContactsByKeyword" parameterType="String" resultType="addressUserDomain">
+        <bind name="pattern" value="'%' + keyword + '%'" />
+        
+        SELECT u.USER_NO userNo, 
+               u.USER_NAME userName, 
+               u.PHONENUMBER phoneNumber, 
+               g.GROUPS_NAME groupsName, 
+               o.ORGANIZATION_NAME organizaionName
+        FROM users u
+        LEFT JOIN ORGANIZATION o ON u.user_no = o.user_no
+        LEFT JOIN GROUPS g ON u.user_no = g.user_no
+        
+        WHERE u.USER_NAME LIKE #{pattern} 
+           OR u.PHONENUMBER LIKE #{pattern} 
+           
+           OR u.USER_NO IN (
+               SELECT om.ORGMEMBER_NO 
+               FROM ORGANIZATIONMEMBER om
+               JOIN ORGANIZATION org ON om.ORGANIZATION_NO = org.ORGANIZATION_NO
+               WHERE org.ORGANIZATION_NAME LIKE #{pattern}
+           )
+           
+           OR u.USER_NO IN (
+               SELECT gm.GRP_MEMBER_NO 
+               FROM GROUPSMEMBER gm
+               JOIN GROUPS grp ON gm.GROUPS_NO = grp.GROUPS_NO
+               WHERE grp.GROUPS_NAME LIKE #{pattern}
+           )
+    </select>
+	
+    <!-- 6. 사원 상세 정보 조회 (기존 유지) -->
+    <select id="selectAddressDetail" parameterType="String" resultType="addressUserDomain">
+        SELECT U.USER_NAME userName, U.EMAIL email, U.PROFILEIMAGE profileImage, R.RANK_NAME rankName, P.POSITION_NAME positionName, O.ORGANIZATION_NAME organizaionName, COMPANY_NAME companyName
+        FROM USERS U
+        LEFT JOIN COMPANY C ON U.COMPANY_NO = C.COMPANY_NO
+        LEFT JOIN TITLE T ON U.USER_NO = T.USER_NO
+        LEFT JOIN RANK R ON T.RANK_NO = R.RANK_NO
+        LEFT JOIN POSITION P ON T.POSITION_NO = P.POSITION_NO
+        LEFT JOIN ORGANIZATION O ON U.USER_NO = O.USER_NO
+        WHERE U.USER_NO = #{ userNo }
+    </select>
+	
+    <!-- 7. 북마크 추가 (기존 유지) -->
+    <insert id="insertBookmark" parameterType="addressUserDTO">
+        INSERT INTO ADDRBOOKMARK(TARGET_NO, USER_NO) VALUES(#{ targetNo }, #{ userNo })
+    </insert>
+	
+    <!-- 8. 북마크 삭제 (기존 유지) -->
+    <delete id="deleteBookmark" parameterType="addressUserDTO">
+        DELETE FROM ADDRBOOKMARK WHERE TARGET_NO = #{ targetNo } AND USER_NO = #{ userNo }
+    </delete>
+
+</mapper>

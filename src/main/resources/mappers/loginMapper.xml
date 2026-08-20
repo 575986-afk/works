@@ -12,7 +12,7 @@
     </resultMap>
 
     <select id="selectLogin" parameterType="string" resultMap="userResultMap">
-    SELECT u.user_no AS userNo,
+     SELECT u.user_no AS userNo,
            u.user_name,
            u.user_id AS userId,    
            u.password,
@@ -23,7 +23,6 @@
            r.role_level
     FROM users u
     LEFT JOIN ROLE r on u.user_no=r.user_no
-    WHERE user_id = #{userId}
 </select>
 
 </mapper>

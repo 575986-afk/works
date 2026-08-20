@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<style type="text/css">
+.cal-edit-card { padding: 24px; background: #fff; border-radius: 12px; }
+.top-btn-group { display: flex; gap: 8px; margin-bottom: 20px; }
+
+.btn-save-custom {
+    background-color: #186ade;
+    border: none;
+    color: #fff;
+    padding: 6px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.btn-save-custom:hover { background-color: #1153b3; }
+
+.btn-outline-custom {
+    background-color: #fff;
+    border: 1px solid #d9d9d9;
+    color: #333;
+    padding: 6px 14px;
+    font-size: 13px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.btn-outline-custom:hover { background-color: #f5f5f5; }
+
+.form-row { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.form-icon { width: 20px; text-align: center; color: #666; font-size: 15px; padding-top: 8px; }
+
+.input-custom {
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: #333;
+    outline: none;
+}
+.input-custom:focus { border-color: #186ade; }
+.title-input { width: 100%; font-size: 14px; }
+
+.datetime-group { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 13px; }
+.select-custom {
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 7px 8px;
+    font-size: 13px;
+    background-color: #fff;
+    outline: none;
+}
+.tz-text { font-size: 12px; color: #555; margin-left: 6px; cursor: pointer; }
+
+/* 고정 텍스트용 스타일 */
+.green-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: #28a745;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+.fixed-company-text {
+    font-size: 14px;
+    color: #333;
+    padding-top: 6px;
+    display: flex;
+    align-items: center;
+}
+
+.sub-caption { font-size: 12px; color: #8c8c8c; margin-top: 6px; }
+.edit-divider { border: 0; height: 1px; background: #f0f0f0; margin: 18px 0; }
+
+.textarea-custom {
+    width: 100%;
+    height: 85px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 13px;
+    resize: none;
+    outline: none;
+}
+.meta-info { font-size: 12px; color: #8c8c8c; line-height: 1.8; }
+</style>
+
+<script type="text/javascript">
+function deleteCalendar() {
+    if (confirm("일정을 삭제하시겠습니까?")) {
+        document.getElementById("deleteFormInEdit").submit();
+    }
+}
+</script>
+</head>
+<body>
+
+<div class="cal-edit-card">
+    <form th:action="@{/adminUser/service/calendar/modifyCal}" method="post" id="modifyForm">
+        <input type="hidden" name="calendarId" th:value="${calendar['calendarId']}" />
+        <input type="hidden" name="scheduleNo" th:value="${calendar['scheduleNo']}" />
+
+        <div class="top-btn-group">
+            <button type="submit" class="btn-save-custom">저장</button>
+            
+            <button type="button" 
+                    class="btn-outline-custom" 
+                    th:data-id="${calendar['calendarId']}" 
+                    onclick="goDetail(this.getAttribute('data-id'))">취소</button>
+                    
+            <button type="button" class="btn-outline-custom" onclick="deleteCalendar()" style="margin-left: 6px;">일정 삭제</button>
+        </div>
+
+        <div class="form-row">
+            <div class="form-icon"><i class="fa-regular fa-star"></i></div>
+            <div style="flex: 1;">
+                <input type="text" name="title" class="input-custom title-input" th:value="${calendar['title']}" />
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-icon"><i class="fa-regular fa-clock"></i></div>
+            <div class="datetime-group">
+                <input type="text" name="startDate" class="input-custom" style="width: 125px;" th:value="${calendar['startDate']}" />
+                <select name="startTime" class="select-custom">
+                    <option selected th:text="${calendar['startTime']}">오후 06:00</option>
+                    <option>16:13</option>
+                    <option>17:00</option>
+                </select>
+                <span>-</span>
+                <input type="text" name="endDate" class="input-custom" style="width: 125px;" th:value="${calendar['endDate']}" />
+                <select name="endTime" class="select-custom">
+                    <option selected th:text="${calendar['endTime']}">오후 07:00</option>
+                    <option>17:00</option>
+                    <option>18:00</option>
+                </select>
+                <span class="tz-text">시간대 변경</span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-icon"><i class="fa-regular fa-calendar"></i></div>
+            <div style="width: 100%;">
+                <div class="fixed-company-text">
+                    <span class="green-dot"></span>
+                    <!-- 대괄호 문제 해결: 안전하게 키값 표시 -->
+                    <span th:text="${calendar['companyName'] != null ? calendar['companyName'] : '회사 2조'}">회사 2조</span>
+                </div>
+                <div class="sub-caption">회사 캘린더 일정입니다. 사내 전체 구성원에게 공개됩니다.</div>
+            </div>
+        </div>
+
+        <hr class="edit-divider" />
+
+        <div class="form-row">
+            <div class="form-icon"><i class="fa-regular fa-file-lines"></i></div>
+            <div style="flex: 1;">
+                <textarea name="content" class="textarea-custom" th:text="${calendar['content']}" placeholder="메모를 작성하세요."></textarea>
+            </div>
+        </div>
+
+        <hr class="edit-divider" />
+
+        <div class="meta-info">
+            <div>최근 업데이트 : 이다영 (2026. 8. 6. (목) 오후 05:32)</div>
+            <div>생성자 : 이다영</div>
+        </div>
+    </form>
+
+    <form id="deleteFormInEdit" th:action="@{/adminUser/service/calendar/deleteCal}" method="post" style="display: none;">
+        <input type="hidden" name="scheduleNo" th:value="${calendar['scheduleNo']}" />
+    </form>
+</div>
+
+</body>
+</html>
