@@ -30,7 +30,6 @@ public class UserDashboardService {
 	}
 
 	public String getCurrentStatusName(String userNo) {
-	    // 유저의 status_no로 status 테이블을 조인해서 status_name을 가져오는 쿼리 호출
 	    return udMapper.selectUserStatusName(userNo);
 	}
 	
@@ -38,8 +37,8 @@ public class UserDashboardService {
 		return udMapper.selectAlarm(userNo);
 	}
 	
-	public int setAlarm(String userNo) {
-		int cnt=udMapper.updateAlarm(userNo);
+	public int setAlarm(int isAlarmOn,String userNo) {
+		int cnt=udMapper.updateAlarm(isAlarmOn,userNo);
 		return cnt;
 	}
     //to do ----------------------------------------------------------------------------------

@@ -71,18 +71,17 @@ public class UserDashboardController {
  // 알람 클릭 시 온/오프 
     @PostMapping("/AlarmSetting")
     @ResponseBody
-    public int alarmSetting(@RequestParam("isAlarmOn") int isAlarmOn, HttpSession session, String userNo) {
+    public int alarmSetting(@RequestParam("isAlarmOn") int isAlarmOn, HttpSession session) {
         UserDTO loginUser = (UserDTO) session.getAttribute("user");
         if (loginUser == null) {
             System.out.println("❌ [알람 설정 실패] 세션에 유저 정보가 없습니다!");
             return 0; 
         }
-        AlarmSettingDTO alarmDTO = new AlarmSettingDTO();
-        alarmDTO.setUserNo(loginUser.getUserNo());
-        alarmDTO.setIsAlarmOn(isAlarmOn);
         
-        int cnt = uds.setAlarm(userNo);
-        System.out.println("디버깅 -> userNo: [" + alarmDTO.getUserNo() + "], isAlarmOn: " + alarmDTO.getIsAlarmOn());
+        String userNo = loginUser.getUserNo();
+        
+        int cnt = uds.setAlarm(isAlarmOn, userNo);
+        System.out.println("디버깅 -> userNo: [" + userNo + "], isAlarmOn: " + isAlarmOn);
         return cnt;
     }
     

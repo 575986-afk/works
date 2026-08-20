@@ -18,7 +18,7 @@ public interface UserDashboardMapper {
 	String selectUserStatus(String userNo);
 	String selectUserStatusName(String userNo);
 	AlarmSettingDTO selectAlarm(String userNo);
-	int updateAlarm(String userNo);
+	int updateAlarm(@Param("isAlarmOn") int isAlarmOn, @Param("userNo") String userNo);
 	List<TodoDomain> selectTodo(String todoNo);
 	List<OrganizationDomain> selectOrganization(String userNo);
 	

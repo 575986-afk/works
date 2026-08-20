@@ -43,7 +43,7 @@
         WHERE user_no = #{userNo}
     </select>
     
-    <update id="updateAlarm" parameterType="String">
+    <update id="updateAlarm">
     UPDATE alarmsetting 
     SET is_alarm_on = #{isAlarmOn, jdbcType=INTEGER}
     WHERE TRIM(user_no) = TRIM(#{userNo, jdbcType=VARCHAR})
