@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<div th:fragment="deleteModal">
+    <div id="deleteAccountModal" class="custom-delete-modal">
+        <div class="custom-delete-content">
+            <h3 class="modal-title">계정 삭제</h3>
+            
+            <div class="modal-body-content">
+                <label class="check-item">
+                    <input type="checkbox" class="del-chk">
+                    <span>계정 삭제 시 함께 삭제되는 데이터 종류를 점검하고 필요 시 백업해주세요.</span>
+                </label>
+                <label class="check-item">
+                    <input type="checkbox" class="del-chk">
+                    <span>삭제된 구성원은 서비스 이용을 더 이상 할 수 없습니다.</span>
+                </label>
+                <label class="check-item">
+                    <input type="checkbox" class="del-chk">
+                    <span>7일 내 삭제를 취소하지 않으면 구성원 데이터가 영구 삭제됩니다.</span>
+                </label>
+                <label class="check-item">
+                    <input type="checkbox" class="del-chk">
+                    <span>휴직 정보는 즉시 삭제되며 복원되지 않습니다.</span>
+                </label>
+            </div>
+            
+            <div class="modal-footer-btns">
+                <button type="button" class="btn-cancel" id="closeDeleteModal">취소</button>
+                <button type="button" class="btn-delete-confirm" id="confirmDeleteBtn" disabled>삭제</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 삭제 전송용 Hidden Form -->
+    <form id="deleteForm" th:action="@{/adminUser/member/deleteMember}" method="post">
+        <input type="hidden" name="userNo" id="deleteTargetUserId" value="">
+    </form>
+</div>
+</html>

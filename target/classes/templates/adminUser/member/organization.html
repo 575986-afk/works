@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>조직</title>
+
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- FontAwesome 아이콘 CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- axios CDN -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<link rel="stylesheet" th:href="@{/css/common.css}">
+<style type="text/css">
+* { box-sizing: border-box; }
+body { background: #ffffff; font-family: "맑은 고딕", sans-serif; margin: 0; }
+#wrap { width:100%; margin:0; }
+#container { display:flex; min-height: calc(100vh - 56px); }
+#main { flex:1; background:#fff; }
+.pageContainer { width:100%; max-width: 1500px; margin: 0 auto; padding:35px 20px; }
+.breadcrumb { font-size:12px; color:#9ca3af; margin-bottom:15px; }
+.pageTitle h2 { font-size:24px; font-weight:700; color:#1f2937; margin:0 0 30px 0; }
+.contentBox { width:100%; }
+
+.orgHeader { display:flex; justify-content:space-between; margin-bottom:20px; }
+.orgBtnArea button { margin-left:8px; font-size:13px; }
+.orgWrap { display:flex; min-height:380px; border:1px solid #e5e7eb; }
+
+.organizationList { flex:1; }
+.listHeader { height:40px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; padding:0 15px; font-size:13px; }
+.listHeader i { margin-left:12px; color:#666; cursor:pointer; }
+
+table { width:100%; border-collapse:collapse; table-layout: fixed; }
+th, td { padding:0 15px; text-align:left; vertical-align:middle; }
+th { height:38px; background:#fafafa; font-size:12px; color:#666; border-bottom:1px solid #e5e7eb; font-weight:600; }
+td { height:45px; border-top:1px solid #f1f1f1; font-size:13px; }
+td i { color:#aaa; margin-right:8px; }
+
+th:nth-child(1), td:nth-child(1) { width: 45px; text-align: center; padding: 0; }
+th:nth-child(2), td:nth-child(2) { width: 320px; }
+th:nth-child(3), td:nth-child(3) { width: auto; }
+
+input[type="checkbox"] { width: 14px; height: 14px; vertical-align: middle; }
+
+.paging { text-align:center; margin-top:20px; color:#aaa; }
+.paging span { border:1px solid #4da3ff; padding:5px 8px; color:#4da3ff; }
+.listAction { display:flex; align-items:center; gap:10px; }
+
+.orgRow { cursor:pointer; }
+.orgRow:hover { background:#f8fafc; }
+
+.searchInputBox { display: flex; align-items: center; gap: 5px; }
+.searchInputBox input { height: 28px; font-size: 12px; padding: 0 8px; border: 1px solid #d1d5db; border-radius: 4px; }
+
+.customModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:9999; }
+.customModalContent { width:520px; margin:80px auto; background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.2); }
+.customModalHeader { height:60px; padding:0 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e5e7eb; }
+.customModalHeader h3 { margin:0; font-size:20px; }
+.modalClose { border:none; background:none; font-size:28px; cursor:pointer; }
+.customModalBody { padding:20px; }
+.formRow { margin-bottom:18px; }
+.formRow label { display:block; margin-bottom:6px; font-size:14px; font-weight:600; }
+.formRow input, .formRow select { width:100%; height:40px; border:1px solid #d1d5db; border-radius:4px; padding:0 10px; font-size:14px; }
+.customModalFooter { display:flex; justify-content:flex-end; gap:10px; padding:15px 20px; border-top:1px solid #e5e7eb; }
+
+#detailModalArea:empty { display: none; }
+#detailModalArea {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
+}
+</style>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script type="text/javascript">
+$(function(){
+    // 사이드바 토글 동작
+    $(".sidebarMenu").click(function(){
+        $(this).next(".submenu").slideToggle(200);
+        $(this).find(".arrow").toggleClass("rotate");
+    });
+
+    // 검색 창 토글 및 실시간 검색 기능
+    $(".searchBtn").click(function(){
+        $(this).hide();
+        $(".searchInputBox").show();
+        $(".searchInputBox input").focus();
+    });
+    $(".searchClose").click(function(){
+        $(".searchInputBox").hide();
+        $(".searchBtn").show();
+        $("#searchOrgKeyword").val("").trigger("keyup");
+    });
+
+    $("#searchOrgKeyword").on("keyup", function(){
+        var value = $(this).val().toLowerCase().trim();
+        $("tbody tr.orgRow").filter(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+        });
+    });
+
+    // 삭제 버튼 표시 여부 제어 함수
+    function toggleDeleteBtn() {
+        const checkedCount = $(".org-chk:checked").length;
+        if (checkedCount > 0) {
+            $("#btnDeleteSelected").show();
+        } else {
+            $("#btnDeleteSelected").hide();
+        }
+    }
+
+    // 전체 선택 체크박스
+    $("#selectAllOrg").change(function(){
+        $(".org-chk").prop("checked", $(this).prop("checked"));
+        toggleDeleteBtn();
+    });
+
+    // 개별 체크박스
+    $(document).on("change", ".org-chk", function(){
+        const total = $(".org-chk").length;
+        const checked = $(".org-chk:checked").length;
+        $("#selectAllOrg").prop("checked", total === checked);
+        toggleDeleteBtn();
+    });
+
+    // 돋보기 옆 삭제 버튼 클릭 이벤트
+    $("#btnDeleteSelected").click(function(){
+        const checkedList = $(".org-chk:checked");
+        if(checkedList.length === 0) return;
+
+        if (confirm("선택한 " + checkedList.length + "명의 조직원을 삭제하시겠습니까?")) {
+            const requests = [];
+            checkedList.each(function(){
+                const organizationNo = $(this).val();
+                const params = new URLSearchParams();
+                params.append("organizationNo", organizationNo);
+                requests.push(axios.post("/adminUser/member/deleteOrganization", params));
+            });
+
+            Promise.all(requests)
+            .then(function(responses){
+                alert("선택한 조직원이 삭제되었습니다.");
+                location.reload();
+            })
+            .catch(function(error){
+                console.error("삭제 실패:", error);
+                alert("조직 삭제 중 오류가 발생했습니다.");
+            });
+        }
+    });
+
+    // 조직 상세 보기
+    // 조직 상세 보기
+	$(document).on("click", ".orgRow", function(e){
+	    if($(e.target).is("input[type='checkbox']")){
+	        return;
+	    }
+	    var url = $(this).data("url");
+	    if(url){
+	        axios.get(url)
+	        .then(function(response){
+	            $("#detailModalArea").html(response.data);
+	        })
+	        .catch(function(error){
+	            console.error("조직 상세보기 로드 오류:", error);
+	            alert("상세 정보를 불러오는 데 실패했습니다.");
+	        });
+	    }
+	});
+
+    $(document).on("click", "#detailModalArea .closeBtn", function(e){
+        e.preventDefault();
+        $("#detailModalArea").empty();
+    });
+
+    // 조직 추가 모달 열기
+    $("#openAddOrganizationForm").click(function(){
+        axios.get("/adminUser/member/addOrganizationForm")
+        .then(function(response){
+            $("#addOrganizationFormArea").html(response.data);
+            
+            $("#formMode").val("add");
+            $("#modalHeaderTitle, .customModalHeader h3").text("조직 추가");
+            $("#saveOrganizationBtn, #btnSaveOrganization").text("추가");
+            
+            $("#organizationAddModal, .customModal").show();
+        })
+        .catch(function(error){
+            console.error(error);
+        });
+    });
+    
+    // 동적 모달 닫기
+    $(document).on("click", "#addOrganizationFormArea .modalClose, #addOrganizationFormArea .cancelBtn, #addOrganizationFormArea .closeBtn", function(){
+        $("#addOrganizationFormArea").empty();
+    });
+    
+ 	// 조직 목록 무한 스크롤
+    let orgPage = 1;
+    let isOrgFetching = false;
+    const orgSentinel = document.getElementById('orgScrollSentinel');
+
+    if (orgSentinel) {
+        const orgObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !isOrgFetching) {
+                    loadMoreOrganizations();
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+        orgObserver.observe(orgSentinel);
+    }
+
+    function loadMoreOrganizations() {
+        isOrgFetching = true;
+        orgPage++;
+
+        axios.get("/adminUser/member/getOrganizationList", {
+            params: { page: orgPage }
+        })
+        .then(function(res){
+            if (res.data && res.data.length > 0) {
+                $("#orgScrollSentinel").before(res.data);
+                isOrgFetching = false;
+            } else {
+                orgObserver.disconnect();
+            }
+        })
+        .catch(function(err){
+            console.error("조직 목록 추가 로드 실패:", err);
+            isOrgFetching = false;
+        });
+    }
+    
+});
+</script>
+</head>
+<body>
+<div th:replace="~{fragments/header :: headerFragment}"></div>
+
+<div id="container">
+    <div th:replace="~{fragments/sidebar :: sidebarFragment}"></div>
+    
+    <div id="main">
+        <div class="pageContainer">
+            <div class="breadcrumb">
+                메인 &gt; 구성원 &gt; 조직
+            </div>
+            <div class="pageTitle">
+                <h2>조직</h2>
+            </div>
+            
+            <div id="orgContent">
+                <div class="contentBox">
+                    <div class="orgHeader">
+                        <div></div>
+                        <div class="orgBtnArea">
+                            <button id="openAddOrganizationForm" class="btn btn-info text-white">조직 추가</button>
+                        </div>
+                    </div>
+                    <div class="orgWrap">
+                        <div class="organizationList">
+                            <div class="listHeader">
+                                <span th:text="'전체 ' + ${#lists.size(organizationList)}">전체 0</span>
+                                <div class="listAction">
+                                    <button type="button" id="btnDeleteSelected" class="btn btn-outline-danger btn-sm" style="display:none; padding: 2px 8px; font-size: 12px;">삭제</button>
+                                    
+                                    <i class="fa-solid fa-magnifying-glass searchBtn"></i>
+                                    <div class="searchInputBox" style="display:none;">
+                                        <input type="text" id="searchOrgKeyword" placeholder="조직 검색">
+                                        <i class="fa-solid fa-xmark searchClose"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th><input type="checkbox" id="selectAllOrg"></th>
+                                        <th>조직명</th>
+                                        <th>조직장</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${#lists.isEmpty(organizationList)}">
+                                        <td colspan="3" style="text-align:center;">등록된 조직이 없습니다.</td>
+                                    </tr>
+
+                                    <tr class="orgRow" 
+                                        th:each="org : ${organizationList}" 
+                                        th:data-url="@{/adminUser/member/organizationdetail(organizationNo=${org.organizationNo})}">
+                                        <td><input type="checkbox" class="org-chk" th:value="${org.organizationNo}"></td>
+                                        <td>
+                                            <i class="fa-solid fa-users"></i>
+                                            <span th:text="${org.organizationName}">조직 1</span>
+                                            <span style="font-size: 11px; color: gray;" 
+                                                  th:text="${org.memberCount + '명'}">0명</span> 
+                                        </td>
+                                        <td th:text="${org.leaderName}">조직장명</td>
+                                    </tr>
+                                    <tr id="orgScrollSentinel">
+								        <td colspan="3" style="height: 1px; padding: 0; border: none;"></td>
+								    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="addOrganizationFormArea"></div>
+            <div id="detailModalArea"></div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

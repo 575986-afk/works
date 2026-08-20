@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.sist.security.AuthorityMapper">
+    <select id="selectRole" resultType="roleDomain">
+     SELECT 
+     	 role_name AS roleName,
+     	 MIN(role_no) AS roleNo,
+     	 role_level AS roleLevel
+     FROM ROLE
+     WHERE company_no = #{companyNo}
+     GROUP BY role_name, role_level
+     ORDER BY role_level DESC
+    </select>
+    
+    <select id="selectRoleMember" resultType="authorityUserDomain">
+	 SELECT
+	     r.role_no AS roleNo,
+	     r.role_name AS roleName,
+	     r.user_no AS userNo,
+	     u.user_name AS userName,
+	     u.email AS email,
+	     p.position_name AS position,
+	     k.rank_name AS rank
+	 FROM ROLE r
+	 JOIN USERS u
+	     ON r.user_no = u.user_no
+	 LEFT JOIN TITLE t
+	     ON u.user_no = t.user_no
+	 LEFT JOIN POSITION p
+	     ON t.position_no = p.position_no
+	 LEFT JOIN RANK k
+        ON t.rank_no = k.rank_no
+	 WHERE r.company_no = #{companyNo}
+	   AND r.role_name = #{roleName}
+	   AND r.user_no IS NOT NULL
+	</select>
+	
+	<insert id="insertRole" parameterType="roleDTO">
+	 INSERT INTO ROLE(role_no, role_name, role_level, company_no, user_no)
+	 VALUES ('R' || LPAD(SEQ_ROLE_NO.NEXTVAL, 6, '0'), #{roleName}, 50, #{companyNo}, NULL)
+	</insert>
+	
+	<update id="updateRoleName">
+	 update role
+	 set role_name=#{roleName}
+	 where role_no=#{roleNo} and company_no=#{companyNo}
+	</update>
+	
+	<delete id="deleteRole">
+	 delete from role where role_no=#{roleNo} and company_no=#{companyNo}
+	</delete>
+	
+	<update id="updateDelegation">
+	 update role
+	 set user_no=#{userNo}
+	 where role_name='최고관리자' and company_no=#{companyNo}
+	</update>
+	
+	<insert id="insertUserRole">
+	 INSERT INTO ROLE(role_no, role_name, role_level, company_no, user_no)
+	 VALUES ('R' || LPAD(SEQ_ROLE_NO.NEXTVAL, 6, '0'), #{roleName}, #{roleLevel}, #{companyNo}, #{userNo})
+	</insert>
+	
+	<delete id="deleteUserRole">
+	 delete from role where role_no=#{roleNo} and company_no=#{companyNo} and user_no=#{userNo}
+	</delete>
+    
+</mapper>

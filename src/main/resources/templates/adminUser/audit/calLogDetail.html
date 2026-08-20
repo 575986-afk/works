@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+
+<div class="detail-popup-wrapper">
+    <div class="detail-group">
+        <label class="detail-label">제목</label>
+        <div class="detail-value title-val" th:text="${logDetail.title}">1232131</div>
+    </div>
+
+    <div class="detail-group">
+        <label class="detail-label">시작일</label>
+        <div class="detail-value" th:text="${logDetail.startDate}">2026-07-21T14:00:00+09:00</div>
+    </div>
+
+    <div class="detail-group">
+        <label class="detail-label">종료일</label>
+        <div class="detail-value" th:text="${logDetail.endDate}">2026-07-21T14:30:00+09:00</div>
+    </div>
+</div>
+
+<style>
+.detail-popup-wrapper {
+    padding: 4px 8px;
+}
+
+.detail-group {
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f3f5;
+}
+
+.detail-group:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.detail-group:first-child {
+    padding-top: 0;
+}
+
+.detail-label {
+    display: block;
+    font-size: 12px;
+    color: #8c939d;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.detail-value {
+    font-size: 13px;
+    color: #111827;
+    line-height: 1.5;
+    word-break: break-all;
+}
+
+.detail-value.title-val {
+    font-weight: 600;
+    color: #1a1d20;
+}
+</style>
+
+</body>
+</html>

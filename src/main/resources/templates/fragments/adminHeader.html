@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div id="header" th:fragment="headerFragment">
+	<!-- 헤더 -->
+    <a th:href="@{/dashboard}" class="headerLeft">
+        <span class="logo">W</span>
+        <span>Admin</span>
+    </a>
+    <div class="headerRight">
+        <span class="groupName" th:text="${groupName}">연습</span>
+    </div>
+</div>
+</html>

@@ -1,0 +1,375 @@
+@charset "UTF-8";
+
+.customModal{
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,.35);
+    z-index:9999;
+}
+.memberAddBox{
+    width:520px;
+    margin:95px auto;
+    background:#fff;
+    border-radius:2px;
+    box-shadow:0 5px 20px rgba(0,0,0,.15);
+}
+.memberAddHeader{
+    height:55px;
+    padding:0 25px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:1px solid #eee;
+}
+.memberAddHeader h3{
+    margin:0;
+    font-size:18px;
+    font-weight:700;
+}
+.modalClose{
+    font-size:28px;
+    color:#999;
+    cursor:pointer;
+}
+.memberAddBody{
+    padding:15px 35px 25px;
+}
+.memberFormRow{
+    display:flex;
+    align-items:center;
+    margin-bottom:22px;
+}
+.memberFormRow label {
+    width: 90px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+}
+.memberFormRow input[type="text"],
+.memberFormRow select{
+    height:38px;
+    border:1px solid #ddd;
+    padding:0 10px;
+    border-radius:4px;
+}
+.memberFormRow select{
+    width:280px;
+}
+.idArea{
+    display:flex;
+    gap:10px;
+}
+.idArea input{
+    width:180px;
+}
+.idArea button{
+    height:38px;
+    background:#5865f2;
+    color:white;
+    border:none;
+    padding:0 15px;
+    border-radius:4px;
+    font-size:13px;
+}
+
+/* ---- 소속 조직 커스텀 선택 박스 (추가된 부분) ---- */
+.deptSelectBox {
+    width: 280px;
+    height: 110px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 6px 10px;
+    background: #ffffff;
+}
+.deptCheckItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+}
+.deptCheckItem input[type="checkbox"] {
+    width: 15px !important;
+    height: 15px !important;
+    margin: 0;
+    cursor: pointer;
+}
+.deptCheckItem label {
+    width: auto !important;
+    font-size: 13px;
+    font-weight: normal;
+    color: #374151;
+    cursor: pointer;
+    margin: 0;
+}
+
+.addDept{
+    color:#3b82f6;
+    font-size:13px;
+    text-decoration:none;
+}
+.memberAddFooter{
+    height:65px;
+    border-top:1px solid #eee;
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    gap:10px;
+    padding:0 20px;
+}
+.memberAddFooter button{
+    height:36px;
+    padding:0 18px;
+    border-radius:4px;
+    border:1px solid #ddd;
+}
+.cancelBtn{
+    background:#fff;
+}
+.saveBtn{
+    background:#2563eb;
+    color:white;
+    border:none !important;
+}
+
+/* ---- 계정 삭제 모달 스타일 ---- */
+.custom-delete-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+.custom-delete-modal.active {
+    display: flex;
+}
+.custom-delete-content {
+    background: #fff;
+    width: 440px;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+.custom-delete-content .modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+.modal-body-content {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 24px;
+}
+.check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    color: #444;
+    line-height: 1.45;
+    cursor: pointer;
+}
+.check-item input[type="checkbox"] {
+    margin-top: 2px;
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+.link-blue {
+    color: #2563eb;
+    text-decoration: underline;
+}
+.modal-footer-btns {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+.btn-cancel {
+    padding: 7px 18px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+}
+.btn-delete-confirm {
+    padding: 7px 18px;
+    border: 1px solid #fecaca;
+    background: #fff;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #fca5a5;
+    cursor: not-allowed;
+}
+.btn-delete-confirm:not(:disabled) {
+    border-color: #f87171;
+    color: #ef4444;
+    cursor: pointer;
+}
+.btn-delete-confirm:not(:disabled):hover {
+    background-color: #ef4444;
+    color: #fff;
+}
+
+/*-- 아이디 확인 --*/
+.id-check-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.25);
+    z-index: 99999;
+    align-items: center;
+    justify-content: center;
+}
+.id-check-box {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 18px 22px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    min-width: 250px;
+    font-size: 13px;
+    color: #333;
+}
+.id-check-body {
+    line-height: 1.6;
+    margin-bottom: 14px;
+}
+.id-check-footer {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+.btn-pop-no {
+    background: #8e95a5;
+    color: #fff;
+    border: none;
+    padding: 5px 14px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+}
+.btn-pop-yes {
+    background: #5c5ce6;
+    color: #fff;
+    border: none;
+    padding: 5px 14px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+/*-- 소속 조직 추가 --*/
+.dept-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 99999;
+    align-items: center;
+    justify-content: center;
+}
+.dept-modal-box {
+    background: #ffffff;
+    width: 360px;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+}
+.dept-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+.dept-modal-header h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #222;
+    margin: 0;
+}
+.dept-modal-header i {
+    font-size: 18px;
+    color: #888;
+    cursor: pointer;
+}
+.dept-list-box {
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 10px;
+    min-height: 220px;
+    max-height: 300px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.dept-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+    transition: background 0.15s;
+}
+.dept-item:hover {
+    background: #f3f4f6;
+}
+.dept-item:has(input[type="radio"]:checked) {
+    background: #f1f1f1;
+}
+.dept-item input[type="radio"] {
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    accent-color: #3b82f6;
+}
+.dept-item i {
+    color: #9ca3af;
+    font-size: 14px;
+}
+.dept-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 20px;
+}
+.btn-dept-close {
+    padding: 6px 16px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+}
+.btn-dept-submit {
+    padding: 6px 16px;
+    border: none;
+    background: #93c5fd;
+    color: #fff;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+}
+.btn-dept-submit:hover {
+    background: #60a5fa;
+}

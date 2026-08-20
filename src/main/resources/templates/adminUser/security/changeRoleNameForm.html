@@ -1,0 +1,22 @@
+<!-- 권한명 수정 모달 팝업 -->
+<div class="modal fade" id="editRoleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content" style="border-radius: 10px; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.15);">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold text-dark">권한명 수정</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="font-size: 11px;"></button>
+            </div>
+            <form id="editRoleFrm">
+                <!-- 컨트롤러로 보낼 roleNo hidden 처리 -->
+                <input type="hidden" name="roleNo" th:value="${roleNo}">
+                <div class="modal-body py-3">
+                    <input type="text" name="roleName" id="editRoleName" class="form-control form-control-sm" placeholder="변경할 권한명을 입력하세요" style="font-size: 13px;" required>
+                </div>
+                <div class="modal-footer border-0 pt-0 justify-content-end">
+                    <button type="button" class="btn btn-light btn-sm px-3" data-bs-dismiss="modal" style="font-size: 13px;">취소</button>
+                    <button type="button" id="saveEditRoleBtn" class="btn btn-primary btn-sm px-3" style="font-size: 13px;">확인</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

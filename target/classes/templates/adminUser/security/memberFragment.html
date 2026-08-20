@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div class="p-3">
+    <table class="table table-hover align-middle" style="font-size: 13px;">
+        <thead class="table-light">
+            <tr>
+                <th style="width: 50%;">이름</th>
+                <th style="width: 35%;">조직/직책</th>
+                <th style="width: 15%; text-align: center;">권한</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="member : ${roleMemberList}">
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-circle-user fa-2x text-secondary"></i>
+                        <div>
+                            <div class="fw-bold text-dark" th:text="${member.userName}">홍길동</div>
+                            <div class="text-muted" style="font-size: 11px;" th:text="${member.email}">user@domain.com</div>
+                        </div>
+                    </div>
+                </td>
+                <td th:text="${member.position}">팀장</td>
+                <td align="center">
+                    <!-- 최고 관리자 위임 버튼 -->
+                    <button th:if="${member.roleName == '최고관리자' or member.roleName == '최고 관리자'}"
+                            type="button" 
+                            class="btn btn-link btn-sm p-0 text-decoration-none delegateBtn" 
+                            style="color: #0d6efd; font-weight: 500;"
+                            th:data-user="${member.userNo}">위임</button>
+                    
+                    <!-- 다른 운영 관리자/추가 권한 해제 버튼 -->
+                    <button th:if="${member.roleName != '최고관리자' and member.roleName != '최고 관리자'}" 
+                            type="button" 
+                            class="btn btn-link btn-sm p-0 text-decoration-none revokeBtn" 
+                            style="color: #dc3545; font-weight: 500;" 
+                            th:data-user="${member.userNo}"
+                            th:data-roleno="${member.roleNo}">해제</button>
+                </td>
+            </tr>
+
+            <th:block th:if="${#lists.isEmpty(roleMemberList)}">
+                <tr>
+                    <td colspan="3" style="text-align:center; padding:40px 0; color:#999;">
+                        해당 권한을 가진 구성원이 없습니다.
+                    </td>
+                </tr>
+            </th:block>
+        </tbody>
+    </table>
+</div>
+
+<script type="text/javascript">
+$(function(){
+    $(document).off("click", ".delegateBtn").on("click", ".delegateBtn", function(){
+        location.href = "/adminUser/security/changeDelegationForm";
+    });
+
+    $(document).off("click", ".revokeBtn").on("click", ".revokeBtn", function(){
+        let userNo = $(this).data("user");
+        let roleNo = $(this).data("roleno");
+
+        if(confirm("해당 관리자의 권한을 해제하시겠습니까?")){
+            $.ajax({
+                type: "POST",
+                url: "/adminUser/security/removeUserRole",
+                data: { 
+                    userNo: userNo,
+                    roleNo: roleNo
+                },
+                success: function(result){
+                    alert("권한이 해제되었습니다.");
+                    loadMember(selectedRoleName);
+                },
+                error: function(xhr){
+                	alert("권한 해제 중 오류가 발생했습니다.");
+                	console.error(xhr);
+                }
+            });
+        }
+    });
+});
+</script>
+</html>

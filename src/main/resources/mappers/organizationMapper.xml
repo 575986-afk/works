@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.sist.organization.OrganizationMapper">
+
+    <!-- 그룹 검색 -->
+    <select id="selectOrganization" resultType="organizationDomain">
+        SELECT
+            g.organization_no AS organizationNo,
+            g.organization_name AS organizationName,
+            g.organization_description AS organizationDesc,
+            g.input_date AS inputDate,
+            g.company_no AS companyNo,
+            g.user_no AS userNo,
+            u.user_name AS leaderName,
+            (
+                SELECT COUNT(*)
+                FROM organizationmember gm2
+                WHERE gm2.organization_no = g.organization_no
+            ) AS memberCount
+        FROM organization g
+        LEFT JOIN users u
+            ON g.user_no = u.user_no
+        WHERE g.company_no = #{companyNo}
+          AND (
+              g.organization_name LIKE '%' || #{keyword} || '%'
+              OR EXISTS (
+                  SELECT 1
+                  FROM organizationmember gm
+                  JOIN users mu
+                      ON gm.orgmember_no = mu.user_no
+                  WHERE gm.organization_no = g.organization_no
+                    AND mu.user_name LIKE '%' || #{keyword} || '%'
+              )
+          )
+        ORDER BY g.organization_no DESC
+    </select>
+
+    <!-- 그룹 전체 조회 -->
+    <select id="selectAllOrganization" resultType="organizationDomain">
+        SELECT
+            g.organization_no AS organizationNo,
+            g.organization_name AS organizationName,
+            g.organization_description AS organizationDesc,
+            g.input_date AS inputDate,
+            g.company_no AS companyNo,
+            g.user_no AS userNo,
+            u.user_name AS leaderName,
+            (
+                SELECT COUNT(*)
+                FROM organizationmember gm
+                WHERE gm.organization_no = g.organization_no
+            ) AS memberCount
+        FROM organization g
+        LEFT JOIN users u
+            ON g.user_no = u.user_no
+        WHERE g.company_no = #{companyNo}
+        ORDER BY g.organization_no DESC
+    </select>
+
+    <!-- 그룹 추가 -->
+    <insert id="insertOrganization" parameterType="organizationDTO">
+        <selectKey keyProperty="organizationNo"
+                   resultType="String"
+                   order="BEFORE">
+            SELECT 'O' || LPAD(SEQ_organization_NO.NEXTVAL, 6, '0')
+            FROM dual
+        </selectKey>
+        INSERT INTO organization (
+            organization_no,
+            organization_name,
+            organization_description,
+            company_no,
+            user_no,
+            input_date
+        )
+        VALUES (
+            #{organizationNo},
+            #{organizationName},
+            #{organizationDescription, jdbcType=VARCHAR},
+            #{companyNo},
+            #{userNo, jdbcType=VARCHAR},
+            SYSDATE
+        )
+    </insert>
+
+    <!-- 그룹 추가시 그룹멤버에도 넣기 -->
+    <insert id="insertOrganizationMember">
+        INSERT INTO organizationmember (
+            organization_no,
+            ORGMEMBER_NO,
+            is_leader
+        )
+        VALUES (
+            #{organizationNo},
+            #{userNo},
+            1
+        )
+    </insert>
+
+    <!-- 기존 그룹에 멤버 추가 -->
+    <insert id="insertOrganizationMemberForEdit">
+        INSERT INTO organizationmember (
+            organization_no,
+            ORGMEMBER_NO,
+            is_leader
+        )
+        SELECT
+            #{organizationNo},
+            #{userNo},
+            CASE
+                WHEN g.user_no = #{userNo} THEN 1
+                ELSE 0
+            END
+        FROM organization g
+        WHERE g.organization_no = #{organizationNo}
+    </insert>
+
+    <!-- 그룹 상세 정보 조회 -->
+    <select id="selectOrganizationDetail" resultType="organizationDomain">
+        SELECT
+            g.organization_no AS organizationNo,
+            g.organization_name AS organizationName,
+            g.organization_description AS organizationDesc,
+            g.input_date AS inputDate,
+            g.company_no AS companyNo,
+            g.user_no AS userNo,
+            u.user_name AS leaderName,
+            (
+                SELECT COUNT(*)
+                FROM organizationmember gm
+                WHERE gm.organization_no = g.organization_no
+            ) AS memberCount
+        FROM organization g
+        LEFT JOIN users u
+            ON g.user_no = u.user_no
+        WHERE g.organization_no = #{organizationNo}
+          AND g.company_no = #{companyNo}
+    </select>
+
+    <!-- 그룹 구성원 조회 -->
+    <select id="selectOrganizationMember"
+            resultType="organizationMemberDomain">
+        SELECT
+            gm.organization_no AS organizationNo,
+            gm.ORGMEMBER_NO AS userNo,
+            u.user_name AS userName,
+            u.email AS email,
+            r.rank_name AS rankName,
+            p.position_name AS positionName,
+            gm.is_leader AS isLeader
+        FROM organizationmember gm
+        JOIN users u
+            ON gm.ORGMEMBER_NO = u.user_no
+        JOIN organization g
+            ON gm.organization_no = g.organization_no
+        LEFT JOIN title t
+            ON u.user_no = t.user_no
+        LEFT JOIN rank r
+            ON t.rank_no = r.rank_no
+           AND r.company_no = g.company_no
+        LEFT JOIN position p
+            ON t.position_no = p.position_no
+           AND p.company_no = g.company_no
+        WHERE gm.organization_no = #{organizationNo}
+        ORDER BY gm.is_leader DESC
+    </select>
+
+    <!-- 그룹 구성원 삭제 -->
+    <delete id="deleteOrganizationMember">
+        DELETE FROM organizationmember
+        WHERE organization_no = #{organizationNo}
+          AND ORGMEMBER_NO = #{userNo}
+    </delete>
+
+    <!-- 그룹장 변경 - 별도 "그룹 마스터 변경" 기능 -->
+    <update id="updateOrganizationMemberLeader">
+        UPDATE organizationmember
+        SET is_leader =
+            CASE
+                WHEN ORGMEMBER_NO = #{userNo} THEN 1
+                ELSE 0
+            END
+        WHERE organization_no = #{organizationNo}
+    </update>
+
+    <!-- organization 테이블의 그룹장 변경 -->
+    <update id="updateOrganizationLeader">
+        UPDATE organization
+        SET user_no = #{userNo}
+        WHERE organization_no = #{organizationNo}
+    </update>
+
+    <!-- 그룹 삭제 전 구성원 삭제 -->
+    <delete id="deleteOrganizationMemberAll">
+        DELETE FROM organizationmember
+        WHERE organization_no = #{organizationNo}
+    </delete>
+
+    <!-- 그룹 삭제 -->
+    <delete id="deleteOrganization">
+        DELETE FROM organization
+        WHERE organization_no = #{organizationNo}
+    </delete>
+
+    <!-- 그룹 정보 수정 -->
+	<update id="updateOrganization" parameterType="organizationDTO">
+	    UPDATE organization
+	    <set>
+	        <if test="organizationName != null and organizationName != ''">
+	            organization_NAME = #{organizationName},
+	        </if>
+	        <if test="organizationDescription != null">
+	            organization_DESCRIPTION = #{organizationDescription},
+	        </if>
+	    </set>
+	    WHERE organization_NO = #{organizationNo}
+	      <if test="companyNo != null and companyNo != ''">
+	        AND COMPANY_NO = #{companyNo}
+	      </if>
+	</update>
+
+    <!-- 그룹/그룹마스터 수정용 그룹 마스터 변경 -->
+    <update id="updateOrganizationLeaderForEdit">
+        UPDATE organization
+        SET user_no = #{userNo}
+        WHERE organization_no = #{organizationNo}
+          AND company_no = #{companyNo}
+    </update>
+
+    <!-- 그룹/그룹마스터 수정용 organizationmember 마스터 변경 -->
+    <update id="updateOrganizationMemberLeaderForEdit">
+        UPDATE organizationmember
+        SET is_leader =
+            CASE
+                WHEN ORGMEMBER_NO = #{userNo} THEN 1
+                ELSE 0
+            END
+        WHERE organization_no = #{organizationNo}
+    </update>
+
+</mapper>

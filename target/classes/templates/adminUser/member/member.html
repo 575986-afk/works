@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>구성원</title>
+
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- FontAwesome 아이콘 CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- axios CDN -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<link rel="stylesheet" th:href="@{/css/common.css}">
+<link rel="stylesheet" th:href="@{/css/addMemberForm.css}">
+
+<style type="text/css">
+* {
+    box-sizing: border-box;
+}
+body{
+    background: #ffffff;
+    font-family: "맑은 고딕", sans-serif;
+    margin: 0;
+}
+#wrap{
+    width:100%;
+    margin:0;
+}
+#container{
+    display:flex;
+    min-height: calc(100vh - 56px);
+}
+
+/* ---- 메인 ---- */
+#main{
+    flex:1;
+    background:#fff;
+}
+.pageContainer{
+    width:100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding:35px 20px;
+}
+.breadcrumb{
+    font-size:12px;
+    color:#9ca3af;
+    margin-bottom:15px;
+}
+.pageTitle h2{
+    font-size:24px;
+    font-weight:700;
+    color:#1f2937;
+    margin:0 0 30px 0;
+}
+.contentBox{
+    width:100%;
+}
+.memberHeader{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:20px;
+}
+.memberBtnArea button{
+    margin-left:8px;
+    font-size:13px;
+}
+.memberWrap{
+    display: flex;
+    height: 650px;
+    border: 1px solid #e5e7eb;
+}
+.deptBox{
+    width:180px;
+    border-right:1px solid #e5e7eb;
+    padding:10px;
+    overflow-y: auto; 
+}
+.deptItem{
+    padding:10px;
+    font-size:13px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+.deptItem:hover, 
+.deptChild div:hover {
+    background: #f1f5f9;
+}
+.deptItem.active,
+.deptChild div.active {
+    background: #e8f1ff !important;
+    color: #2563eb !important;
+    font-weight: bold;
+    border-radius: 4px;
+}
+.deptChild div{
+    padding:8px 20px;
+    font-size:13px;
+    color:#555;
+    cursor: pointer;
+    border-radius: 4px;
+}
+.memberList{
+    flex:1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.memberTableWrap {
+    flex: 1;
+    overflow-y: auto;
+}
+.listHeader{
+    height:40px;
+    border-bottom:1px solid #eee;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 15px;
+    font-size:13px;
+}
+.listHeader i{
+    margin-left:12px;
+    color:#666;
+}
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+th{
+    height:35px;
+    background:#fafafa;
+    font-size:12px;
+    color:#666;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+td{
+    height:45px;
+    border-top:1px solid #f1f1f1;
+    font-size:13px;
+}
+td i{
+    color:#aaa;
+    margin-right:10px;
+}
+.paging{
+    text-align:center;
+    margin-top:20px;
+    color:#aaa;
+}
+.paging span{
+    border:1px solid #4da3ff;
+    padding:5px 8px;
+    color:#4da3ff;
+}
+th:first-child,
+td:first-child {
+    text-align: center;
+    vertical-align: middle;
+}
+input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    vertical-align: middle;
+}
+.listAction{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+.sortBox{
+    position:relative;
+}
+.filterBtn{
+    cursor:pointer;
+}
+.sortMenu{
+    display:none;
+    position:absolute;
+    top:26px;
+    right:0;
+    width:130px;
+    background:#fff;
+    border:1px solid #ddd;
+    border-radius:6px;
+    box-shadow:0 3px 10px rgba(0,0,0,.15);
+    overflow:hidden;
+    z-index:1000;
+}
+.sortItem{
+    padding:10px 15px;
+    cursor:pointer;
+    font-size:13px;
+}
+.sortItem:hover{
+    background:#f5f5f5;
+}
+
+.userRow{
+    cursor:pointer;
+}
+.userRow:hover{
+    background:#f8fafc;
+}
+.userRow a{
+    color:inherit;
+    text-decoration:none;
+}
+</style>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script th:src="@{/js/addMemberForm.js}"></script>
+<script type="text/javascript">
+$(function(){
+    // 사이드바 토글 동작
+    $(".sidebarMenu").click(function(){
+        $(this).next(".submenu").slideToggle(200);
+        $(this).find(".arrow").toggleClass("rotate");
+    });
+    
+    // 구성원 추가 모달 열기
+    $("#openAddMemberForm").click(function(){
+        axios.get("/adminUser/member/addMemberForm")
+        .then(function(response){
+            $("#addMemberFormArea").html(response.data);
+            $("#memberAddModal").show();
+        })
+        .catch(function(error){
+            console.error(error);
+        });
+    });
+    
+    // 구성원 추가/수정 모달 닫기
+    $(document).on("click", ".modalClose, .cancelBtn", function(){
+        $("#addMemberFormArea").empty();
+    });
+    
+    // 구성원 삭제
+    $("#selectAll").change(function(){
+        $("tbody .member-chk").prop("checked", $(this).prop("checked"));
+    });
+
+    $("#memberDelete").click(function(){
+        const $checked = $("tbody .member-chk:checked");
+        
+        if ($checked.length === 0) {
+            alert("삭제할 구성원을 선택해주세요.");
+            return;
+        }
+
+        const targetUserId = $checked.first().val();
+        $("#deleteTargetUserId").val(targetUserId);
+
+        $(".del-chk").prop("checked", false);
+        $("#confirmDeleteBtn").prop("disabled", true);
+        $("#deleteAccountModal").addClass("active");
+    });
+
+    $(document).on("click", "#closeDeleteModal", function(){
+        $("#deleteAccountModal").removeClass("active");
+    });
+
+    $(document).on("change", ".del-chk", function(){
+        const total = $(".del-chk").length;
+        const checked = $(".del-chk:checked").length;
+        $("#confirmDeleteBtn").prop("disabled", total !== checked);
+    });
+
+    $(document).on("click", "#confirmDeleteBtn", function(){
+        if(!$(this).prop("disabled")) {
+            $("#deleteForm").submit();
+        }
+    });
+
+    // 필터 및 검색
+    $(".filterBtn").click(function(e){
+        e.stopPropagation();
+        $(".sortMenu").stop().slideToggle(150);
+    });
+    $(document).click(function(){
+        $(".sortMenu").stop().slideUp(150);
+    });
+    $(".sortMenu").click(function(e){
+        e.stopPropagation();
+    });
+    $(".searchBtn").click(function(){
+        $(this).hide();
+        $(".searchInputBox").show();
+        $(".searchInputBox input").focus();
+    });
+    $(".searchClose").click(function(){
+        $("#memberSearch").val("");
+        filterMembers();
+        $(".searchInputBox").hide();
+        $(".searchBtn").show();
+    });
+    $(".userRow").click(function(e){
+        if($(e.target).is("input[type='checkbox']")){
+            return;
+        }
+        location.href = $(this).data("url");
+    });
+    
+    // 상태 필터링
+    let selectedStatus = "ALL";
+    function filterMembers() {
+        const keyword = $("#memberSearch").val().trim().toLowerCase();
+        $("tbody .userRow").each(function() {
+            const userName = $(this).find("td:nth-child(2) span").text().trim().toLowerCase();
+            const memberStatus = $(this).find("td:nth-child(4)").text().trim();
+            const nameMatch = userName.includes(keyword);
+            const statusMatch = (selectedStatus === "ALL" || memberStatus === selectedStatus);
+            $(this).toggle(nameMatch && statusMatch);
+        });
+    }
+
+    $("#memberSearch").on("input", function() {
+        filterMembers();
+    });
+
+    $(".sortItem").click(function() {
+        selectedStatus = $(this).data("status");
+        filterMembers();
+        $(".sortMenu").slideUp(150);
+    });
+});
+</script>
+</head>
+<body>
+<!-- 헤더 -->
+<div th:replace="~{fragments/header :: headerFragment}"></div>
+
+<div id="container">
+    <!-- 사이드바 -->
+    <div th:replace="~{fragments/sidebar :: sidebarFragment}"></div>
+    
+    <!-- 메인 -->
+    <div id="main">
+        <div class="pageContainer">
+            <div class="breadcrumb">
+                메인 &gt; 구성원 &gt; 구성원
+            </div>
+            <div class="pageTitle">
+                <h2>구성원</h2>
+            </div>
+            
+            <div id="memberContent">
+                <div class="contentBox">
+                    <div class="memberHeader">
+                        <div></div>
+                        <div class="memberBtnArea">
+                            <button id="memberDelete" class="btn btn-primary">구성원 삭제</button>
+                            <button id="openAddMemberForm" class="btn btn-info">구성원 추가</button>
+                        </div>
+                    </div>
+                    <div class="memberWrap">
+                        <div class="deptBox">
+                            <div class="deptItem"
+                                 th:classappend="${#strings.isEmpty(organizationNo) or organizationNo == 'ALL'} ? 'active'"
+                                 th:onclick="|location.href='@{/adminUser/member/member(organizationNo='ALL')}'|">
+                                <i class="fa-solid fa-building"></i>
+                                <span th:text="${company.companyName}">연습</span>
+                            </div>
+                            <div class="deptChild">
+                                <div th:each="org : ${organizationList}"
+                                     th:classappend="${#strings.equals(organizationNo, org.organizationNo)} ? 'active'"
+                                     th:onclick="|location.href='@{/adminUser/member/member(organizationNo=${org.organizationNo})}'|">
+                                    <i class="fa-regular fa-user"></i>
+                                    <span th:text="${org.organizationName}">조직명</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="memberList">
+                            <div class="listHeader">
+                                <span>
+							        <th:block th:if="${#strings.isEmpty(organizationNo) or organizationNo == 'ALL'}">
+							            <span th:text="${company.companyName}">회사명</span>
+							            (<span th:text="${memberCount}">0</span>)
+							        </th:block>
+							        <th:block th:unless="${#strings.isEmpty(organizationNo) or organizationNo == 'ALL'}">
+							            <th:block th:each="org : ${organizationList}" th:if="${org.organizationNo == organizationNo}">
+							                <span th:text="${org.organizationName}">조직명</span>
+							            </th:block>
+							            (<span th:text="${#lists.size(memberList)}">0</span>)
+							        </th:block>
+							    </span>
+                                <div class="listAction">
+                                    <i class="fa-solid fa-magnifying-glass searchBtn"></i>
+                                    <div class="searchInputBox">
+                                        <input type="text" id="memberSearch" placeholder="이름 검색">
+                                        <i class="fa-solid fa-xmark searchClose"></i>
+                                    </div>
+                                    <div class="sortBox">
+                                        <i class="fa-solid fa-filter filterBtn"></i>
+                                        <div class="sortMenu">
+                                            <div class="sortItem" data-status="ALL">전체</div>
+                                            <div class="sortItem" data-status="활성">활성</div>
+                                            <div class="sortItem" data-status="비활성">비활성</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="memberTableWrap">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th><input type="checkbox" id="selectAll"></th>
+                                            <th>이름</th>
+                                            <th>직급</th>
+                                            <th>계정 상태</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:if="${#lists.isEmpty(memberList)}">
+                                            <td colspan="4" style="text-align:center;">등록된 구성원이 없습니다.</td>
+                                        </tr>
+                                        <tr th:each="member : ${memberList}"
+                                            class="userRow"
+                                            th:data-url="@{/adminUser/member/detail(userNo=${member.userNo})}">
+                                            <td>
+                                                <input type="checkbox" class="member-chk" th:value="${member.userNo}">
+                                            </td>
+                                            <td>
+                                                <i class="fa-solid fa-circle-user"></i>
+                                                <span th:text="${member.userName}">홍길동</span>
+                                            </td>
+                                            <td th:text="${member.positionName}">직급</td>
+                                            <td th:text="${member.status}">사용중</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 모달 영역 -->
+            <div id="addMemberFormArea"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 삭제 모달 -->
+<div th:replace="~{fragments/deleteModal :: deleteModal}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

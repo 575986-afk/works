@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2단계 인증</title>
+<style type="text/css">
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+body {
+    background-color: #f7f9fa;
+    font-family: "맑은 고딕", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #333333;
+}
+.auth-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    position: relative;
+}
+.auth-card {
+    background: #ffffff;
+    width: 100%;
+    max-width: 440px;
+    border-radius: 16px;
+    padding: 48px 36px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    border: 1px solid #ebedf0;
+    text-align: center;
+}
+.auth-title {
+    font-size: 21px;
+    font-weight: 700;
+    color: #222222;
+    line-height: 1.4;
+    margin-bottom: 12px;
+    letter-spacing: -0.3px;
+}
+.auth-subtitle {
+    font-size: 13px;
+    color: #8e8e8e;
+    margin-bottom: 32px;
+}
+.method-card {
+    background: #ffffff;
+    border: 1px solid #e1e6eb;
+    border-radius: 10px;
+    padding: 28px 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.method-card:hover {
+    border-color: #00c73c;
+    box-shadow: 0 4px 12px rgba(0, 199, 60, 0.08);
+    transform: translateY(-2px);
+}
+.icon-box {
+    margin-bottom: 14px;
+}
+.method-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #333333;
+    margin-bottom: 6px;
+}
+.method-detail {
+    font-size: 13px;
+    color: #88929e;
+    letter-spacing: 0.3px;
+}
+
+</style>
+</head>
+<body>
+
+<div class="auth-wrapper">
+    <!-- 메인 카드 -->
+    <div class="auth-card">
+        <h2 class="auth-title">
+            안전한 접근을 위해<br>
+            2단계 인증을 진행합니다.
+        </h2>
+        <p class="auth-subtitle">인증번호를 받을 수단을 선택해 주세요.</p>
+
+        <!-- 인증 수단 박스 -->
+        <div class="method-card" onclick="location.href='send.html'">
+            <div class="icon-box">
+                <!-- SVG 이메일 & 체크 아이콘 -->
+                <svg width="44" height="44" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="6" y="15" width="36" height="25" rx="5" fill="#EBF3FE" stroke="#B8D5FC" stroke-width="2"/>
+                    <path d="M7 17L24 29L41 17" stroke="#B8D5FC" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="24" cy="14" r="7" fill="#00C73C"/>
+                    <path d="M21 14L23 16L27 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="method-title">이메일로 인증</div>
+            <div class="method-detail" th:text="${maskedEmail}">fa*******@na*******</div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

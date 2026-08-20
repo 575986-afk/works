@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2단계 인증번호 입력</title>
+<style type="text/css">
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+body {
+    background-color: #f7f9fa;
+    font-family: "맑은 고딕", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #333333;
+}
+.auth-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    position: relative;
+}
+.auth-card {
+    background: #ffffff;
+    width: 100%;
+    max-width: 440px;
+    border-radius: 16px;
+    padding: 56px 36px 48px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    border: 1px solid #ebedf0;
+    text-align: center;
+}
+.auth-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #222222;
+    line-height: 1.45;
+    margin-bottom: 36px;
+    letter-spacing: -0.3px;
+}
+.email-highlight {
+    color: #0264fb;
+    font-weight: 700;
+}
+.otp-container {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 28px;
+}
+.otp-input {
+    width: 52px;
+    height: 56px;
+    border: 1.5px solid #e1e6eb;
+    border-radius: 12px;
+    font-size: 24px;
+    font-weight: 700;
+    text-align: center;
+    color: #222222;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    background-color: #ffffff;
+}
+.otp-input:focus {
+    border-color: #0264fb;
+    border-width: 2px;
+}
+.timer-text {
+    font-size: 13px;
+    color: #8e8e8e;
+    margin-bottom: 20px;
+}
+.resend-btn {
+    background-color: #ffffff;
+    border: 1px solid #e1e6eb;
+    border-radius: 8px;
+    padding: 8px 24px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #555555;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+.resend-btn:hover {
+    background-color: #f8fafc;
+    border-color: #d1d5db;
+}
+
+</style>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script type="text/javascript">
+$(function(){
+    var $inputs = $(".otp-input");
+    // 1. 숫자 입력 시 자동 다음 입력창 포커스
+    $inputs.on("input", function(){
+        var $this = $(this);
+        if ($this.val().length === 1) {
+            $this.next(".otp-input").focus();
+        }
+        checkAndSubmit();
+    });
+    // 2. Backspace 키 누를 때 이전 입력창 이동
+    $inputs.on("keydown", function(e){
+        var $this = $(this);
+        if (e.key === "Backspace" && !$this.val()) {
+            $this.prev(".otp-input").focus();
+        }
+    });
+    // 3. 4자리 붙여넣기(Paste) 동작 처리
+    $inputs.on("paste", function(e){
+        e.preventDefault();
+        var clipboardData = (e.originalEvent.clipboardData || window.clipboardData).getData("text").trim();
+        
+        if (/^\d{4}$/.test(clipboardData)) {
+            var digits = clipboardData.split("");
+            $inputs.each(function(index){
+                $(this).val(digits[index]);
+            });
+            $inputs.last().focus();
+            checkAndSubmit();
+        }
+    });
+    // 4. 재전송 버튼 클릭 이벤트
+    $("#resendBtn").click(function(){
+        alert("인증 번호가 재전송되었습니다.");
+        // AJAX 재전송 요청 처리 가능
+    });
+    // 4자리 모두 입력 시 hidden input에 조합 후 자동 제출 준비
+    function checkAndSubmit() {
+        var code = "";
+        $inputs.each(function(){
+            code += $(this).val();
+        });
+        if (code.length === 4) {
+            $("#otpCode").val(code);
+            // $("#otpForm").submit(); // 필요 시 폼 자동 제출 활성화
+        }
+    }
+});
+</script>
+</head>
+<body>
+
+<div class="auth-wrapper">
+    <!-- 메인 카드 -->
+    <div class="auth-card">
+        <h2 class="auth-title">
+            <span class="email-highlight" th:text="${maskedEmail}">fa*******@na*******</span>로<br>
+            전송된 인증 번호를 입력해주세요.
+        </h2>
+        <!-- 4자리 인증번호 입력 폼 -->
+        <form id="otpForm" action="/auth/verify" method="post">
+            <div class="otp-container">
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]*" inputmode="numeric" autofocus autocomplete="off">
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]*" inputmode="numeric" autocomplete="off">
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]*" inputmode="numeric" autocomplete="off">
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]*" inputmode="numeric" autocomplete="off">
+            </div>
+            <input type="hidden" name="otpCode" id="otpCode">
+        </form>
+        <p class="timer-text">10분 이내로 입력해주세요.</p>
+        <button type="button" class="resend-btn" id="resendBtn">재전송</button>
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div id="sidebar" th:fragment="sidebarFragment">
+    <!-- 사이드바 -->
+        <!-- 공통 관리 -->
+        <div class="sidebarSection">
+            <div class="sidebarTitle">공통 관리</div>
+            
+            <!-- 기본환경 -->
+            <div class="sidebarItemGroup">
+                <div class="sidebarMenu">
+                    <div class="sidebarMenuLeft">
+                        <i class="fa-regular fa-building"></i>
+                        <span>기본환경</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down arrow"></i>
+                </div>
+                <ul class="submenu">
+                    <li><a th:href="@{/adminUser/company/info}">회사 정보</a></li>
+                </ul>
+            </div>
+
+            <!-- 구성원 -->
+            <div class="sidebarItemGroup">
+                <div class="sidebarMenu">
+                    <div class="sidebarMenuLeft">
+                        <i class="fa-regular fa-user"></i>
+                        <span>구성원</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down arrow"></i>
+                </div>
+                <ul class="submenu">
+                    <li><a th:href="@{/adminUser/member/member}">구성원</a></li>
+                    <li><a th:href="@{/adminUser/member/organization}">조직</a></li>
+                    <li><a th:href="@{/adminUser/member/group}">그룹</a></li>
+                    <li><a th:href="@{/adminUser/member/title}">직책/직급</a></li>
+                </ul>
+            </div>
+
+            <!-- 보안 -->
+            <div class="sidebarItemGroup">
+                <div class="sidebarMenu">
+                    <div class="sidebarMenuLeft">
+                        <i class="fa-solid fa-lock"></i>
+                        <span>보안</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down arrow"></i>
+                </div>
+                <ul class="submenu">
+                    <li><a th:href="@{/adminUser/security/authority}">관리자 권한</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 서비스 관리 -->
+        <div class="sidebarSection">
+            <div class="sidebarTitle">서비스 관리</div>
+            
+            <!-- 서비스 -->
+            <div class="sidebarItemGroup">
+                <div class="sidebarMenu">
+                    <div class="sidebarMenuLeft">
+                        <i class="fa-solid fa-border-all"></i>
+                        <span>서비스</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down arrow"></i>
+                </div>
+                <ul class="submenu">
+                    <li><a th:href="@{/adminUser/service/calendar}">캘린더</a></li>
+                </ul>
+            </div>
+
+            <!-- 감사 -->
+            <div class="sidebarItemGroup">
+                <div class="sidebarMenu">
+                    <div class="sidebarMenuLeft">
+                        <i class="fa-regular fa-file-lines"></i>
+                        <span>감사</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down arrow"></i>
+                </div>
+                <ul class="submenu">
+                    <li><a th:href="@{/adminUser/audit/loginAudit}">로그인</a></li>
+                    <li><a th:href="@{/adminUser/audit/calAudit}">캘린더</a></li>
+                    <li><a th:href="@{/adminUser/audit/todoAudit}">할일</a></li>
+                    <li><a th:href="@{/adminUser/audit/addrAudit}">주소록</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</html>

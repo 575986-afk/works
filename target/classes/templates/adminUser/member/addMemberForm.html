@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<div th:fragment="addMemberForm">
+<div id="memberAddModal" class="customModal">
+    <div class="memberAddBox">
+        <form id="addMemberForm">
+            <!-- 모드 구분 (add / modify) -->
+            <input type="hidden" id="formMode" th:value="${mode}">
+            <input type="hidden" name="userNo" th:value="${member?.userNo}">
+            
+            <!-- 제목 -->
+            <div class="memberAddHeader">
+                <h3 id="modalHeaderTitle" th:text="${mode == 'modify' ? '구성원 수정' : '구성원 추가'}">구성원 추가</h3>
+                <span class="modalClose">×</span>
+            </div>
+
+            <!-- 내용 -->
+            <div class="memberAddBody">
+                <div class="memberFormRow">
+				    <label>ID</label>
+				    <div class="idArea" style="display: flex; align-items: center; gap: 8px;">
+				        <input type="text" id="memberId" name="userId" th:value="${member?.userId}" th:readonly="${mode == 'modify'}" placeholder="ID 입력">
+				        <button type="button" id="idCheckBtn" th:if="${mode == 'add'}" class="btn btn-outline-secondary btn-sm">아이디 확인</button>
+				    </div>
+				</div>
+				
+				<!-- 메시지가 출력되는 영역 -->
+				<div class="memberFormRow" th:if="${mode == 'add'}" style="margin-top: -6px;">
+				    <label></label>
+				    <span id="idCheckMsg" style="font-size: 12px; font-weight: 500;"></span>
+				</div>
+
+                <div class="memberFormRow">
+                    <label>직급</label>
+                    <select id="rank" name="rankNo">
+                        <option value="">없음</option>
+                        <option th:each="rank : ${rankList}"
+                                th:value="${rank.rankNo}"
+                                th:text="${rank.rankName}"
+                                th:selected="${member != null and member.rankName == rank.rankName}">
+                            임원
+                        </option>
+                    </select>
+                </div>
+                
+                <div class="memberFormRow">
+                    <label>직책</label>
+                    <select id="position" name="positionNo">
+                        <option value="">없음</option>
+                        <option th:each="position : ${positionList}"
+                                th:value="${position.positionNo}"
+                                th:text="${position.positionName}"
+                                th:selected="${member != null and member.positionName == position.positionName}">
+                            이사
+                        </option>
+                    </select>
+                </div>
+
+                <div class="memberFormRow">
+				    <label>소속 조직</label>
+				    <div class="deptSelectBox">
+				        <div th:each="dept : ${deptList}" class="deptCheckItem">
+				            <input type="checkbox" 
+				                   name="organizationNos" 
+				                   th:id="${'org_' + dept.organizationNo}" 
+				                   th:value="${dept.organizationNo}">
+				            <label th:for="${'org_' + dept.organizationNo}" th:text="${dept.organizationName}">ORG1</label>
+				        </div>
+				    </div>
+				</div>
+
+                <div class="memberFormRow">
+                    <label>근무처</label>
+                    <input type="text" id="workplace" name="workplace" th:value="${member?.workplace}" placeholder="근무처">
+                </div>
+
+                <div class="memberFormRow">
+                    <label>담당 업무</label>
+                    <input type="text" id="jobtask" name="jobtask" th:value="${member?.jobtask}" placeholder="담당 업무">
+                </div>
+            </div>
+
+            <div class="memberAddFooter">
+                <button type="button" class="cancelBtn">취소</button>
+                <button type="button" class="saveBtn" id="saveMemberBtn" th:text="${mode == 'modify' ? '수정' : '추가'}">추가</button>
+            </div>
+        </form>
+    </div>
+</div>
+</div>
+</html>

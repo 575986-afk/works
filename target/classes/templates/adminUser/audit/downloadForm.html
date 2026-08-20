@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<style>
+.download-modal-wrapper { padding: 4px 2px; }
+.download-notice { font-size: 12px; color: #6b7280; line-height: 1.5; margin-bottom: 20px; }
+.download-notice .highlight { color: #2563eb; font-weight: 500; }
+.download-field { display: flex; flex-direction: column; gap: 6px; }
+.download-label { font-size: 12px; color: #374151; font-weight: 500; }
+.download-input { width: 100%; height: 36px; border: 1px solid #d1d5db; border-radius: 4px; padding: 0 10px; font-size: 13px; color: #111827; background-color: #f9fafb; outline: none; }
+</style>
+</head>
+<body>
+
+<div class="download-modal-wrapper">
+    <p class="download-notice">
+        로그 파일이 준비되면 <span class="highlight">로그 다운로드</span>에서 파일을 다운로드 받을 수 있습니다.
+    </p>
+
+    <form id="downloadProcessForm" th:action="@{/adminUser/audit/downloadCalLog}" method="get">
+        <input type="hidden" name="isProcess" value="true">
+        
+        <input type="hidden" name="startDate" th:value="${startDate}">
+        <input type="hidden" name="endDate" th:value="${endDate}">
+        <input type="hidden" name="title" th:value="${title}">
+        <input type="hidden" name="task" th:value="${task}">
+        <input type="hidden" name="userName" th:value="${userName}">
+
+        <div class="download-field">
+            <label class="download-label">다운로드 이름</label>
+            <input type="text" name="fileName" class="download-input" th:value="${defaultFileName}" readonly>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>

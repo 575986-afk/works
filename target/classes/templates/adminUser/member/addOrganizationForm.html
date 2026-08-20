@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="addOrgForm" id="organizationAddEditModal" class="customModal" style="display: block; z-index: 10001;">
+    <div class="customModalContent" style="width: 580px;">
+        
+        <!-- 모달 헤더 -->
+        <div class="customModalHeader" style="padding: 20px 24px; border-bottom: 1px solid #e5e7eb;">
+            <h3 id="modalTitle" style="font-size: 18px; font-weight: 700; color: #111827; margin: 0;"
+                th:text="${organization != null ? '조직 수정' : '조직 추가'}">조직 추가</h3>
+            <button type="button" class="modalClose closeOrgAddEditModal">&times;</button>
+        </div>
+
+        <!-- 모달 바디 -->
+        <form id="organizationForm" style="padding: 20px 24px;">
+            <!-- 조직 번호 -->
+            <input type="hidden" id="organizationNo" name="organizationNo" 
+                   th:value="${organization != null ? organization.organizationNo : ''}">
+            
+            <!-- 기존 마스터 ID 보관용 hidden 필드 -->
+            <input type="hidden" id="initialMasterUserNo" th:value="${organization != null ? organization.userNo : ''}">
+
+            <!-- 조직명 -->
+            <div class="formRow mb-3">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <label style="font-size: 13px; font-weight: 700; color: #374151; margin: 0;">조직명 <span style="color: #ef4444;">*</span></label>
+                    <span style="font-size: 11px; color: #9ca3af;">
+                        <span id="organizationNameLen" th:text="${organization != null && organization.organizationName != null ? #strings.length(organization.organizationName) : 0}">0</span>/100
+                    </span>
+                </div>
+                <input type="text" id="organizationNameInput" name="organizationName" 
+                       th:value="${organization != null ? organization.organizationName : ''}" 
+                       maxlength="100" class="form-control" placeholder="조직명을 입력해 주세요" style="font-size: 13px; height: 40px;">
+            </div>
+
+            <!-- 조직 설명 -->
+            <div class="formRow mb-3">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <label style="font-size: 13px; font-weight: 700; color: #374151; margin: 0;">조직 설명</label>
+                    <span style="font-size: 11px; color: #9ca3af;">
+                        <span id="organizationDescriptionLen" th:text="${organization != null && organization.organizationDesc != null ? #strings.length(organization.organizationDesc) : 0}">0</span>/300
+                    </span>
+                </div>
+                <input type="text" id="organizationDescriptionInput" name="organizationDescription" 
+                       th:value="${organization != null ? organization.organizationDesc : ''}" 
+                       maxlength="300" class="form-control" placeholder="설명을 입력해 주세요(선택)" style="font-size: 13px; height: 40px;">
+            </div>
+
+            <!-- 마스터 설정 -->
+            <div class="formRow mb-3">
+                <label style="font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 6px; display: block;">마스터</label>
+                <div class="d-flex gap-2 mb-2">
+                    <input type="text" id="masterSearchInput" class="form-control" placeholder="이름 또는 ID 검색" style="font-size: 13px; height: 40px;">
+                    <button type="button" id="openMasterSelectBtn" class="btn btn-outline-secondary" style="font-size: 13px; white-space: nowrap; width: 80px; height: 40px;">주소록</button>
+                </div>
+
+                <div id="selectedMasterBox" style="border: 1px solid #e5e7eb; border-radius: 6px; min-height: 80px; padding: 12px; background: #fafafa; display: flex; align-items: center; justify-content: center;">
+                    <span id="emptyMasterText" 
+                          th:style="${organization != null && organization.leaderName != null ? 'display:none;' : 'font-size: 13px; color: #9ca3af;'}">조직 마스터를 추가해 주세요</span>
+                    
+                    <div id="selectedMasterItem" 
+                         th:style="${organization != null && organization.leaderName != null ? 'display: flex; width: 100%; align-items: center; justify-content: space-between; background: #fff; padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px;' : 'display: none;'}">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 32px; height: 32px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af;">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            <div>
+                                <span id="selectedMasterName" style="font-size: 13px; font-weight: 700; color: #111827;" 
+                                      th:text="${organization != null ? organization.leaderName : ''}"></span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-xmark" id="btnRemoveMaster" style="cursor: pointer; color: #ef4444;"></i>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- 모달 푸터 -->
+        <div class="customModalFooter" style="padding: 16px 24px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" class="btn btn-outline-secondary closeOrgAddEditModal" style="font-size: 13px; padding: 6px 18px;">취소</button>
+            <button type="button" id="btnSaveOrganization" class="btn btn-primary" style="font-size: 13px; padding: 6px 18px; background-color: #2563eb;">저장</button>
+        </div>
+    </div>
+
+    <!-- 마스터 선택 서브 모달 -->
+    <div id="masterSelectSubModal" class="customSubModal" 
+         style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.4); z-index: 10002; align-items: center; justify-content: center;">
+        <div class="customModalContent" style="width: 480px;">
+            <div class="customModalHeader" style="padding: 16px 20px; border-bottom: 1px solid #e5e7eb;">
+                <h3 style="font-size: 16px; font-weight: 700; margin: 0;">마스터 선택</h3>
+                <button type="button" class="modalClose closeSubMasterModal">&times;</button>
+            </div>
+            
+            <div class="customModalBody" style="padding: 16px;">
+                <div style="position: relative; margin-bottom: 12px;">
+                    <input type="text" class="form-control" placeholder="이름 또는 ID 검색" style="font-size: 13px; height: 36px; padding-right: 30px;">
+                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #9ca3af;"></i>
+                </div>
+
+                <div class="subMasterListBox" style="border: 1px solid #e5e7eb; border-radius: 6px; max-height: 260px; overflow-y: auto;">
+                    <label class="sub-master-item" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid #f3f4f6; cursor: pointer; margin: 0;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="radio" name="subMasterRadio" value="101" data-name="홍길동" data-sub="개발팀 / 팀장" style="width: 15px; height: 15px;">
+                            <div style="width: 32px; height: 32px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af;">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 13px; font-weight: 700; color: #111827;">홍길동</div>
+                                <div style="font-size: 11px; color: #6b7280;">개발팀 / 팀장</div>
+                            </div>
+                        </div>
+                    </label>
+                    <div id="subMasterScrollSentinel" style="height: 10px;"></div>
+                </div>
+            </div>
+
+            <div class="customModalFooter" style="padding: 12px 16px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 8px;">
+                <button type="button" class="btn btn-outline-secondary closeSubMasterModal" style="font-size: 12px; padding: 5px 14px;">취소</button>
+                <button type="button" id="btnConfirmSelectMaster" class="btn btn-primary" style="font-size: 12px; padding: 5px 14px; background-color: #2563eb;">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 스크립트 -->
+    <script type="text/javascript">
+    $(function(){
+        // 기존 마스터 ID 세팅
+        window.selectedMasterId = $("#initialMasterUserNo").val() || "";
+
+        // 1. 글자 수 카운팅
+        $(document).off("input", "#organizationNameInput").on("input", "#organizationNameInput", function(){
+            $("#organizationNameLen").text($(this).val().length);
+        });
+        
+        $(document).off("input", "#organizationDescriptionInput").on("input", "#organizationDescriptionInput", function(){
+            $("#organizationDescriptionLen").text($(this).val().length);
+        });
+
+        // 2. 취소 / 모달 닫기
+        $(document).off("click", ".closeOrgAddEditModal").on("click", ".closeOrgAddEditModal", function(e){
+            e.preventDefault();
+            $("#addOrganizationFormArea").empty();
+        });
+
+        // 3. 마스터 주소록 모달 열기/닫기
+        $(document).off("click", "#openMasterSelectBtn").on("click", "#openMasterSelectBtn", function(){
+            $("#masterSelectSubModal").css("display", "flex");
+        });
+
+        $(document).off("click", ".closeSubMasterModal").on("click", ".closeSubMasterModal", function(){
+            $("#masterSelectSubModal").hide();
+        });
+
+        // 4. 주소록 선택 후 적용
+        $(document).off("click", "#btnConfirmSelectMaster").on("click", "#btnConfirmSelectMaster", function(){
+            const $checked = $("input[name='subMasterRadio']:checked");
+            if($checked.length === 0) {
+                alert("마스터를 선택해 주세요.");
+                return;
+            }
+
+            window.selectedMasterId = $checked.val();
+            $("#emptyMasterText").hide();
+            $("#selectedMasterName").text($checked.data("name"));
+            $("#selectedMasterItem").css("display", "flex");
+
+            $("#masterSelectSubModal").hide();
+        });
+
+        // 5. 마스터 삭제 (X 버튼)
+        $(document).off("click", "#btnRemoveMaster").on("click", "#btnRemoveMaster", function(){
+            window.selectedMasterId = "";
+            $("#selectedMasterItem").hide();
+            $("#emptyMasterText").show();
+            $("input[name='subMasterRadio']").prop("checked", false);
+        });
+
+        // 6. 저장 / 수정 처리 (통합 이벤트)
+        $(document).off("click", "#btnSaveOrganization").on("click", "#btnSaveOrganization", function(e){
+            e.preventDefault();
+
+            const organizationNo = $.trim($("#organizationNo").val());
+            const organizationName = $.trim($("#organizationNameInput").val());
+            const organizationDescription = $.trim($("#organizationDescriptionInput").val());
+            
+            let masterNo = window.selectedMasterId || $.trim($("#initialMasterUserNo").val());
+
+            if(!organizationName) {
+                alert("조직명을 입력해 주세요.");
+                $("#organizationNameInput").focus();
+                return;
+            }
+
+            const params = new URLSearchParams();
+            params.append("organizationNo", organizationNo);
+            params.append("organizationName", organizationName);
+            params.append("organizationDescription", organizationDescription);
+            params.append("userNo", masterNo);
+
+            const targetUrl = organizationNo ? "/adminUser/member/modifyOrganization" : "/adminUser/member/addOrganization";
+
+            axios.post(targetUrl, params)
+            .then(function(res){
+                if(res.data === true || res.data === "success" || res.status === 200) {
+                    alert(organizationNo ? "조직 정보가 수정되었습니다." : "조직이 추가되었습니다.");
+                    location.reload();
+                } else {
+                    alert("처리에 실패했습니다.");
+                }
+            })
+            .catch(function(err){
+                console.error("처리 오류:", err);
+                alert("처리 중 오류가 발생했습니다.");
+            });
+        });
+        
+     	// 조직 마스터 선택 서브 모달 무한 스크롤
+        let subMasterPage = 1;
+        let isSubMasterFetching = false;
+
+        const subMasterContainer = document.querySelector("#masterSelectSubModal .subMasterListBox");
+        const subMasterSentinel = document.getElementById("subMasterScrollSentinel");
+
+        if (subMasterSentinel && subMasterContainer) {
+            const subMasterObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !isSubMasterFetching) {
+                        loadMoreSubMasters();
+                    }
+                });
+            }, {
+                root: subMasterContainer,
+                threshold: 0.1
+            });
+
+            subMasterObserver.observe(subMasterSentinel);
+        }
+
+        function loadMoreSubMasters() {
+            isSubMasterFetching = true;
+            subMasterPage++;
+
+            const searchKeyword = $.trim($("#masterSelectSubModal input[type='text']").val());
+
+            axios.get("/adminUser/member/getSelectMasterList", {
+                params: { 
+                    page: subMasterPage, 
+                    keyword: searchKeyword 
+                }
+            })
+            .then(function(res){
+                if (res.data && res.data.length > 0) {
+                    $("#subMasterScrollSentinel").before(res.data);
+                    isSubMasterFetching = false;
+                } else {
+                    subMasterObserver.disconnect();
+                }
+            })
+            .catch(function(err){
+                console.error("조직 마스터 목록 추가 로드 실패:", err);
+                isSubMasterFetching = false;
+            });
+        }
+    });
+    </script>
+</div>
+
+</body>
+</html>

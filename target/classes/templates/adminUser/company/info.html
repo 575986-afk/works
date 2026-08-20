@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>회사 정보</title>
+
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- FontAwesome 아이콘 CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- axios CDN -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<link rel="stylesheet" th:href="@{/css/common.css}">
+<style type="text/css">
+* {
+    box-sizing: border-box;
+}
+body{
+    background: #ffffff;
+    font-family: "맑은 고딕", sans-serif;
+    margin: 0;
+}
+#wrap{
+    width:100%;
+    margin:0;
+}
+#container{
+    display:flex;
+    min-height: calc(100vh - 56px);
+}
+
+/* ---- 메인 ---- */
+#main{
+    flex:1;
+    background:#fff;
+}
+.pageContainer{
+    width:100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding:35px 20px;
+}
+.breadcrumb{
+    font-size:12px;
+    color:#9ca3af;
+    margin-bottom:15px;
+}
+.pageTitle h2{
+    font-size:24px;
+    font-weight:700;
+    color:#1f2937;
+    margin:0 0 30px 0;
+}
+.contentBox{
+    width:100%;
+}
+.sectionTitle{
+    font-size:14px;
+    font-weight:bold;
+    padding:15px 0;
+    border-bottom:3px solid #e5e7eb;
+}
+.formArea{
+    margin-top:30px;
+}
+.formRow{
+    display:flex;
+    align-items:center;
+    height:40px;
+    margin-bottom:10px;
+}
+.formRow label{
+    width:100px;
+    font-size:13px;
+    color:#64748b;
+}
+.formRow input{
+    width:190px;
+    height:32px;
+    border:1px solid #dcdfe6;
+    border-radius:4px;
+    padding:0 10px;
+    font-size:13px;
+}
+.buttonArea{
+    margin-top:100px;
+    display:flex;
+    justify-content:flex-end;
+    gap:6px;
+    padding-right: 80px;
+}
+.buttonArea button{
+    width:80px;
+    height:35px;
+    padding:0;
+    border-radius:3px;
+    font-size:15px;
+    line-height:32px;
+    text-align:center;
+    cursor:pointer;
+}
+.saveBtn{
+    background:#1677ff;
+    color:white;
+    border:1px solid #1677ff;
+}
+.cancelBtn{
+    background:white;
+    color:#374151;
+    border:1px solid #d9d9d9;
+}
+
+/* 수정모달 */
+.successModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+.successBox {
+    width: 320px;
+    background: white;
+    border-radius: 6px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+.successText {
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 25px;
+}
+.successBox button {
+    width: 70px;
+    height: 34px;
+    border: none;
+    border-radius: 4px;
+    background: #1677ff;
+    color: white;
+    cursor: pointer;
+}
+
+</style>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script type="text/javascript">
+$(function(){
+    // 사이드바 토글 동작
+    $(".sidebarMenu").click(function(){
+        $(this).next(".submenu").slideToggle(200);
+        $(this).find(".arrow").toggleClass("rotate");
+    });
+    
+    const params = new URLSearchParams(location.search);
+
+    if(params.get("success") === "true"){
+        $("#successModal").css("display", "flex");
+    }
+
+    $("#successOkBtn").click(function(){
+        $("#successModal").hide();
+        history.replaceState(null, "", location.pathname);
+    });
+});
+
+</script>
+</head>
+<body>
+<!-- 헤더 -->
+<div th:replace="~{fragments/header :: headerFragment}"></div>
+
+<div id="container">
+    <!-- 사이드바 -->
+    <div th:replace="~{fragments/sidebar :: sidebarFragment}"></div>
+    
+    <!-- 메인 -->
+    <div id="main">
+	    <div class="pageContainer">
+	        <div class="breadcrumb">
+	            메인 > 기본환경 > 회사 정보
+	        </div>
+	        <div class="pageTitle">
+	            <h2>회사 정보</h2>
+	        </div>
+	        <form th:action="@{/adminUser/company/changeData}" method="post">
+	        <div class="contentBox">
+			    <div class="sectionTitle">기본 정보</div>
+			    <div th:object="${companyData}">
+				    <div class="formArea">
+				        <div class="formRow">
+				            <label>기업/단체명</label>
+				            <input type="text" th:field="*{companyName}">
+				        </div>
+				
+				        <div class="formRow">
+				            <label>전화 번호</label>
+				            <input type="text" th:field="*{companyTel}">
+				        </div>
+				    </div>
+				
+				    <div class="buttonArea">
+				        <button type="submit" class="saveBtn">저장</button>
+				        <button type="button" class="cancelBtn" onclick="location.reload()">취소</button>
+				    </div>
+				</div>
+			</div>
+			</form>
+
+	    </div>
+	</div>
+</div>
+
+<!-- 수정 모달 -->
+<div id="successModal" class="successModal">
+    <div class="successBox">
+        <div class="successText">수정되었습니다!</div>
+        <button type="button" id="successOkBtn">확인</button>
+    </div>
+</div>
+
+</body>
+</html>

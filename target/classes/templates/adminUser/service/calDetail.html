@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<style type="text/css">
+.cal-detail-card { padding: 24px; background: #fff; border-radius: 12px; }
+.top-btn-group { display: flex; gap: 8px; margin-bottom: 20px; }
+.btn-outline-custom { background-color: #fff; border: 1px solid #d9d9d9; color: #333; padding: 6px 14px; font-size: 13px; border-radius: 6px; cursor: pointer; transition: all 0.2s; text-decoration: none; }
+.btn-outline-custom:hover { background-color: #f5f5f5; }
+.detail-title { font-size: 20px; font-weight: 700; color: #111; margin-bottom: 20px; word-break: break-all; }
+.info-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; font-size: 14px; color: #333; }
+.info-icon { width: 20px; text-align: center; color: #666; font-size: 15px; }
+.green-dot { display: inline-block; width: 10px; height: 10px; background-color: #28a745; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.divider { border: 0; height: 1px; background: #f0f0f0; margin: 20px 0; }
+.meta-info { font-size: 12px; color: #8c8c8c; line-height: 1.8; margin-bottom: 20px; }
+</style>
+
+<script type="text/javascript">
+function deleteCalendar() {
+    if (confirm("일정을 삭제하시겠습니까?")) {
+        document.getElementById("deleteForm").submit();
+    }
+}
+</script>
+</head>
+<body>
+
+<div class="cal-detail-card">
+    <div class="top-btn-group">
+        <button type="button" class="btn-outline-custom" th:onclick="goModifyForm([[${calendar.calendarId}]])">일정 수정</button>
+        <button type="button" class="btn-outline-custom" onclick="deleteCalendar()">일정 삭제</button>
+    </div>
+
+    <div class="detail-title" th:text="${calendar.title}">주간 팀 회의</div>
+
+    <div class="info-row">
+        <div class="info-icon"><i class="fa-regular fa-clock"></i></div>
+        <div>
+            <span th:text="${calendar.startDate}">2026-07-16</span> 
+            <span th:text="${calendar.startTime}">16:13</span> - 
+            <span th:text="${calendar.endTime}">17:00</span>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-icon"><i class="fa-regular fa-calendar-check"></i></div>
+        <div>
+            <span class="green-dot"></span>
+            <span th:text="${calendar.content}">주간 업무 진행 상황 점검</span>
+        </div>
+    </div>
+
+    <hr class="divider" />
+
+    <div class="meta-info">
+        <div>최근 수정 : 이다영 (2026. 8. 6. (목) 오후 05:32)</div>
+        <div>생성자 : 이다영 (2026. 8. 6. (목) 오후 05:32)</div>
+    </div>
+
+    <div>
+        <button type="button" class="btn-outline-custom" data-bs-dismiss="modal">닫기</button>
+    </div>
+
+    <form id="deleteForm" th:action="@{/adminUser/service/calendar/deleteCal}" method="post" style="display: none;">
+        <input type="hidden" name="scheduleNo" th:value="${calendar.scheduleNo}" />
+    </form>
+</div>
+
+</body>
+</html>

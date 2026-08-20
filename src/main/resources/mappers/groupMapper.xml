@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.sist.group.GroupMapper">
+
+    <!-- 그룹 검색 -->
+    <select id="selectGroup" resultType="groupDomain">
+        SELECT
+            g.groups_no AS groupNo,
+            g.groups_name AS groupName,
+            g.groups_description AS groupDesc,
+            g.input_date AS inputDate,
+            g.company_no AS companyNo,
+            g.user_no AS userNo,
+            u.user_name AS leaderName,
+            (
+                SELECT COUNT(*)
+                FROM groupsmember gm2
+                WHERE gm2.groups_no = g.groups_no
+            ) AS memberCount
+        FROM groups g
+        LEFT JOIN users u
+            ON g.user_no = u.user_no
+        WHERE g.company_no = #{companyNo}
+          AND (
+              g.groups_name LIKE '%' || #{keyword} || '%'
+              OR EXISTS (
+                  SELECT 1
+                  FROM groupsmember gm
+                  JOIN users mu
+                      ON gm.grp_member_no = mu.user_no
+                  WHERE gm.groups_no = g.groups_no
+                    AND mu.user_name LIKE '%' || #{keyword} || '%'
+              )
+          )
+        ORDER BY g.groups_no DESC
+    </select>
+
+    <!-- 그룹 전체 조회 -->
+    <select id="selectAllGroup" resultType="groupDomain">
+        SELECT
+            g.groups_no AS groupNo,
+            g.groups_name AS groupName,
+            g.groups_description AS groupDesc,
+            g.input_date AS inputDate,
+            g.company_no AS companyNo,
+            g.user_no AS userNo,
+            u.user_name AS leaderName,
+            (
+                SELECT COUNT(*)
+                FROM groupsmember gm
+                WHERE gm.groups_no = g.groups_no
+            ) AS memberCount
+        FROM groups g
+        LEFT JOIN users u
+            ON g.user_no = u.user_no
+        WHERE g.company_no = #{companyNo}
+        ORDER BY g.groups_no DESC
+    </select>
+
+    <!-- 그룹 추가 -->
+    <insert id="insertGroup" parameterType="groupDTO">
+        <selectKey keyProperty="groupNo"
+                   resultType="String"
+                   order="BEFORE">
+            SELECT 'G' || LPAD(SEQ_groups_NO.NEXTVAL, 6, '0')
+            FROM dual
+        </selectKey>
+        INSERT INTO groups (
+            groups_no,
+            groups_name,
+            groups_description,
+            company_no,
+            user_no,
+            input_date
+        )
+        VALUES (
+            #{groupNo},
+            #{groupName},
+            #{groupDescription, jdbcType=VARCHAR},
+            #{companyNo},
+            #{userNo, jdbcType=VARCHAR},
+            SYSDATE
+        )
+    </insert>
+
+    <!-- 그룹 추가시 그룹멤버에도 넣기 -->
+    <insert id="insertGroupMember">
+        INSERT INTO groupsmember (
+            groups_no,
+            grp_member_no,
+            is_leader
+        )
+        VALUES (
+            #{groupNo},
+            #{userNo},
+            1
+        )
+    </insert>
+
+    <!-- 기존 그룹에 멤버 추가 -->
+    <insert id="insertGroupMemberForEdit">
+        INSERT INTO groupsmember (
+            groups_no,
+            grp_member_no,
+            is_leader
+        )
+        SELECT
+            #{groupNo},
+            #{userNo},
+            CASE
+                WHEN g.user_no = #{userNo} THEN 1
+                ELSE 0
+            END
+        FROM groups g
+        WHERE g.groups_no = #{groupNo}
+    </insert>
+
+    <!-- 그룹 상세 정보 조회 -->
+    <select id="selectGroupDetail" resultType="groupDomain">
+        SELECT
+            g.groups_no AS groupNo,
+            g.groups_name AS groupName,
+            g.groups_description AS groupDesc,
+            g.input_date AS inputDate,
+            g.company_no AS companyNo,
+            g.user_no AS userNo,
+            u.user_name AS leaderName,
+            (
+                SELECT COUNT(*)
+                FROM groupsmember gm
+                WHERE gm.groups_no = g.groups_no
+            ) AS memberCount
+        FROM groups g
+        LEFT JOIN users u
+            ON g.user_no = u.user_no
+        WHERE g.groups_no = #{groupNo}
+          AND g.company_no = #{companyNo}
+    </select>
+
+    <!-- 그룹 구성원 조회 -->
+    <select id="selectGroupMember"
+            resultType="groupMemberDomain">
+        SELECT
+            gm.groups_no AS groupNo,
+            gm.grp_member_no AS userNo,
+            u.user_name AS userName,
+            u.email AS email,
+            r.rank_name AS rankName,
+            p.position_name AS positionName,
+            gm.is_leader AS isLeader
+        FROM groupsmember gm
+        JOIN users u
+            ON gm.grp_member_no = u.user_no
+        JOIN groups g
+            ON gm.groups_no = g.groups_no
+        LEFT JOIN title t
+            ON u.user_no = t.user_no
+        LEFT JOIN rank r
+            ON t.rank_no = r.rank_no
+           AND r.company_no = g.company_no
+        LEFT JOIN position p
+            ON t.position_no = p.position_no
+           AND p.company_no = g.company_no
+        WHERE gm.groups_no = #{groupNo}
+        ORDER BY gm.is_leader DESC
+    </select>
+
+    <!-- 그룹 구성원 삭제 -->
+    <delete id="deleteGroupMember">
+        DELETE FROM groupsmember
+        WHERE groups_no = #{groupNo}
+          AND grp_member_no = #{userNo}
+    </delete>
+
+    <!-- 그룹장 변경 - 별도 "그룹 마스터 변경" 기능 -->
+    <update id="updateGroupMemberLeader">
+        UPDATE groupsmember
+        SET is_leader =
+            CASE
+                WHEN grp_member_no = #{userNo} THEN 1
+                ELSE 0
+            END
+        WHERE groups_no = #{groupNo}
+    </update>
+
+    <!-- GROUPS 테이블의 그룹장 변경 -->
+    <update id="updateGroupLeader">
+        UPDATE groups
+        SET user_no = #{userNo}
+        WHERE groups_no = #{groupNo}
+    </update>
+
+    <!-- 그룹 삭제 전 구성원 삭제 -->
+    <delete id="deleteGroupMemberAll">
+        DELETE FROM groupsmember
+        WHERE groups_no = #{groupNo}
+    </delete>
+
+    <!-- 그룹 삭제 -->
+    <delete id="deleteGroup">
+        DELETE FROM groups
+        WHERE groups_no = #{groupNo}
+    </delete>
+
+    <!-- 그룹 정보 수정 -->
+	<update id="updateGroup" parameterType="groupDTO">
+	    UPDATE GROUPS
+	    <set>
+	        <if test="groupName != null and groupName != ''">
+	            GROUPS_NAME = #{groupName},
+	        </if>
+	        <if test="groupDescription != null">
+	            GROUPS_DESCRIPTION = #{groupDescription},
+	        </if>
+	    </set>
+	    WHERE GROUPS_NO = #{groupNo}
+	      <if test="companyNo != null and companyNo != ''">
+	        AND COMPANY_NO = #{companyNo}
+	      </if>
+	</update>
+
+    <!-- 그룹/그룹마스터 수정용 그룹 마스터 변경 -->
+    <update id="updateGroupLeaderForEdit">
+        UPDATE groups
+        SET user_no = #{userNo}
+        WHERE groups_no = #{groupNo}
+          AND company_no = #{companyNo}
+    </update>
+
+    <!-- 그룹/그룹마스터 수정용 groupsmember 마스터 변경 -->
+    <update id="updateGroupMemberLeaderForEdit">
+        UPDATE groupsmember
+        SET is_leader =
+            CASE
+                WHEN grp_member_no = #{userNo} THEN 1
+                ELSE 0
+            END
+        WHERE groups_no = #{groupNo}
+    </update>
+
+</mapper>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:each="role, stat : ${roleList}"
+     class="roleItem"
+     th:classappend="${stat.first} ? 'active' : ''"
+     th:data-rolename="${role.roleName}"
+     th:data-roleno="${role.roleNo}">
+    
+    <span class="roleNameText" th:text="${role.roleName}">최고관리자</span>
+
+    <!-- 최고관리자, 운영관리자가 아닌 경우에만 점 세개 노출 -->
+    <div class="roleMoreWrap" 
+         th:if="${role.roleName != '최고관리자' and role.roleName != '운영관리자' and role.roleName != '최고 관리자' and role.roleName != '운영 관리자'}">
+        <button type="button" class="moreBtn">
+            <i class="fa-solid fa-ellipsis-vertical"></i>
+        </button>
+        <div class="roleDropdown">
+            <div class="dropdownItem editRoleCmd">권한명 수정</div>
+            <div class="dropdownItem deleteRoleCmd text-danger">권한 삭제</div>
+        </div>
+    </div>
+</div>
+</html>
