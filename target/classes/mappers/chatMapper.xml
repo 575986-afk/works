@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="kr.co.sist.chat.ChatMapper">
+  <select id="selectChatRoom" parameterType="string" resultType="kr.co.sist.chat.ChatRoomDTO">
+        SELECT 
+            cr.chat_room_no AS chatRoomNo,
+            cr.chat_room_name AS chatRoomName,
+            cr.chat_room_type AS chatRoomType,
+            cr.input_date AS inputDate
+        FROM chatParticipant cp
+        JOIN ChatRoom cr ON cp.chatRoomNo = cr.chatRoomNo
+        WHERE cp.participantNo = #{userNo}
+        ORDER BY cr.input_date DESC
+    </select>
+  
+  
+  </mapper>
