@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>환경설정</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, '맑은 고딕', sans-serif;
+        }
+        body {
+            background-color: #f8f9fa;
+            color: #333333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .settings-wrapper {
+            display: flex;
+            flex: 1;
+            margin-top: 60px;
+        }
+        
+        /* 콘텐츠 영역 왼쪽 정렬 고정 */
+        .settings-content {
+            flex: 1;
+            padding: 40px;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: flex-start; /* 왼쪽 정렬 */
+            align-items: flex-start;
+        }
+        .profile-container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0; /* 중앙 정렬 마진 제거 */
+        }
+        .content-header h2 {
+            font-size: 16px;
+            color: #2b7de9;
+            font-weight: 600;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+        }
+        
+        /* 화살표 링크 밑줄 제거 및 정렬 */
+        .content-header h2 a {
+            text-decoration: none; 
+            color: inherit;
+            display: flex;
+            align-items: center;
+        }
+
+        .back-arrow {
+            font-weight: bold;
+            margin-right: 5px;
+            text-decoration: none;
+        }
+
+        .profile-summary {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        .avatar-wrapper {
+            position: relative;
+        }
+        .avatar-circle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background-color: #3b82f6;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .camera-badge {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: background-color 0.2s;
+        }
+        .camera-badge:hover {
+            background-color: #f3f4f6;
+        }
+        .camera-icon {
+            width: 14px;
+            height: 14px;
+            fill: #4b5563;
+        }
+        .profile-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        .profile-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .form-row {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            border-bottom: 1px solid #f2f2f2;
+            padding-bottom: 15px;
+        }
+        .form-group {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        .form-group.half {
+            width: 50%;
+        }
+        .form-group label {
+            width: 120px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+        .form-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .btn-secondary {
+            background-color: #2b7de9;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .readonly-box {
+            flex: 1;
+            background-color: #e5e7eb;
+            padding: 10px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #4b5563;
+        }
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        .btn-cancel {
+            background-color: #f3f4f6;
+            border: 1px solid #d1d5db;
+            padding: 8px 20px;
+            border-radius: 4px;
+            color: #374151;
+            cursor: pointer;
+        }
+        .btn-save {
+            background-color: #3b82f6;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 4px;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        /* 모달 스타일 */
+        .modal {
+            display: none;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-box {
+            width: 420px;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 35px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+        }
+        .modal-box h3 {
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 25px;
+            color: #222;
+        }
+        .modal-box input {
+            width: 100%;
+            height: 44px;
+            margin-bottom: 12px;
+            padding: 0 14px;
+            border: 1px solid #dcdcdc;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .modal-box input:focus {
+            outline: none;
+            border-color: #1f7ef2;
+            box-shadow: 0 0 0 3px rgba(31,126,242,.15);
+        }
+        .modal-guide {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .modal-btn {
+            display: flex;
+            gap: 10px;
+        }
+        .modal-btn button {
+            flex: 1;
+            height: 44px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s ease;
+        }
+        #cancelBtn {
+            background: #ffffff;
+            color: #555555;
+            border: 1px solid #d9d9d9;
+        }
+        #cancelBtn:hover {
+            background: #f5f5f5;
+        }
+        #okBtn {
+            background: #1f7ef2;
+            color: #ffffff;
+            border: 1px solid #1f7ef2;
+        }
+        #okBtn:hover {
+            background: #1868c7;
+        }
+    </style>
+<script type="text/javascript">
+$(function(){
+    // 비밀번호 변경 버튼 클릭 시 모달창 열기
+    $("#pwchg").click(function(e){
+        e.preventDefault();
+        $("#passwordModal").css("display","flex");
+    });
+
+    // 모달 취소 버튼
+    $("#cancelBtn").click(function(){
+        $("#passwordModal").hide();
+        $("#newPw, #newPwConfirm").val("");
+    });
+
+    // 모달 확인 버튼 (비밀번호 일치 여부 확인)
+    $("#okBtn").click(function(){
+        let newPwd = $("#newPw").val();
+        let confirmPwd = $("#newPwConfirm").val();
+
+        if(!newPwd || !confirmPwd) {
+            alert("비밀번호를 입력해주세요.");
+            return;
+        }
+
+        if(newPwd !== confirmPwd) {
+            alert("새 비밀번호가 일치하지 않습니다.");
+            return;
+        }
+
+        $.ajax({
+            url: "/updatePw", // 비밀번호 변경을 처리할 컨트롤러 매핑 주소
+            type: "POST",
+            data: { newPw: newPwd },
+            success: function(response) {
+                // 서버에서 정상적으로 수정되어 1이 넘어온 경우
+                if(response === 1 || response === "1") {
+                    alert("비밀번호가 성공적으로 변경되었습니다.");
+                    $("#passwordModal").hide();
+                    $("#newPw, #newPwConfirm").val("");
+                } else {
+                    alert("비밀번호 변경에 실패했습니다.");
+                }
+            },
+            error: function(err) {
+                console.log(err);
+                alert("서버 오류가 발생했습니다.");
+            }
+        });
+    });
+});
+</script>
+</head>
+<body>
+
+    <!-- 공통 헤더 -->
+    <div th:replace="~{fragments/header :: commonHeader}"></div>
+
+    <div class="settings-wrapper">
+        <!-- 사이드바 -->
+        <div th:replace="~{fragments/settingSidebar :: settingSidebar}"></div>
+
+        <!-- 본문 콘텐츠 -->
+        <div class="settings-content">
+            <div class="profile-container">
+                <div class="content-header">
+                   <h2><a href="/userInfo"><span class="back-arrow">&lt;</span> 내 프로필</a></h2>
+                </div>
+
+                <div class="profile-summary">
+                    <div class="avatar-wrapper">
+                        <div class="avatar-circle">
+                           <span th:text="${#strings.substring(userName, 0, 1)}"></span>
+                        </div>
+                        <label for="profile-img-input" class="camera-badge">
+                            <svg class="camera-icon" viewBox="0 0 24 24">
+                                <path d="M12 9c2.21 0 4 1.79 4 4s-1.79 4-4 4-4-1.79-4-4 1.79-4 4-4zm0-2c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z"/>
+                                <path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h4.05l1.83-2h4.24l1.83 2H20v12z"/>
+                            </svg>
+                        </label>
+                        <input type="file" id="profile-img-input" style="display: none;" accept="image/*">
+                    </div>
+                    <span th:text="${userName}"></span>
+                </div>
+
+                <form th:action="@{/updateProfile}" method="post" class="profile-form">
+                    <div class="form-row">
+                        <!-- <div class="form-group half">
+                            <label>닉네임</label>
+                            <input type="text" class="form-input">
+                        </div> -->
+                        <div class="form-group half password-row">
+                            <label>비밀번호</label>
+                            <button type="button" class="btn-secondary" id="pwchg">비밀번호 변경</button>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group full">
+                            <label>직급</label>
+                            <div class="readonly-box" th:text="${rank}"></div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group full">
+                            <label>직책</label>
+                            <div class="readonly-box" th:text="${position}"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group full">
+                            <label>휴대폰</label>
+                            <input type="text" name="tel" th:value="${Tel}" class="form-input">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group full">
+                            <label>이메일</label>
+                            <input type="email" name="email" th:value="${Email}" class="form-input">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group full">
+                            <label>근무지</label>
+                            <div class="readonly-box" th:text="${workplace}">근무지</div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group full">
+                            <label>담당 업무</label>
+                            <div class="readonly-box" th:text="${jobtask}">담당 업무 내용</div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="history.back()">취소</button>
+                        <button type="submit" class="btn-save">저장</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 비밀번호 변경 모달 팝업 -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-box">
+            <h3>새 비밀번호를 등록해주세요.</h3>
+
+            <input type="password" id="newPw" placeholder="새 비밀번호" autocomplete="off">
+            <input type="password" id="newPwConfirm" placeholder="새 비밀번호 확인">
+
+            <div class="modal-guide">
+               
+            </div>
+
+            <div class="modal-btn">
+                <button type="button" id="cancelBtn">취소</button>
+                <button type="button" id="okBtn">확인</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

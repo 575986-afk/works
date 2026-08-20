@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>회원가입 유형 선택</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#f5f6f8;
+    font-family:'맑은 고딕', sans-serif;
+}
+
+/* ===== Header ===== */
+header{
+    width:100%;
+    height:60px;
+    background:white;
+    border-bottom:1px solid #ddd;
+    display:flex;
+    align-items:center;
+    padding-left:30px;
+}
+
+header img{
+    height:28px;
+}
+
+.header-logo{
+    width:20px;
+    height:20px;
+    background:#00c6c9;
+    border-radius:3px;
+    margin-right:6px;
+}
+
+/* ===== Main ===== */
+
+.container{
+    width:1050px;
+    margin:100px auto;
+    background:white;
+    padding:100px 80px;
+}
+
+.title{
+    text-align:center;
+    font-size:30px;
+    font-weight:600;
+    margin-bottom:70px;
+    color:#333;
+}
+
+.join-wrap{
+    display:flex;
+    justify-content:center;
+    gap:70px;
+}
+
+.join-card{
+    width:300px;
+    height:280px;
+    border:1px solid #d9d9d9;
+    border-radius:12px;
+    background:white;
+    cursor:pointer;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+
+    transition:.25s;
+}
+
+.join-card:hover{
+    transform:translateY(-6px);
+    border-color:#3282F6;
+    box-shadow:0 10px 25px rgba(0,0,0,.12);
+}
+
+.join-card:active{
+    transform:scale(.98);
+}
+
+.join-title{
+    font-size:22px;
+    font-weight:bold;
+    color:#222;
+    line-height:1.6;
+}
+
+.join-desc{
+    margin-top:18px;
+    font-size:14px;
+    color:#888;
+}
+</style>
+
+</head>
+
+<body>
+
+<!-- <header>
+
+    네 헤더
+    <img th:src="@{/images/logo.png}" alt="WORKS">
+
+</header> -->
+<header>
+    <div class="header-logo">W</div>
+</header>
+
+<div class="container">
+
+    <div class="title">
+        해당하는 회원가입 유형을 선택해주세요.
+    </div>
+
+    <div class="join-wrap">
+
+        <button class="join-card"
+                th:onclick="|location.href='@{/managerJoinForm}'|">
+
+            <div class="join-title">
+                관리자<br>
+                회원가입
+            </div>
+
+            <div class="join-desc">
+                기업 관리자 계정 생성
+            </div>
+
+        </button>
+
+        <button class="join-card"
+                th:onclick="|location.href='@{/userJoinForm}'|">
+
+            <div class="join-title">
+                사용자<br>
+                회원가입
+            </div>
+
+            <div class="join-desc">
+                일반 사용자 계정 생성
+            </div>
+
+        </button>
+
+    </div>
+
+</div>
+
+</body>
+</html>

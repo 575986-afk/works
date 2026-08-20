@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>비밀번호 재설정</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'맑은 고딕', sans-serif;
+}
+
+body{
+    background:#f3f3f3;
+}
+
+/* 로그인과 완전히 동일한 헤더 스타일 직접 포함 */
+header{
+    width:100%;
+    height:60px;
+    background:white;
+    border-bottom:1px solid #ddd;
+    display:flex;
+    align-items:center;
+    padding-left:30px;
+}
+
+.header-logo {
+    width: 20px;
+    height: 20px;
+    background-color: #00c6c9;
+    border-radius: 3px;
+    margin-right: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+/* 가운데 컨테이너 */
+.container{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    margin-top:100px;
+}
+
+.reset-box{
+    width:550px;
+    background:white;
+    border-radius:10px;
+    padding:35px 30px;
+    padding-left:50px; 
+    padding-right:50px; 
+}
+
+.reset-box h2{
+    height:80px;
+    padding-top:40px; 
+    font-size:24px;
+    margin-bottom:30px;
+    font-weight:bold;
+}
+
+.input-box{
+    margin-bottom:12px;
+}
+
+.input-box input{
+    width:100%;
+    height:45px;
+    border:1px solid #ddd;
+    border-radius:4px;
+    padding-left:15px;
+    font-size:14px;
+}
+
+.input-box input:focus{
+    border-color:#1f7ef2;
+    outline:none;
+}
+
+.reset-btn{
+    width:100%;
+    height:46px;
+    background:#1f7ef2;
+    color:white;
+    border:none;
+    border-radius:4px;
+    cursor:pointer;
+    font-size:15px;
+    font-weight:bold;
+    margin-top:15px;
+    margin-bottom:30px;
+}
+
+.reset-btn:hover{
+    background:#1768c8;
+}
+</style>
+</head>
+
+<body>
+
+<!-- 헤더 구조 직접 적용 -->
+<header>
+    <div class="header-logo">W</div>
+</header>
+
+<div class="container">
+    <div class="reset-box">
+        <h2>비밀번호 재설정</h2>
+        
+        <form th:action="@{/resetPwProcess}" method="post">
+            <div class="input-box">
+                <input type="password" name="newPw" placeholder="새 비밀번호를 입력해 주십시오." required>
+            </div>
+
+            <div class="input-box">
+                <input type="password" name="confirmPw" placeholder="새 비밀번호를 다시 입력해 주십시오." required>
+            </div>
+
+            <button class="reset-btn" type="submit">
+                비밀번호 변경
+            </button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

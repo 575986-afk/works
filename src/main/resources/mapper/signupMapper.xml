@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.sist.signup.SignupMapper">
+    <select id="selectIdDup" parameterType="string" resultType="int" >
+        SELECT COUNT(*) FROM users WHERE user_id = #{user_id}
+    </select>
+    
+    <insert id="insertUserJoin" parameterType="kr.co.sist.signup.UserDTO" >
+        INSERT INTO users(user_name, user_id, password, email, phoneNumber,ip, signup_Date,ACCOUNT_STATUS) 
+        VALUES (#{name, typeHandler=kr.co.sist.login.EncryptTypeHandler}, #{userId}, #{password}, #{email, typeHandler=kr.co.sist.login.EncryptTypeHandler}, #{tel, typeHandler=kr.co.sist.login.EncryptTypeHandler},#{ip} ,SYSDATE,'활성')
+        <selectKey keyProperty="userNo" resultType="string" order="AFTER">
+        SELECT MAX(user_no) FROM users
+    </selectKey>
+    </insert>
+    
+    <insert id="insertUserRole" parameterType="kr.co.sist.signup.UserDTO" >
+        INSERT INTO role(user_no, role_name,role_level ) 
+        VALUES (#{userNo, jdbcType=VARCHAR},'일반사용자',1 )
+    </insert>
+   <!--  <insert id="insertRankPosition" parameterType="kr.co.sist.signup.UserDTO" >
+        INSERT INTO title(user_no, rank_no, position_no ) VALUES (#{userNo}, 'RK000003', 'P000006')
+        
+    </insert> -->
+    
+	<insert id="insertCompanyInfo" parameterType="kr.co.sist.signup.UserDTO">
+    INSERT INTO company (company_name,company_tel)
+    VALUES (null,null)
+    <selectKey keyProperty="companyNo" resultType="string" order="AFTER">
+        SELECT MAX(company_no) FROM company
+    </selectKey>
+</insert>
+    
+    <insert id="insertManagerJoin" parameterType="kr.co.sist.signup.UserDTO">
+    INSERT INTO users(user_name, user_id, password, email, phoneNumber,ip, company_no, signup_Date,ACCOUNT_STATUS) 
+    VALUES (#{name, typeHandler=kr.co.sist.login.EncryptTypeHandler}, #{userId}, #{password}, #{email, typeHandler=kr.co.sist.login.EncryptTypeHandler}, #{tel, typeHandler=kr.co.sist.login.EncryptTypeHandler}, #{ip}, #{companyNo, jdbcType=VARCHAR}, SYSDATE,'활성')
+    
+    <selectKey keyProperty="userNo" resultType="string" order="AFTER">
+        SELECT MAX(user_no) FROM users
+    </selectKey>
+</insert>
+    
+    <insert id="insertRole" parameterType="kr.co.sist.signup.UserDTO" >
+        INSERT INTO role(user_no, role_name,role_level, company_no) 
+        VALUES (#{userNo, jdbcType=VARCHAR},'최고운영자',99 ,#{companyNo, jdbcType=VARCHAR})
+    </insert>
+   <!--  <insert id="insertManagerRankPosition" parameterType="kr.co.sist.signup.UserDTO" >
+        INSERT INTO title(user_no, rank_no, position_no ) VALUES (#{userNo}, 'RK000002', 'P000006')
+        
+    </insert> -->
+</mapper>

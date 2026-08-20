@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.sist.setting.SettingMapper">
+	<resultMap id="userResultMap" type="kr.co.sist.signup.UserDTO">
+	    <id property="userNo" column="user_no"/>
+	    <result property="userId" column="user_id"/>
+        <result property="name" column="user_name" typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+        <result property="email" column="email" typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+        <result property="tel" column="phoneNumber" typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+    </resultMap>
+    
+    <select id="selectLogin" parameterType="String" resultType="kr.co.sist.signup.UserDTO">
+        SELECT user_id AS userId,
+               password
+        FROM users 
+        WHERE user_id = #{userId}
+    </select>
+    
+    <select id="selectProfile" parameterType="String" resultMap="userResultMap">
+        SELECT user_no,
+               user_id,
+               password,
+               user_name,
+               email,
+               phoneNumber,
+               ip,
+               signup_date,
+               account_status
+        FROM users
+        WHERE user_no = #{userNo, jdbcType=VARCHAR}
+    </select>
+   <select id="selectRankPosition" parameterType="String" resultType="titleDTO">
+    SELECT 
+        t.user_no,
+        r.rank_name AS rankName,
+        p.position_name AS positionName
+    FROM title t
+    LEFT JOIN rank r ON t.rank_no = r.rank_no
+    LEFT JOIN position p ON t.position_no = p.position_no
+    WHERE t.user_no = #{userNo}
+</select>
+    
+    <update id="updateProfile" parameterType="UserDTO">
+        UPDATE users 
+        SET phoneNumber = #{tel, typeHandler=kr.co.sist.login.EncryptTypeHandler}, 
+            email = #{email, typeHandler=kr.co.sist.login.EncryptTypeHandler} 
+        WHERE user_no = #{userNo, jdbcType=VARCHAR}
+    </update>
+    
+    <update id="updatePwChg">
+        UPDATE users 
+        SET password = #{newPw} 
+        WHERE user_no = #{userNo, jdbcType=VARCHAR}
+    </update>
+    
+    
+    
+    
+  <select id="selectStatusList" resultType="kr.co.sist.setting.StatusDTO">
+      SELECT status_no AS statusNo,
+             status_name AS statusName,
+             icon
+      FROM status
+  </select>
+
+  <select id="selectUserStatus" parameterType="String" resultType="String">
+      SELECT status_no AS statusNo
+      FROM users
+      WHERE user_no = #{userNo}
+  </select>
+
+  <update id="updateUserStatus">
+      UPDATE users
+      SET status_no = #{statusNo, jdbcType=VARCHAR}
+      WHERE user_no = #{userNo}
+  </update>
+    
+    
+    
+    <!-- 알람 설정  -->
+    <select id="selectAlarmSetting" parameterType="String" resultType="kr.co.sist.setting.AlarmSettingDTO">
+        SELECT user_no AS userNo,
+               is_alarm_on AS isAlarmOn,
+               allow_event_invitation AS allowEventInvitation,
+               allow_attendance_response AS allowAttendanceResponse,
+               allow_task_assignment AS allowTaskAssignment,
+               allow_task_completion AS allowTaskCompletion
+        FROM ALARMSETTING
+        WHERE user_no = #{userNo}
+    </select>
+    
+    <update id="updateAlarmSetting" parameterType="kr.co.sist.setting.AlarmSettingDTO">
+        UPDATE ALARMSETTING 
+        SET is_alarm_on = #{isAlarmOn},
+            allow_event_invitation = #{allowEventInvitation},
+            allow_attendance_response = #{allowAttendanceResponse},
+            allow_task_assignment = #{allowTaskAssignment},
+            allow_task_completion = #{allowTaskCompletion}
+        WHERE user_no = #{userNo}
+    </update>
+
+
+
+
+
+
+
+	<!-- 문의 설정  -->
+    <select id="selectInquiry" parameterType="String" resultType="kr.co.sist.setting.InquiryDomain">
+        SELECT * FROM inquiry WHERE user_no = #{userNo, jdbcType=VARCHAR}
+    </select>
+</mapper>

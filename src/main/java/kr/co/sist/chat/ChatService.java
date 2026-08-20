@@ -1,0 +1,51 @@
+package kr.co.sist.chat;
+
+import java.util.List;
+
+public class ChatService {
+
+	public List<ChatRoomDTO> getChatRoomList(String userNo){
+		List<ChatRoomDTO> list=null;
+		return list;
+	}
+	
+	public List<ChattingDTO> getMessageList(String chatRoomNo){
+		List<ChattingDTO> list=null;
+		return list;
+	}
+	
+	public List<ChatRoomDTO> searchUser(String userName) {
+		List<ChatRoomDTO> list=null;
+		return list;
+	}
+	
+	public int getChatCnt() {
+		int cnt=0;
+		return cnt;
+	}
+	
+	public int sendMessage(String chatRoomNo, String content) {
+		int cnt=0;
+		return cnt;
+	}
+	
+	public int createChat(ChatRoomDTO crDTO) {
+		int cnt=0;
+		return cnt;
+	}
+	
+	public List<ChatRoomDTO> sortChatRoom(String chatRoomNo){
+		List<ChatRoomDTO> list=null;
+		return list;
+	}
+	
+	public int leaveChat(String userNo, String chatRoomNo) {
+		int cnt=0;
+		return cnt;
+	}
+	
+	public String insertFile(String content) {
+		return "";
+	}
+	
+}

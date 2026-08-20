@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>이메일 인증</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'맑은 고딕', sans-serif;
+}
+
+body{
+    background:#f3f3f3;
+}
+
+/* 상단 헤더 스타일 직접 포함 */
+header{
+    width:100%;
+    height:60px;
+    background:white;
+    border-bottom:1px solid #ddd;
+    display:flex;
+    align-items:center;
+    padding-left:30px;
+}
+
+.header-logo {
+    width: 20px;
+    height: 20px;
+    background-color: #00c6c9;
+    border-radius: 3px;
+    margin-right: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+/* 가운데 컨테이너 및 박스 */
+.container{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    margin-top:100px;
+}
+
+.verify-box{
+    width:550px;
+    height:480px;
+    background:white;
+    border-radius:10px;
+    padding:40px 50px;
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+}
+
+/* 안내 문구 스타일 */
+.verify-box .guide-text {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.verify-box .guide-text span {
+    color: #1f7ef2;
+}
+
+.verify-box .sub-guide {
+    font-size: 15px;
+    color: #555;
+    margin-bottom: 35px;
+}
+
+/* 4자리 인증번호 입력 인풋 박스들 */
+.code-inputs {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.code-inputs input {
+    width: 55px;
+    height: 55px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.code-inputs input:focus {
+    border-color: #1f7ef2;
+    outline: none;
+}
+
+/* 타이머/안내 문구 */
+.timer-text {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 30px;
+}
+
+/* 버튼 영역 */
+.btn-group {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    max-width: 260px;
+}
+
+.resend-btn {
+    flex: 1;
+    height: 42px;
+    background: white;
+    color: #555;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.resend-btn:hover {
+    background: #f9f9f9;
+}
+
+.confirm-btn {
+    flex: 1;
+    height: 42px;
+    background: #1f7ef2;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.confirm-btn:hover {
+    background: #1768c8;
+}
+</style>
+</head>
+
+<body>
+
+<!-- 헤더 구조 직접 삽입 -->
+<header>
+    <div class="header-logo">W</div>
+</header>
+
+<div class="container">
+    <div class="verify-box">
+        
+        <!-- 전송 시 자바스크립트로 값을 하나로 합쳐서 전송하도록 onsubmit 추가 -->
+        <form th:action="@{/verifyCodeProcess}" method="post" onsubmit="combineCode()">
+            
+            <div class="guide-text">
+            <h3>전송된 이메일로 인증번호를 확인해주세요.</h3><br>
+            </div>
+
+            <div class="code-inputs">
+                <input type="text" class="code-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required autofocus>
+                <input type="text" class="code-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                <input type="text" class="code-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                <input type="text" class="code-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+            </div>
+
+            <!-- 컨트롤러가 받을 단일 파라미터 hidden input -->
+            <input type="hidden" id="verificationNo" name="verificationNo">
+
+            <div class="timer-text">10분 이내에 입력해주세요.</div>
+
+            <div style="display: flex; justify-content: center;">
+                <div class="btn-group">
+                    <button type="button" class="resend-btn" onclick="location.href='/resendCode'">재전송</button>
+                    <button type="submit" class="confirm-btn">확인</button>
+                </div>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const inputs = document.querySelectorAll('.code-input');
+
+    inputs.forEach((input, index) => {
+        input.addEventListener('input', (e) => {
+            if (e.target.value.length === 1 && index < inputs.length - 1) {
+                inputs[index + 1].focus();
+            }
+        });
+        
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && input.value === '' && index > 0) {
+                inputs[index - 1].focus();
+            }
+        });
+    });
+
+    // 4개의 인풋 값을 하나로 합쳐서 hidden input에 넣는 함수
+    function combineCode() {
+        let code = "";
+        inputs.forEach(input => {
+            code += input.value;
+        });
+        document.getElementById('verificationNo').value = code;
+    }
+
+    /*<![CDATA[*/
+    var errorMessage = /*[[${errorMessage}]]*/ null;
+    if (errorMessage) {
+        alert(errorMessage);
+    }
+    /*]]>*/
+</script>
+
+</body>
+</html>

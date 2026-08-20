@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>환경설정</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, '맑은 고딕', sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            color: #333333;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .settings-wrapper {
+            display: flex;
+            flex: 1;
+            margin-top: 60px;
+        }
+
+        .settings-content {
+            flex: 1;
+            padding: 40px;
+            background-color: #ffffff;
+            overflow-y: auto;
+        }
+
+        /* 상단 타이틀 영역 (뒤로가기 화살표 포함) */
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 40px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #111;
+            cursor: pointer;
+        }
+
+        .page-header .back-icon {
+            color: #2563eb;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        /* 본문 행 레이아웃 */
+        .setting-row {
+            display: flex;
+            align-items: flex-start;
+            padding-bottom: 30px;
+            padding-left: 30px;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        .setting-label {
+            width: 150px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .setting-control {
+            flex: 1;
+        }
+
+        .status-options {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .status-option-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+        }
+
+        .status-option-item input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #2563eb;
+            cursor: pointer;
+        }
+
+        /* 하단 버튼 영역 */
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .form-actions button {
+            min-width: 80px;
+            height: 38px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all .2s ease;
+        }
+
+        .okBtn {
+            background: #60a5fa;
+            color: #ffffff;
+            border: none;
+        }
+
+        .okBtn:hover {
+            background: #3b82f6;
+        }
+    </style>
+<script type="text/javascript">
+$(function(){
+    // 저장 버튼 클릭 시 AJAX로 서버 전송
+    $(".okBtn").click(function(){
+        let selectedStatus = $("input[name='statusNo']:checked").val();
+        
+        $.ajax({
+            url: "/userStatus",
+            type: "POST",
+            data: { statusNo: selectedStatus },
+            success: function(response){
+                if (response > 0) {
+                    alert("상태가 성공적으로 변경되었습니다.");
+                    window.location.href = "/userInfo";
+                } else {
+                    alert("상태 변경에 실패했습니다. 다시 시도해주세요.");
+                }
+            },
+            error: function(){
+                alert("서버 통신 중 오류가 발생했습니다.");
+            }
+        });
+    });
+
+    // 취소 버튼 및 상단 뒤로가기 클릭 시 userInfo로 이동
+    $(".page-header").click(function(){
+        window.location.href = "/userInfo";
+    });
+});
+</script>
+</head>
+<body>
+    <div th:replace="~{fragments/header :: commonHeader}"></div>
+
+    <div class="settings-wrapper">
+        
+        <div th:replace="~{fragments/settingSidebar :: settingSidebar}"></div>
+
+        <div class="settings-content">
+            
+            <div class="page-header">
+                <span class="back-icon">&lt;</span>
+                <span>상태 설정</span>
+            </div>
+
+            <div class="setting-row">
+                <div class="setting-label">상태 설정</div>
+                <div class="setting-control">
+                    <div class="status-options">
+                        
+                        <label class="status-option-item">
+                            <input type="radio" name="statusNo" value="" th:checked="${currentStatusNo == null || currentStatusNo == ''}">
+                            설정 안 함
+                        </label>
+
+                        <label class="status-option-item" th:each="status : ${statusList}">
+                            <input type="radio" name="statusNo" 
+                                   th:value="${status.statusNo}" 
+                                   th:checked="${status.statusNo == currentStatusNo}">
+                            <span th:text="${status.statusName}">상태명</span>
+                        </label>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="okBtn">저장</button>
+            </div>
+
+        </div>
+        
+    </div>
+
+</body>
+</html>

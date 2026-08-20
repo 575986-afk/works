@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.sist.login.LoginMapper">
+
+    <resultMap id="userResultMap" type="kr.co.sist.signup.UserDTO">
+        <result property="name" column="user_name" typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+        <result property="email" column="email" typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+        <result property="tel" column="phoneNumber" typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+    </resultMap>
+
+    <select id="selectLogin" parameterType="string" resultMap="userResultMap">
+    SELECT user_no AS userNo,
+           user_name,
+           user_id AS userId,    
+           password,
+           email,
+           phoneNumber,
+           company_no AS companyNo,
+           signup_date AS signupDate
+    FROM users 
+    WHERE user_id = #{userId}
+</select>
+
+</mapper>

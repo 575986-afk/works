@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>WORKS 회원가입</title>
+    <style>
+        :root {
+            --bg-color: #f4f4f5;
+            --card-bg: #ffffff;
+            --text-dark: #333333;
+            --text-light: #666666;
+            --border-color: #cccccc;
+            --btn-enabled: #5c6bc0;
+            --error-color: #ff3333;
+        }
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:'Pretendard', -apple-system, BlinkMacSystemFont, '맑은 고딕', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+        }
+        
+        /* 상단 헤더 (전체 너비 적용 및 상단 고정) */
+        header{
+            width: 100%;
+            height: 60px;
+            background: white;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            padding-left: 30px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+
+        header img{
+            height: 28px;
+        }
+        
+        /* 중앙 컨테이너 (고정 헤더와의 간격 확보) */
+        .container {
+            width: 80%;
+            max-width: 550px;
+            margin: 80px auto 30px auto;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .header-logo {
+            width: 20px;
+            height: 20px;
+            background-color: #00c6c9;
+            border-radius: 3px;
+            margin-right: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+        .register-card {
+            background-color: var(--card-bg);
+            padding: 60px 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--text-dark);
+            margin: 0 0 4px 0;
+        }
+        .card-subtitle {
+            font-size: 13px;
+            color: var(--text-light);
+            margin: 0 0 16px 0;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .id-input-row {
+            display: flex;
+            gap: 6px;
+        }
+
+        .check-btn {
+            width: 100px;
+            flex-shrink: 0;
+            font-size: 12px;
+            color: #ffffff;
+            background-color: #1f7ef2;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: #ffffff;
+            box-sizing: border-box;
+            font-size: 15px;
+            color: var(--text-dark);
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #1f7ef2;
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .terms-section {
+            margin-top: 16px;
+            border-top: 1px solid #eeeeee;
+            padding-top: 12px;
+        }
+        .terms-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-dark);
+            margin: 0 0 2px 0;
+        }
+        .terms-subtitle {
+            font-size: 12px;
+            color: var(--text-light);
+            margin: 0 0 8px 0;
+        }
+
+        .terms-item {
+            display: flex;
+            align-items: center;
+            padding: 4px 0;
+            font-size: 13px;
+        }
+        .terms-item label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        .terms-item input[type="checkbox"] {
+            margin-right: 8px;
+            width: 15px;
+            height: 15px;
+            accent-color: #1f7ef2;
+        }
+        .terms-item .required {
+            color: #1f7ef2;
+            font-weight: bold;
+            margin-right: 4px;
+        }
+        .terms-item .link {
+            margin-left: auto;
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 11px;
+        }
+        
+        .sub-term-item {
+            display: flex;
+            align-items: center;
+            padding: 6px 0 6px 24px;
+            font-size: 13px;
+            position: relative;
+        }
+        .sub-term-item::before {
+            content: "";
+            position: absolute;
+            left: 8px;
+            top: 0;
+            width: 8px;
+            height: 14px;
+            border-left: 1.5px solid #ccc;
+            border-bottom: 1.5px solid #ccc;
+        }
+        .sub-term-text {
+            color: var(--text-light);
+            font-size: 12px;
+        }
+        .sub-term-item .link {
+            margin-left: auto;
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 11px;
+        }
+
+        .button-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 8px;
+        }
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-cancel {
+            background-color: #e0e0e0;
+            color: var(--text-dark);
+        }
+        .btn-submit {
+            background: #1f7ef2;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="header">
+        <div class="header-logo">W</div>
+    </header>
+
+    <div class="container">
+        <main class="register-card">
+            <h1 class="card-title">회원가입 정보를 입력해주세요.</h1>
+            <p class="card-subtitle">입력하신 정보로 회원님의 계정이 생성됩니다.</p>
+
+            <!-- 1. form 태그에 id="joinForm" 추가 -->
+            <form id="joinForm" th:action="@{${formAction}}" th:object="${memberForm}" method="post">
+                <div class="input-group">
+                    <div class="input-label-wrapper">
+                        <label for="userName" class="label">이름</label>
+                    </div>
+                    <input type="text" id="userName" th:field="*{name}" class="input-field" placeholder="이름을 입력해 주십시오" required>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label-wrapper">
+                        <label for="userId" class="label">아이디</label>
+                    </div>
+                    <div class="id-input-row">
+                        <input type="text" id="userId" th:field="*{userId}" class="input-field" placeholder="아이디를 입력해 주십시오" required>
+                        <button type="button" class="check-btn" id="checkIdBtn">아이디 중복 확인</button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label-wrapper">
+                        <label for="password" class="label">비밀번호</label>
+                    </div>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" th:field="*{password}" class="input-field" placeholder="비밀번호를 입력해 주십시오" required>
+                        <svg class="password-toggle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" onclick="togglePassword('password', this)">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <line x1="1" y1="1" x2="23" y2="23" class="slash" style="display:none;"></line>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label-wrapper">
+                        <label for="passwordConfirm" class="label">비밀번호 확인</label>
+                    </div>
+                    <div class="password-wrapper">
+                        <input type="password" id="passwordConfirm" th:field="*{passwordConfirm}" class="input-field" placeholder="비밀번호를 다시 입력해 주십시오" required>
+                        <svg class="password-toggle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" onclick="togglePassword('passwordConfirm', this)">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <line x1="1" y1="1" x2="23" y2="23" class="slash" style="display:none;"></line>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label-wrapper">
+                        <label for="email" class="label">이메일</label>
+                    </div>
+                    <input type="email" id="email" th:field="*{email}" class="input-field" placeholder="사용할 이메일을 입력해 주십시오" required>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label-wrapper">
+                        <label for="tel" class="label">전화번호</label>
+                    </div>
+                    <input type="tel" id="tel" th:field="*{tel}" class="input-field" placeholder="연락처를 입력해 주십시오" required>
+                </div>
+
+                <section class="terms-section">
+                    <h2 class="terms-title">약관 및 개인정보 수집, 이용 안내에 동의해주세요.</h2>
+                    <p class="terms-subtitle">개인정보 수집 및 이용 안내 동의가 필요 합니다.</p>
+
+                    <div class="terms-item">
+                        <input type="checkbox" id="allTerms" onclick="toggleAllTerms(this)">
+                        <label for="allTerms"><strong>전체 동의</strong></label>
+                    </div>
+
+                    <!-- 2. term-checkbox 클래스 추가 -->
+                    <div class="terms-item">
+                        <input type="checkbox" id="termService" name="terms" class="term-checkbox" required onchange="checkIndividualTerm()">
+                        <label for="termService"><span class="required">[필수]</span> 서비스 이용 약관</label>
+                        <a href="#" class="link">전문 ></a>
+                    </div>
+
+                    <div class="sub-term-item">
+                        <span class="sub-term-text">개인정보 수집 및 이용 안내</span>
+                        <a href="#" class="link">전문 ></a>
+                    </div>
+                </section>
+
+                <div class="button-group">
+                    <button type="button" class="btn btn-cancel" onclick="location.href='/'">취소</button>
+                    <button type="submit" class="btn btn-submit" id="submitBtn">회원가입</button>
+                </div>
+            </form>
+        </main>
+    </div>
+
+    <script>
+        // 3. 중복된 스크립트 블록을 하나로 통합
+        document.getElementById("joinForm").addEventListener("submit", function(e) {
+            const password = document.getElementById("password").value;
+            const passwordConfirm = document.getElementById("passwordConfirm").value;
+
+            if (password !== passwordConfirm) {
+                e.preventDefault();
+                alert("비밀번호가 일치하지 않습니다.");
+                document.getElementById("passwordConfirm").focus();
+            }
+        });
+
+        function togglePassword(inputId, iconElement) {
+            const input = document.getElementById(inputId);
+            const slash = iconElement.querySelector('.slash');
+            if (input.type === 'password') {
+                input.type = 'text';
+                slash.style.display = 'block';
+            } else {
+                input.type = 'password';
+                slash.style.display = 'none';
+            }
+        }
+
+        // 전체 동의 체크박스 제어
+        function toggleAllTerms(source) {
+            const checkboxes = document.querySelectorAll('.term-checkbox');
+            checkboxes.forEach(checkbox => checkbox.checked = source.checked);
+        }
+
+        // 개별 필수 체크박스 상태 변경 시 전체 동의 상태 동기화
+        function checkIndividualTerm() {
+            const allTerms = document.getElementById('allTerms');
+            const checkboxes = document.querySelectorAll('.term-checkbox');
+            
+            const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
+            allTerms.checked = allChecked;
+        }
+        
+        // 아이디 중복 확인 버튼 비동기(AJAX) 연동
+        document.getElementById('checkIdBtn').addEventListener('click', function() {
+            const userId = document.getElementById('userId').value.trim();
+            
+            if (userId === "") {
+                alert("아이디를 입력해 주세요.");
+                document.getElementById('userId').focus();
+                return;
+            }
+
+            fetch('/idDup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'id=' + encodeURIComponent(userId)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data > 0) {
+                    alert("이미 사용 중인 아이디입니다.");
+                    document.getElementById('userId').value = "";
+                    document.getElementById('userId').focus();
+                } else {
+                    alert("사용 가능한 아이디입니다.");
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("중복 확인 중 오류가 발생했습니다.");
+            });
+        });
+    </script>
+</body>
+</html>

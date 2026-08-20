@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="kr.co.sist.userDashboard.UserDashboardMapper">
+  <select id="selectRankPosition" parameterType="String" resultType="kr.co.sist.setting.TitleDTO">
+    SELECT 
+        r.rank_name AS rankName, 
+        p.position_name AS positionName
+    FROM users u
+    LEFT JOIN title t ON t.user_no=u.user_no
+    LEFT JOIN rank r ON t.rank_no = r.rank_no
+    LEFT JOIN position p ON t.position_no = p.position_no
+    WHERE u.user_no = #{userNo}
+</select>
+  <select id="selectStatusList" resultType="kr.co.sist.setting.StatusDTO">
+      SELECT status_no AS statusNo, status_name AS statusName, icon 
+      FROM status
+  </select>
+
+  <select id="selectUserStatus" parameterType="String" resultType="String">
+      SELECT status_no 
+      FROM users 
+      WHERE user_no = #{userNo}
+  </select>
+
+<select id="selectUserStatusName" parameterType="String" resultType="String">
+    SELECT s.status_name 
+    FROM users u
+    JOIN status s ON u.status_no = s.status_no
+    WHERE u.user_no = #{userNo}
+</select>
+  
+  
+  <select id="selectAlarm" parameterType="String" resultType="kr.co.sist.setting.AlarmSettingDTO">
+        SELECT user_no AS userNo,
+               is_alarm_on AS isAlarmOn,
+               allow_event_invitation AS allowEventInvitation,
+               allow_attendance_response AS allowAttendanceResponse,
+               allow_task_assignment AS allowTaskAssignment,
+               allow_task_completion AS allowTaskCompletion
+        FROM alarmsetting
+        WHERE user_no = #{userNo}
+    </select>
+    
+    <update id="updateAlarm" parameterType="kr.co.sist.setting.AlarmSettingDTO">
+    UPDATE alarmsetting 
+    SET is_alarm_on = #{isAlarmOn, jdbcType=INTEGER}
+    WHERE TRIM(user_no) = TRIM(#{userNo, jdbcType=VARCHAR})
+</update>
+
+
+
+  <select id="selectTodo" resultType="list">
+  select * from todo where user_no=#{userNo} order by end_date desc
+  </select>
+  
+  
+  
+  
+  <select id="selectOrganization" resultType="list">
+  select * from organization where user_no=#{userNo} order by input_date desc
+  </select>
+  </mapper>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>환경설정 - 1:1 문의</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, '맑은 고딕', sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            color: #333333;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* 전체 레이아웃 (좌측 사이드바 + 우측 콘텐츠) */
+        .settings-wrapper {
+            display: flex;
+            flex: 1;
+            margin-top: 60px; /* 고정 헤더 공간 확보 */
+        }
+
+        /* 우측 본문 콘텐츠 영역 (우측 하단 버튼 배치를 위해 relative 지정) */
+        .settings-content {
+            flex: 1;
+            padding: 40px;
+            background-color: #ffffff;
+            box-sizing: border-box;
+            overflow-y: auto;
+            position: relative; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #222222;
+            margin-bottom: 30px;
+        }
+
+        .inquiry-list {
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 60px; /* 하단 버튼 공간 확보 */
+        }
+
+        .inquiry-item {
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .inquiry-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            font-size: 15px;
+            font-weight: 600;
+            color: #333333;
+            cursor: pointer;
+        }
+
+        .toggle-icon {
+            font-size: 12px;
+            color: #666666;
+            transition: transform 0.2s;
+        }
+
+        /* 토글될 내용 영역 (기본 숨김) */
+        .inquiry-answer-box {
+            display: none;
+            border: 1px solid #dcdcdc;
+            border-radius: 6px;
+            padding: 24px;
+            margin-bottom: 20px;
+            background-color: #ffffff;
+        }
+
+        .question-text {
+            font-size: 14px;
+            color: #333333;
+            margin-bottom: 24px;
+        }
+
+        .answer-section {
+            border-top: 1px solid #e5e5e5;
+            padding-top: 16px;
+        }
+
+        .answer-label {
+            display: block;
+            font-size: 12px;
+            font-weight: bold;
+            color: #555555;
+            margin-bottom: 6px;
+        }
+
+        .answer-text {
+            font-size: 13px;
+            color: #333333;
+            margin: 0;
+        }
+
+        /* 우측 하단 고정 문의하기 버튼 */
+        .inquiry-btn {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            background-color: #1f1f1f;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 22px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .inquiry-btn:hover {
+            background-color: #333333;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. 공통 헤더 조각 호출 -->
+    <div th:replace="~{fragments/header :: commonHeader}"></div>
+
+    <div class="settings-wrapper">
+        
+        <!-- 2. 사이드바 조각 호출 -->
+        <div th:replace="~{fragments/settingSidebar :: settingSidebar}"></div>
+
+        <!-- 3. 우측 1:1 문의 콘텐츠 영역 -->
+        <div class="settings-content">
+    <h2 class="page-title">1:1 문의</h2>
+
+    <!-- 문의 내역이 있는 경우 -->
+<div class="inquiry-list" th:if="${inquiryList != null and !inquiryList.isEmpty()}">
+    <!-- 타임리프를 이용한 반복문 출력 -->
+    <div class="inquiry-item" th:each="inquiry : ${inquiryList}">
+        <div class="inquiry-question" onclick="toggleInquiry(this)">
+            <!-- 제목 영역 -->
+            <span th:text="${inquiry.title}">제목</span>
+            
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <span class="inquiry-date" th:text="${inquiry.inquiry_date}">문의일자</span>
+                <span class="toggle-icon">▼</span>
+            </div>
+        </div>
+        
+        <div class="inquiry-answer-box">
+            <!-- 질문 내용 -->
+            <div class="question-text" th:text="${inquiry.content}">질문 내용</div>
+
+			<div class="file-section" th:if="${inquiry.files != null and inquiry.files != ''}" style="margin-bottom: 20px; padding: 10px; background-color: #f8f9fa; border-radius: 4px; font-size: 13px;">
+		    <span class="file-label" style="display: block; font-weight: bold; color: #555; margin-bottom: 8px;">첨부파일:</span>
+		    
+		    <img th:src="@{/upload/inquiry/{fileName}(fileName=${inquiry.files})}" alt="첨부이미지" style="max-width: 100%; height: auto; border-radius: 4px; border: 1px solid #ddd;" />
+			</div>
+          <!-- <div class="file-section" th:if="${inquiry.files != null and inquiry.files != ''}" style="margin-bottom: 20px; padding: 10px; background-color: #f8f9fa; border-radius: 4px; font-size: 13px;">
+		    <span class="file-label" style="font-weight: bold; color: #555; margin-right: 10px;">첨부파일:</span>
+		    <span th:text="${inquiry.files}" style="color: #333;">파일이름.jpg</span>
+		</div> -->
+
+            <div class="answer-section">
+                <span class="answer-label">문의 답변</span>
+                <p class="answer-text" th:text="${inquiry.answer != null ? inquiry.answer : '답변 대기 중입니다.'}">답변 내용</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- 문의 내역이 없는 경우 -->
+    <div class="empty-inquiry" th:unless="${inquiryList != null and !inquiryList.isEmpty()}">
+        <p>문의내역이 없습니다.</p>
+    </div>
+
+    <!-- 우측 하단 문의하기 버튼 -->
+    <button class="inquiry-btn">문의하기</button>
+</div>
+        
+    </div>
+
+    <script>
+        // 아코디언 토글 스크립트
+        function toggleInquiry(element) {
+            const item = element.parentElement;
+            const answerBox = item.querySelector('.inquiry-answer-box');
+            const icon = element.querySelector('.toggle-icon');
+
+            if (answerBox.style.display === 'block') {
+                answerBox.style.display = 'none';
+                icon.textContent = '▼';
+            } else {
+                answerBox.style.display = 'block';
+                icon.textContent = '▲';
+            }
+        }
+    </script>
+
+</body>
+</html>

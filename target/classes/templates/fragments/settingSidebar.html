@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<style>
+
+</style>
+<body>
+<div class="settings-side">
+    <div th:fragment="settingSidebar" style="width: 300px; background-color: #f8f9fa; border-right: 1px solid #e5e5e5; padding: 24px 16px; box-sizing: border-box; flex-shrink: 0;">
+        <div style="font-size: 18px; font-weight: bold; margin-bottom: 24px; padding-left: 12px; color: #333333;">환경설정</div>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 4px; padding: 0; margin: 0; ">
+            
+            <!-- 개인정보 메뉴 -->
+            <li th:style="${currentMenu == 'profile'} ? 'background-color: #e8f0fe; border-radius: 6px;' : 'border-radius: 6px;'">
+                <a href="/userInfo" th:style="${currentMenu == 'profile'} ? 'display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; color: #1f7ef2; font-weight: 600; font-size: 14px; text-decoration: none;' : 'display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; color: #555555; font-size: 14px; text-decoration: none;'">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    개인정보
+                </a>
+            </li>
+
+            <!-- 알림 메뉴 -->
+            <li th:style="${currentMenu == 'alarm'} ? 'background-color: #e8f0fe; border-radius: 6px;' : 'border-radius: 6px;'">
+                <a href="/alarmSetting" th:style="${currentMenu == 'alarm'} ? 'display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; color: #1f7ef2; font-weight: 600; font-size: 14px; text-decoration: none;' : 'display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; color: #555555; font-size: 14px; text-decoration: none;'">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    알림
+                </a>
+            </li>
+
+            <!-- 문의 메뉴 -->
+            <li th:style="${currentMenu == 'inquiry'} ? 'background-color: #e8f0fe; border-radius: 6px;' : 'border-radius: 6px;'">
+                <a href="/inquiry" th:style="${currentMenu == 'inquiry'} ? 'display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; color: #1f7ef2; font-weight: 600; font-size: 14px; text-decoration: none;' : 'display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; color: #555555; font-size: 14px; text-decoration: none;'">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    문의
+                </a>
+            </li>
+
+        </ul>
+    </div>
+    </div>
+</body>
+</html>

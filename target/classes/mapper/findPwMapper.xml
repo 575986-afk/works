@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="kr.co.sist.findPw.FindPwMapper">
+
+ <select id="selectUserPw" resultType="String">
+      SELECT user_no
+      FROM USERS 
+      WHERE user_id = #{userId} 
+        AND EMAIL = #{email, typeHandler=kr.co.sist.login.EncryptTypeHandler}
+  </select>
+  
+  <insert id="insertCode" parameterType="java.util.Map">
+    INSERT INTO VERIFICATIONCODE (VERIFICATION_NO, INPUT_DATE, USER_NO) 
+    VALUES (#{verificationNo}, SYSDATE, #{userNo, jdbcType=VARCHAR})
+</insert>
+  
+  <select id="selectVerification" resultType="int">
+      SELECT COUNT(*) 
+      FROM (
+          SELECT verification_no 
+          FROM VERIFICATIONCODE 
+          WHERE user_no = #{userNo} 
+          ORDER BY input_date DESC
+      ) 
+      WHERE ROWNUM = 1 AND verification_no = #{verificationNo}
+  </select>
+  
+  <update id="updatePw">
+      UPDATE users SET password = #{newPw} WHERE user_no = #{userNo}
+  </update>
+
+</mapper>

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>환경설정 - 알림</title>
+    <style>
+        /* 기본 레이아웃 및 폰트 설정 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, '맑은 고딕', sans-serif;
+            background-color: #ffffff;
+            color: #333333;
+        }
+
+        /* 전체 컨테이너 (헤더 높이 60px 만큼 상단 여백 부여) */
+        .main-container {
+            display: flex;
+            margin-top: 60px;
+            min-height: calc(100vh - 60px);
+            box-sizing: border-box;
+        }
+
+        /* 콘텐츠 영역 */
+        .content-area {
+            flex: 1;
+            padding: 32px 40px;
+            background-color: #ffffff;
+            box-sizing: border-box;
+        }
+
+        /* 타이틀 */
+        .page-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 24px;
+            color: #111111;
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #333333;
+        }
+
+        /* 카드 박스 스타일 */
+        .setting-card {
+            background: #ffffff;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 20px 24px;
+            margin-bottom: 32px;
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .setting-info .title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333333;
+            margin-bottom: 4px;
+        }
+
+        .setting-info .desc {
+            font-size: 12px;
+            color: #777777;
+        }
+
+        /* 서브 섹션 내부 구분선 */
+        .sub-section + .sub-section {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        /* 스위치 토글 디자인 */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #cccccc;
+            transition: .3s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #1f7ef2;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        /* 비활성화(disabled) 상태일 때 스타일 처리 */
+        input:disabled + .slider {
+            background-color: #e5e5e5;
+            cursor: not-allowed;
+        }
+        
+        .disabled-text {
+            opacity: 0.5;
+        }
+
+        /* 저장 버튼 영역 */
+        .save-area {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 40px;
+        }
+
+        /* 저장 버튼 */
+        .save-btn {
+            width: 120px;
+            height: 42px;
+            border: none;
+            border-radius: 8px;
+            background: #1f7ef2;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .save-btn:hover {
+            background: #1867c8;
+        }
+
+        .save-btn:active {
+            transform: scale(.98);
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript">
+        // 하단 설정들의 활성화/비활성화 상태를 제어하는 함수
+        function toggleSubSettings() {
+            // 알림 일시 정지 스위치가 켜져 있는지 확인 (체크되어 있으면 일시정지 상태)
+            const isPaused = $("#isAlarmOn").is(":checked");
+            
+            // 하단 서비스별 알림 체크박스들 제어
+            const $subInputs = $(".sub-section input[type='checkbox']");
+            const $subTitles = $(".sub-section .setting-info");
+
+            if (isPaused) {
+                // 일시 정지 켜짐 -> 하단 설정 비활성화 및 투명도 조절
+                $subInputs.prop("disabled", true).prop("checked", false);
+                $subTitles.addClass("disabled-text");
+            } else {
+                // 일시 정지 꺼짐 -> 하단 설정 활성화
+                $subInputs.prop("disabled", false);
+                $subTitles.removeClass("disabled-text");
+            }
+        }
+
+        $(function(){
+            // 페이지 로드 시 초기 상태 반영
+            toggleSubSettings();
+
+            // 알림 일시 정지 스위치 변경 시 이벤트
+            $("#isAlarmOn").change(function(){
+                toggleSubSettings();
+            });
+
+            // 저장 버튼 클릭 이벤트
+            $("#saveBtn").click(function(){
+                const alarmData = {
+                    isAlarmOn: $("#isAlarmOn").is(":checked") ? 1 : 0,
+                    allowEventInvitation: $("#allowEventInvitation").is(":checked") ? 1 : 0,
+                    allowAttendanceResponse: $("#allowAttendanceResponse").is(":checked") ? 1 : 0,
+                    allowTaskAssignment: $("#allowTaskAssignment").is(":checked") ? 1 : 0,
+                    allowTaskCompletion: $("#allowTaskCompletion").is(":checked") ? 1 : 0
+                };
+
+                $.ajax({
+                    url: "/updateAlarmSetting",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(alarmData),
+                    success: function(response){
+                        if(response > 0){
+                            alert("설정이 저장되었습니다.");
+                        } else {
+                            alert("저장에 실패했습니다.");
+                        }
+                    },
+                    error: function(){
+                        alert("서버 오류가 발생했습니다.");
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+
+    <!-- 공통 헤더 조각 호출 -->
+    <div th:replace="~{fragments/header :: commonHeader}"></div>
+    
+    <!-- 메인 레이아웃 (사이드바 + 콘텐츠) -->
+    <div class="main-container">
+        
+        <!-- 사이드바 조각 삽입 -->
+        <div th:replace="~{fragments/settingSidebar :: settingSidebar}"></div>
+
+        <!-- 우측 알림 설정 본문 영역 -->
+        <div class="content-area">
+            <div class="page-title">환경설정</div>
+
+            <!-- 간단 알림 설정 -->
+            <div class="section-title">간단 알림 설정</div>
+            <div class="setting-card">
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="title">알림 일시 정지</div>
+                    </div>
+                    <label class="switch">
+                        <!-- DB 값 연동 (1이면 켜짐, 0이면 꺼짐) -->
+                        <input type="checkbox" id="isAlarmOn" th:checked="${alarmDTO.isAlarmOn == 1}">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 서비스별 알림 -->
+            <div class="section-title">서비스별 알림</div>
+            <div class="setting-card">
+                <!-- 캘린더 세부 알림 -->
+                <div class="sub-section" style="margin-top: 0; padding-top: 0; border-top: none;">
+                    <div class="setting-info" style="margin-bottom: 16px;">
+                        <div class="title">캘린더</div>
+                        <div class="desc">약속 관련 알림 및 캘린더 별 미리알림을 설정합니다.</div>
+                    </div>
+                    
+                    <div class="setting-row" style="margin-bottom: 16px;">
+                        <div class="setting-info">
+                            <div class="title" style="font-weight: 500;">일정 초대/변경 알림</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="allowEventInvitation" th:checked="${alarmDTO.allowEventInvitation == 1}">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="title" style="font-weight: 500;">참석 응답 알림</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="allowAttendanceResponse" th:checked="${alarmDTO.allowAttendanceResponse == 1}">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 할 일 세부 알림 -->
+                <div class="sub-section">
+                    <div class="setting-info" style="margin-bottom: 16px;">
+                        <div class="title">할 일</div>
+                        <div class="desc">할 일 할당/완료/변경, 리마인드 관련 알림을 설정합니다.</div>
+                    </div>
+
+                    <div class="setting-row" style="margin-bottom: 16px;">
+                        <div class="setting-info">
+                            <div class="title" style="font-weight: 500;">할 일 할당/완료/변경 알림</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="allowTaskAssignment" th:checked="${alarmDTO.allowTaskAssignment == 1}">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <div class="title" style="font-weight: 500;">담당 할 일 미완료 시, 리마인드 알림</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="allowTaskCompletion" th:checked="${alarmDTO.allowTaskCompletion == 1}">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="save-area">
+                <button type="button" class="save-btn" id="saveBtn">
+                    저장
+                </button>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

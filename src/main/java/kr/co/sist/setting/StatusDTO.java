@@ -1,0 +1,13 @@
+package kr.co.sist.setting;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
+@Getter
+@Setter
+@ToString
+public class StatusDTO {
+
+	private String statusNo, statusName, icon;
+}

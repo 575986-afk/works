@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+<title>아이디 찾기</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'맑은 고딕', sans-serif;
+}
+
+body{
+    background:#f3f3f3;
+}
+
+
+/* 상단 */
+header{
+    width:100%;
+    height:60px;
+    background:white;
+    border-bottom:1px solid #ddd;
+    display:flex;
+    align-items:center;
+    padding-left:30px;
+}
+
+header img{
+    height:28px;
+}
+.header-logo {
+            width: 20px;
+            height: 20px;
+            background-color: #00c6c9;
+            border-radius: 3px;
+            margin-right: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+
+/* 중앙 */
+.container{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    margin-top:150px;
+}
+
+
+.find-box{
+    width:550px;
+    height:400px;
+    background:white;
+    border-radius:10px;
+    padding:35px 30px;
+    padding-left:50px; 
+	padding-right:50px; 
+	padding-top: 50px;
+}
+
+
+/* 제목 */
+.find-box h2{
+    text-align:center;
+    height:50px;
+    font-size:24px;
+}
+
+
+.desc{
+    text-align:center;
+    font-size:12px;
+    color:#999;
+    margin-bottom:25px;
+}
+
+
+/* 입력 */
+.input-box{
+    margin-bottom:15px;
+}
+
+
+.input-box input{
+    width:100%;
+    height:40px;
+    border:1px solid #ddd;
+    padding-left:10px;
+    font-size:13px;
+}
+
+
+/* 이메일 */
+.email-box{
+    display:flex;
+    gap:5px;
+}
+
+
+.email-box input{
+    flex:1;
+    height:40px;
+    border:1px solid #ddd;
+}
+
+
+.find-btn{
+    width:100%;
+    height:40px;
+    margin-top:20px;
+    background:#1f7ef2;
+    color:white;
+    border:none;
+    border-radius:3px;
+    cursor:pointer;
+}
+/* 팝업 버튼 공통 */
+.modal-box button {
+    height: 36px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 5px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+/* 팝업 전체 */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+
+    justify-content: center;
+    align-items: center;
+}
+
+/* 팝업 내용 */
+.modal-box {
+    width: 380px;
+    padding: 35px 30px;
+    background: white;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.modal-box {
+    min-width: 420px;
+    max-width: 500px;
+    padding: 35px 40px;
+    background: white;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+#findIdResult {
+    margin-bottom: 25px;
+    font-size: 15px;
+    color: #333;
+    line-height: 1.6;
+    word-break: keep-all;
+}
+/* 로그인으로 이동 */
+#loginMoveBtn {
+    background: #1f7ef2;
+    color: white;
+    box-shadow: 0 2px 5px rgba(31, 126, 242, 0.25);
+}
+
+#loginMoveBtn:hover {
+    background: #1769d2;
+    transform: translateY(-1px);
+}
+
+/* 닫기 */
+#resultModal .modal-box button:last-child {
+    margin-left: 6px;
+    background: #e9f2ff;
+    color: #1f7ef2;
+    border: 1px solid #c9dfff;
+}
+
+#resultModal .modal-box button:last-child:hover {
+    background: #dcecff;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<header>
+    <div class="header-logo">W</div>
+</header>
+
+
+
+<div class="container">
+
+    <div class="find-box">
+
+        <h2>아이디 찾기</h2>
+
+        <div class="desc">
+            회원가입 시 등록한 이메일로 아이디를 찾을 수 있습니다.
+        </div>
+
+
+        <form id="findIdForm">
+
+    <div class="input-box">
+        <input 
+            type="text"
+            id="name"
+            name="name"
+            placeholder="이름">
+    </div>
+
+    <div class="email-box">
+        <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="이메일을 입력해 주세요.">
+    </div>
+
+    <button type="submit" class="find-btn">
+        확인
+    </button>
+
+</form>
+
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script type="text/javascript">
+document.getElementById("findIdForm").addEventListener("submit", function(e) {
+
+    e.preventDefault();
+
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+
+    axios.post("/findIdProcess", {
+        name: name,
+        email: email
+    })
+    .then(function(res) {
+
+        const result = res.data;
+
+        document.getElementById("resultModal").style.display = "flex";
+
+        if (result.success) {
+
+            document.getElementById("findIdResult").innerText =
+                "회원님의 아이디는 " + result.userId + "입니다.";
+
+            document.getElementById("loginMoveBtn").style.display = "inline-block";
+
+        } else {
+
+            document.getElementById("findIdResult").innerText =
+                result.message;
+
+            document.getElementById("loginMoveBtn").style.display = "none";
+        }
+
+    })
+    .catch(function(error) {
+        /* console.log(error);
+        alert("아이디 찾기 중 오류가 발생했습니다."); */
+        console.log("에러 전체:", error);
+        console.log("응답:", error.response);
+        console.log("응답 데이터:", error.response?.data);
+        console.log("상태 코드:", error.response?.status);
+    });
+
+});
+</script>
+<div id="resultModal" class="modal">
+
+    <div class="modal-box">
+
+        <p id="findIdResult"></p>
+
+        <button
+            type="button"
+            id="loginMoveBtn"
+            onclick="location.href='/login'">
+            로그인으로 이동
+        </button>
+
+        <button
+            type="button"
+            onclick="document.getElementById('resultModal').style.display='none'">
+            닫기
+        </button>
+
+    </div>
+
+</div>
+</body>
+</body>
+</html>
