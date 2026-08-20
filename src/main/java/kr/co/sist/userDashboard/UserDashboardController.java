@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import jakarta.servlet.http.HttpSession;
+import kr.co.sist.organization.OrganizationDomain;
 import kr.co.sist.setting.AlarmSettingDTO;
 import kr.co.sist.setting.StatusDTO;
 import kr.co.sist.setting.TitleDTO;
@@ -42,15 +43,18 @@ public class UserDashboardController {
 	    String currentStatusName = uds.getCurrentStatusName(loginUser.getUserNo());
 	    model.addAttribute("currentStatusName", currentStatusName); 
 	    
-	    //직책/직급
-	    TitleDTO rankPosition=uds.selectRankPosition(loginUser.getUserNo());
-	    model.addAttribute("rank", rankPosition.getRankName()); 
-	    model.addAttribute("position", rankPosition.getPositionName()); 
+	    TitleDTO rankPosition = uds.selectRankPosition(loginUser.getUserNo());
+	    if (rankPosition == null) {
+	        rankPosition = new TitleDTO();
+	        rankPosition.setRankName("");      
+	        rankPosition.setPositionName(""); 
+	    }
+	    model.addAttribute("rank", rankPosition.getRankName());   
+	    model.addAttribute("position", rankPosition.getPositionName());
 	    
-	    //할 일 
 	    List<TodoDomain> list=uds.getTodo(loginUser.getUserNo());
 	    model.addAttribute("todoList",list);
-	    //조직도 
+	    
 	    List<OrganizationDomain> list2=uds.getOrganization(loginUser.getUserNo());
 	    model.addAttribute("organizationList",list2);
 	    
@@ -58,21 +62,45 @@ public class UserDashboardController {
 	}
 	
 	
+    //알람 상태 보기 
+    @PostMapping("/showAlarm")
+    public int showAlarm(int isAlarmOn, String userNo) {
+    	int cnt=0;
+    	return cnt;
+    }
  // 알람 클릭 시 온/오프 
     @PostMapping("/AlarmSetting")
     @ResponseBody
-    public int alarmSetting(@RequestParam("isAlarmOn") int isAlarmOn, HttpSession session, String userNo,AlarmSettingDTO asDTO) {
+    public int alarmSetting(@RequestParam("isAlarmOn") int isAlarmOn, HttpSession session, String userNo) {
         UserDTO loginUser = (UserDTO) session.getAttribute("user");
         if (loginUser == null) {
+            System.out.println("❌ [알람 설정 실패] 세션에 유저 정보가 없습니다!");
             return 0; 
         }
+        AlarmSettingDTO alarmDTO = new AlarmSettingDTO();
+        alarmDTO.setUserNo(loginUser.getUserNo());
+        alarmDTO.setIsAlarmOn(isAlarmOn);
         
-        asDTO.setUserNo(loginUser.getUserNo());
-        asDTO.setIsAlarmOn(isAlarmOn);
-        
-		int cnt = uds.setAlarm(asDTO);
-        System.out.println("디버깅 -> userNo: [" + asDTO.getUserNo() + "], isAlarmOn: " + asDTO.getIsAlarmOn());
+        int cnt = uds.setAlarm(userNo);
+        System.out.println("디버깅 -> userNo: [" + alarmDTO.getUserNo() + "], isAlarmOn: " + alarmDTO.getIsAlarmOn());
         return cnt;
     }
+    
+    
+    
+    
+    
+    
+    //to do ----------------------------------------------------------------------------------
+//    @PostMapping("/showTodo")
+//    public List<TodoDomain> showTodo(String todoNo, String userNo) {
+//    	List<TodoDomain> list=uds.getTodo(todoNo, userNo);
+//    	return list;
+//    }
+    //조직도 ------------------------------------------------------------------------------------
+//    @PostMapping("/showOrganization")
+//    public List<OrganizationDomain> showOrganization(String organizationNo, String userNo) {
+//    	return uds.getOrganization(organizationNo, userNo);
+//    }
     
 }

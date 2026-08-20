@@ -8,10 +8,10 @@ import org.apache.ibatis.annotations.Mapper;
 public interface ChatMapper {
 
 	List<ChatRoomDTO> selectChatRoom(String userNo);
-	List<ChatRoomDTO> selectMessageList(String chatRoomNo);
+	List<ChattingDTO> selectMessageList(String chatRoomNo);
 	List<ChatRoomDTO> selectSearchUser(String userName);
-	int selectChatCnt(ChatRoomDTO cDTO);
-	int insertMessage(ChatRoomDTO cDTO);
+	int selectChatCnt(ChattingDTO cDTO);
+	int insertMessage(ChattingDTO cDTO);
 	int insertChatRoom(ChatRoomDTO crDTO);
 	List<ChatRoomDTO> sortChatRoom(String chatRoomNo);
 	int deleteChatRoom(String userNo, String chatRoomNo);

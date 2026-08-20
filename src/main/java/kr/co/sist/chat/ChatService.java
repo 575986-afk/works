@@ -2,22 +2,15 @@ package kr.co.sist.chat;
 
 import java.util.List;
 
-import org.springframework.stereotype.Service;
-
-import lombok.RequiredArgsConstructor;
-@Service
-@RequiredArgsConstructor
 public class ChatService {
-	
-	private final ChatMapper cm;
 
 	public List<ChatRoomDTO> getChatRoomList(String userNo){
-		List<ChatRoomDTO> list=cm.selectChatRoom(userNo);
+		List<ChatRoomDTO> list=null;
 		return list;
 	}
 	
-	public List<ChatRoomDTO> getMessageList(String chatRoomNo){
-		List<ChatRoomDTO> list=null;
+	public List<ChattingDTO> getMessageList(String chatRoomNo){
+		List<ChattingDTO> list=null;
 		return list;
 	}
 	

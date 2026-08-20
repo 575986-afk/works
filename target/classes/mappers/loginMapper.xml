@@ -12,17 +12,18 @@
     </resultMap>
 
     <select id="selectLogin" parameterType="string" resultMap="userResultMap">
-     SELECT u.user_no AS userNo,
+    SELECT u.user_no AS userNo,
            u.user_name,
            u.user_id AS userId,    
            u.password,
            u.email,
            u.phoneNumber,
            u.company_no AS companyNo,
-           u.signup_date AS signupDate, 
+           u.signup_date AS signupDate,
            r.role_level
     FROM users u
-    LEFT JOIN ROLE r on u.user_no=r.user_no
+    LEFT JOIN role r on r.user_no=u.user_no
+    WHERE u.user_id = #{userId}
 </select>
 
 </mapper>

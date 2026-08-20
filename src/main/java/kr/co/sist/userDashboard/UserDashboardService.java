@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import kr.co.sist.organization.OrganizationDomain;
 import kr.co.sist.setting.AlarmSettingDTO;
 import kr.co.sist.setting.StatusDTO;
 import kr.co.sist.setting.TitleDTO;
@@ -37,8 +38,8 @@ public class UserDashboardService {
 		return udMapper.selectAlarm(userNo);
 	}
 	
-	public int setAlarm(AlarmSettingDTO asDTO) {
-		int cnt=udMapper.updateAlarm(asDTO);
+	public int setAlarm(String userNo) {
+		int cnt=udMapper.updateAlarm(userNo);
 		return cnt;
 	}
     //to do ----------------------------------------------------------------------------------

@@ -27,7 +27,7 @@ public class SignupService {
 		
 		sDAO.insertUserJoin(uDTO);
 		
-		return sDAO.insertUserRole(uDTO); //sDAO.insertRankPosition(uDTO);
+		return sDAO.insertUserRole(uDTO);
 	}
 	
 	@Transactional
@@ -43,7 +43,7 @@ public class SignupService {
 		
 		sDAO.insertManagerJoin(uDTO);
 		
-	    
-	    return sDAO.insertRole(uDTO);// sDAO.insertManagerRankPosition(uDTO);
+	    sDAO.insertRole(uDTO);
+	    return sDAO.insertManagerRankPosition(uDTO);
 	}
 }

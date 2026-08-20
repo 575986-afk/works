@@ -264,7 +264,7 @@ body{
             </a>
             
             <button class="profile-btn" id="alarmToggleBtn" th:onclick="'toggleAlarm(' + ${isAlarmOn} + ')'">
-                <span id="alarmIcon" th:text="${isAlarmOn == 1} ? '🔕' : '🔔'"><!-- 🔕 --></span>
+                <span id="alarmIcon" th:text="${isAlarmOn == 1} ? '🔕' : '🔔'">🔕</span>
                 <span id="alarmText" th:text="${isAlarmOn == 1} ? '알람 일시 정지' : '알람 켜기'">알람 일시 정지</span>
             </button>
         </div>
@@ -281,9 +281,7 @@ body{
 
         <div class="todo-list-container" th:if="${not #lists.isEmpty(todoList)}">
             <div class="todo-item" th:each="todo : ${todoList}">
-                <span th:text="${todo.title}">할일 </span><br>
-                <span th:text="${todo.content}">할일 내용</span><br>
-                <span th:text="${#temporals.format(todo.start_date, 'yyyy-MM-dd')}"></span>~<span th:text="${#temporals.format(todo.end_date, 'yyyy-MM-dd')}"></span>
+                <span th:text="${todo.content}">할일 내용</span>
             </div>
         </div>
 
@@ -297,24 +295,23 @@ body{
     </div>
     
     
-   <div class="home-card">
+    <div class="home-card">
         <div class="card-header-row">
             <div class="card-title-group">
                 <span>조직도 </span>
                 <span class="card-action-icon">></span>
             </div>
-            <span style="color:#0f9d8b;">👥</span>
+            <span style="color:#2563eb;">👥</span>
         </div>
 
         <div class="todo-list-container" th:if="${not #lists.isEmpty(organizationList)}">
             <div class="todo-item" th:each="organization : ${organizationList}">
-                <span th:text="${organization.organization_name}">조직도 </span><br>
-                <span th:text="${organization.organization_description}">조직도 내용</span><br>
-                <span th:text="${#temporals.format(organization.input_date, 'yyyy-MM-dd')}">가입일</span>
+                <span th:text="${organization.organization_name}">조직도 이름 </span><br>
+                <span th:text="${organization.organization_description}">조직도 내용</span>
             </div>
         </div>
 
-        <div class="empty-content" th:if="${#lists.isEmpty(organizationList)}" style="height:170px" >
+        <div class="empty-content" th:if="${#lists.isEmpty(organizationList)}">
             <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                 <polyline points="14 2 14 8 20 8"></polyline>
@@ -332,6 +329,22 @@ body{
             <span style="color:#0f9d8b;">👥</span>
         </div>
 
+        <div class="org-info">
+            <div class="todo-list-container" th:if="${not #lists.isEmpty(organizationList)}">
+            <div class="todo-item" th:each="organization : ${organizationList}">
+                <span th:text="${organization.organization_name}">조직도 이름 </span><br>
+                <span th:text="${organization.organization_description}">조직도 내용</span>
+            </div>
+        </div>
+        
+         <div class="empty-content" th:if="${#lists.isEmpty(organizationList)}">
+            <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+            <span>등록된 조직도가 없습니다.</span>
+        </div>
+        </div>
 
         <div class="empty-content" style="height:170px;">
             <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -341,9 +354,9 @@ body{
             <span>조직원을 확인하세요.</span>
         </div>
 
-    </div>
+    </div> -->
 
-</div> -->
+</div>
 
 <script th:if="${loginMsg}">
     alert('[[${loginMsg}]]');

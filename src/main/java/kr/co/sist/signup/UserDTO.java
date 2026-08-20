@@ -18,7 +18,7 @@ public class UserDTO {
 
 	private String userNo, userId, password, companyNo,name,email,tel,
 	passwordConfirm, userType,companyName, companyTel, ip, newPw, accountStatus,workplace, jobtask, rankNo, positionNo;
-	
+	private int role_level;
 	private Timestamp signupDate;
 	
 }

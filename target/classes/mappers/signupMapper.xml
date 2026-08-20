@@ -19,7 +19,7 @@
         INSERT INTO role(user_no, role_name,role_level ) 
         VALUES (#{userNo, jdbcType=VARCHAR},'일반사용자',1 )
     </insert>
-   <!--  <insert id="insertRankPosition" parameterType="kr.co.sist.signup.UserDTO" >
+    <!-- <insert id="insertRankPosition" parameterType="kr.co.sist.signup.UserDTO" >
         INSERT INTO title(user_no, rank_no, position_no ) VALUES (#{userNo}, 'RK000003', 'P000006')
         
     </insert> -->
@@ -45,8 +45,8 @@
         INSERT INTO role(user_no, role_name,role_level, company_no) 
         VALUES (#{userNo, jdbcType=VARCHAR},'최고운영자',99 ,#{companyNo, jdbcType=VARCHAR})
     </insert>
-   <!--  <insert id="insertManagerRankPosition" parameterType="kr.co.sist.signup.UserDTO" >
-        INSERT INTO title(user_no, rank_no, position_no ) VALUES (#{userNo}, 'RK000002', 'P000006')
+    <insert id="insertManagerRankPosition" parameterType="kr.co.sist.signup.UserDTO" >
+        INSERT INTO title(user_no, rank_no, position_no ) VALUES (#{userNo,jdbcType=VARCHAR}, 'RK000002', 'P000006')
         
-    </insert> -->
+    </insert>
 </mapper>

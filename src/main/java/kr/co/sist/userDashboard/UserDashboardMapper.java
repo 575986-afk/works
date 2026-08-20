@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import kr.co.sist.organization.OrganizationDomain;
 import kr.co.sist.setting.AlarmSettingDTO;
 import kr.co.sist.setting.StatusDTO;
 import kr.co.sist.setting.TitleDTO;
@@ -17,7 +18,7 @@ public interface UserDashboardMapper {
 	String selectUserStatus(String userNo);
 	String selectUserStatusName(String userNo);
 	AlarmSettingDTO selectAlarm(String userNo);
-	int updateAlarm(AlarmSettingDTO asDTO);
+	int updateAlarm(String userNo);
 	List<TodoDomain> selectTodo(String todoNo);
 	List<OrganizationDomain> selectOrganization(String userNo);
 	
