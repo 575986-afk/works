@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <title>WORKS 홈</title>
-
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" th:href="@{/common/css/address.css}">
 <style>
 :root{
     --bg:#f8fafc;
@@ -226,7 +228,8 @@ body{
 </head>
 <body>
 
-<div th:replace="~{fragments/header :: commonHeader}"></div>
+<!-- <div th:replace="~{fragments/header :: commonHeader}"></div> -->
+<div th:replace="~{fragments/dashboardHeader :: user-header}"></div>
 
 <div class="container">
 
