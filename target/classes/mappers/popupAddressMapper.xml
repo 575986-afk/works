@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.sist.user.addrPopup.PopupAddressMapper">
+<select id="selectCompany" parameterType="String" resultType="String">
+select COMPANY_NAME from COMPANY where company_no = #{ companyNo}
+</select>
+
+
+<select id="selectAddressList" parameterType="addrPopupRangeDTO" resultType="addrPopupUserDomain">
+    SELECT U.USER_NO userNo, 
+           U.USER_NAME userName, 
+           U.EMAIL email, 
+           U.PROFILEIMAGE profileImage, 
+           R.RANK_NAME rankName, 
+           P.POSITION_NAME positionName, 
+           O.ORGANIZATION_NAME organizaionName, 
+           C.company_Name companyName
+    FROM USERS U
+    LEFT JOIN TITLE T ON U.USER_NO = T.USER_NO
+    LEFT JOIN RANK R ON T.RANK_NO = R.RANK_NO
+    LEFT JOIN POSITION P ON T.POSITION_NO = P.POSITION_NO
+    LEFT JOIN ORGANIZATION O ON U.USER_NO = O.USER_NO
+    LEFT JOIN COMPANY C ON C.COMPANY_NO = U.COMPANY_NO
+    
+    <!-- 기본 조건: 같은 회사 직원만 조회 -->
+    WHERE U.COMPANY_NO = #{companyNo}
+    
+    <!-- (선택사항) 주소록 목록에서 로그인한 본인을 제외하고 싶다면 아래 조건을 추가하세요 -->
+    AND U.USER_NO != #{userNo}
+    
+    <!-- 1. 부서(organizationNo) 클릭 시 -->
+    <if test="organizationNo != null">
+        AND U.USER_NO IN (
+            SELECT ORGMEMBER_NO 
+            FROM ORGANIZATIONMEMBER 
+            WHERE ORGANIZATION_NO = #{organizationNo}
+        )
+    </if>
+    
+    <!-- 2. 단일 그룹(groupsNo) 클릭 시 -->
+  <if test="groupsNo != null">
+        AND U.USER_NO IN (
+            SELECT GRP_MEMBER_NO 
+            FROM GROUPSMEMBER 
+            WHERE GROUPS_NO = #{groupsNo}
+        )
+    </if>
+    
+    <!-- 3. 좌측 상단 카테고리(type) 클릭 시 -->
+    <if test="type != null and type != ''">
+        <choose>
+            <!-- 즐겨찾기 클릭 시 (세션 userNo 사용) -->
+            <when test="type == 'favorite'">
+                AND U.USER_NO IN (
+                    SELECT TARGET_NO 
+                    FROM ADDRBOOKMARK 
+                    WHERE USER_NO = #{userNo}
+                )
+            </when>
+            
+            <!-- 그룹 클릭 시 (세션 userNo가 소유한 전체 그룹 멤버 조회) -->
+            <when test="type == 'group'">
+                AND U.USER_NO IN (
+                    SELECT GRP_MEMBER_NO 
+                    FROM GROUPSMEMBER 
+                    WHERE GROUPS_NO IN (
+                        SELECT GROUPS_NO 
+                        FROM GROUPS 
+                        WHERE USER_NO = #{userNo}
+                    )
+                )
+            </when>
+        </choose>
+    </if>
+</select>
+	
+	<select id="selectGroup" parameterType="String" resultType="addrPopupGroupsDomain">
+	SELECT GROUPS_NO groupsNo, GROUPS_NAME groupsName
+	FROM GROUPS
+	WHERE GROUPS_NO IN
+	(SELECT GROUPS_NO
+	FROM GROUPSMEMBER
+	WHERE GRP_MEMBER_NO = #{ userNo })
+	</select>
+	
+	<select id="selectOrganization" parameterType="String" resultType="addrPopupOrganizationDomain">
+	SELECT ORGANIZATION_NO organizationNo, ORGANIZATION_NAME organizationName
+	FROM ORGANIZATION
+	WHERE ORGANIZATION_NO IN
+	(SELECT ORGANIZATION_NO
+	FROM ORGANIZATIONMEMBER
+	WHERE ORGMEMBER_NO = #{ userNo })
+	</select>
+	
+	<select id="getContactsByKeyword" parameterType="String" resultType="addrPopupUserDomain">
+    <bind name="pattern" value="'%' + keyword + '%'" />
+    
+    SELECT u.USER_NO userNo, 
+           u.USER_NAME userName, 
+           u.PHONENUMBER phoneNumber, 
+           g.GROUPS_NAME groupsName, 
+           o.ORGANIZATION_NAME organizaionName
+    FROM users u
+    <!-- 화면 출력용 기본 조인 (기존 코드 유지) -->
+    LEFT JOIN ORGANIZATION o ON u.user_no = o.user_no
+    LEFT JOIN GROUPS g ON u.user_no = g.user_no
+    
+    WHERE u.USER_NAME LIKE #{pattern} 
+       OR u.PHONENUMBER LIKE #{pattern} 
+       
+       <!-- 1. 조직명 검색 시: ORGANIZATIONMEMBER를 통해 소속 사원 목록 반환 -->
+       OR u.USER_NO IN (
+           SELECT om.ORGMEMBER_NO 
+           FROM ORGANIZATIONMEMBER om
+           JOIN ORGANIZATION org ON om.ORGANIZATION_NO = org.ORGANIZATION_NO
+           WHERE org.ORGANIZATION_NAME LIKE #{pattern}
+       )
+       
+       <!-- 2. 그룹명 검색 시: GROUPSMEMBER를 통해 소속 사원 목록 반환 -->
+       OR u.USER_NO IN (
+           SELECT gm.GRP_MEMBER_NO 
+           FROM GROUPSMEMBER gm
+           JOIN GROUPS grp ON gm.GROUPS_NO = grp.GROUPS_NO
+           WHERE grp.GROUPS_NAME LIKE #{pattern}
+       )
+</select>
+
+</mapper>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주소록</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/common/css/addressBook.css}">
+    <script th:src="@{/common/js/addressBook.js}"></script>
+</head>
+
+<body class="h-screen flex flex-col overflow-hidden text-gray-800 text-sm">
+
+	<!-- Header -->
+	<div th:replace="~{ fragments/addr :: user-header }"></div>
+	
+    <!-- Main Layout -->
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- Sidebar -->
+        <aside class="w-56 bg-white border-r border-gray-200 flex flex-col shrink-0">
+            <div class="flex p-4 border-b border-gray-100">
+                <!-- 즐겨찾기 클릭 (type=favorite 전달) -->
+                <button onclick="location.href='?type=favorite'" class="flex-1 flex flex-col items-center justify-center gap-1 text-gray-500 hover:text-gray-800 cursor-pointer">
+                    <i class="fa-regular fa-star text-lg"></i>
+                    <span class="text-xs">즐겨찾기</span>
+                </button>
+                <!-- 그룹 클릭 (type=group 전달) -->
+                <button onclick="location.href='?type=group'" class="flex-1 flex flex-col items-center justify-center gap-1 text-gray-500 hover:text-gray-800 border-l border-gray-100 cursor-pointer">
+                    <i class="fa-solid fa-users text-lg"></i>
+                    <span class="text-xs">그룹</span>
+                </button>
+            </div>
+
+			<div class="flex-1 overflow-y-auto py-2">
+				<!-- 조직도 Tree -->
+				<div class="px-2">
+					<!-- 1. 조직도 버튼 -->
+					<div onclick="toggleMenu(this)"
+						class="flex items-center gap-2 px-2 py-1.5 hover:bg-gray-100 rounded cursor-pointer text-gray-700">
+						<i class="fa-solid fa-caret-down text-gray-400 transition-transform duration-200"></i>
+						<span>조직도</span>
+					</div>
+
+					<!-- 조직도 하위 영역 -->
+					<div class="pl-4">
+						<!-- 회사(전체) 클릭 시 파라미터 초기화 -->
+						<div onclick="toggleMenu(this)"
+							class="flex items-center gap-2 px-2 py-1.5 bg-blue-50 text-blue-600 rounded cursor-pointer font-medium mt-1">
+							<i class="fa-solid fa-caret-down transition-transform duration-200"></i>
+							<i class="fa-regular fa-building"></i> <span th:text="${company}">회사명</span>
+						</div>
+
+						<!-- 반복되는 Organization (부서) -->
+						<div class="pl-6 mt-1">
+							<div th:each="organization : ${organizations}" 
+                                 th:id="'org-' + ${organization.organizationNo}"
+                                 th:data-no="${organization.organizationNo}"
+                                 onclick="location.href='?organizationNo=' + this.getAttribute('data-no')"
+								 class="flex items-center gap-2 px-2 py-1.5 hover:bg-gray-100 rounded cursor-pointer text-gray-600">
+								<i class="fa-solid fa-user-group text-gray-400"></i> <span th:text="${organization.organizationName}"></span>
+							</div>
+						</div>
+                        
+                        <!-- 반복되는 Group (커스텀 그룹) -->
+                        <div th:each="group : ${groups}"
+                             th:data-no="${group.groupsNo}"
+                             onclick="location.href='?groupsNo=' + this.getAttribute('data-no')"
+                             class="flex items-center gap-2 px-2 py-1.5 hover:bg-gray-100 rounded cursor-pointer text-gray-600 mt-1">
+                            <i class="fa-solid fa-users-line text-gray-400"></i> <span th:text="${group.groupsName}">그룹</span>
+                        </div>
+						
+					</div>
+				</div>
+			</div>
+
+			<!-- Footer text in sidebar -->
+            <div class="p-4 text-[10px] text-gray-400 border-t border-gray-100">
+                <a th:href="@{/}">© NAVER Cloud Corp.</a>
+            </div>
+        </aside>
+
+        <!-- Main Content (Table Area) -->
+        <main class="flex-1 flex flex-col min-w-0 bg-white relative">
+            
+            <!-- Content Header -->
+            <div class="px-8 pt-8 pb-4">
+                <h1 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                    <span th:text="${company != null ? company : '회사명'}">회사명</span>
+                    <!-- users 데이터가 비어있지 않은 경우 사이즈 출력, totalCount가 있으면 그걸 우선 사용 -->
+                    <span class="text-blue-500" th:text="${totalCount != null ? totalCount : (users != null ? users.size() : '0')}">0</span>
+                </h1>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="px-8 pb-3 border-b border-gray-200 flex items-center gap-3">
+                <input type="checkbox" id="checkAllBtn" class="custom-checkbox cursor-pointer">
+                <button class="px-3 py-1.5 bg-white border border-gray-300 rounded text-gray-600 hover:bg-gray-50 flex items-center gap-2 disabled:opacity-50" disabled>
+                    <i class="fa-regular fa-comment"></i> 메시지
+                </button>
+            </div>
+
+            <!-- Data Table -->
+            <div class="flex-1 overflow-auto">
+                <table class="w-full text-left whitespace-nowrap">
+                    <thead class="sticky top-0 bg-white border-b border-gray-200 z-10">
+                        <tr class="text-gray-500 text-xs">
+                            <th class="w-12 px-4 py-3 text-center"></th>
+                            <th class="w-10 px-2 py-3 text-center"></th>
+                            <th class="px-4 py-3 cursor-pointer hover:text-gray-800">이름 <i class="fa-solid fa-sort text-gray-300 ml-1"></i></th>
+                            <th class="px-4 py-3">직책/직급</th>
+                            <th class="px-4 py-3">조직</th>
+                            <th class="px-4 py-3 cursor-pointer hover:text-gray-800">소속 </th>
+                            <th class="px-4 py-3 cursor-pointer hover:text-gray-800">이메일 </th>
+                            <th class="px-4 py-3 cursor-pointer hover:text-gray-800">전화번호 </th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-700">
+                        <!-- 데이터가 없을 때 표시할 행 추가 -->
+                        <tr th:if="${#lists.isEmpty(users)}">
+                            <td colspan="8" class="text-center text-gray-500 py-10">등록된 사원이 없습니다.</td>
+                        </tr>
+                        
+                        <!-- 사원 데이터 반복 렌더링 -->
+                        <tr class="border-b border-gray-100 table-row-hover contact-row" 
+                            th:each="user : ${users}"
+                            onclick="selectRow(this, event)">
+                            
+                            <td class="px-4 py-3 text-center" onclick="event.stopPropagation();">
+                                <input type="checkbox" class="user-checkbox custom-checkbox cursor-pointer" th:value="${user.userNo}" th:data-name="${user.userName}">
+                            </td>
+                            <td class="px-2 py-3 text-center" 
+    th:data-userno="${user.userNo}" 
+    onclick="event.stopPropagation(); toggleStar(this, this.getAttribute('data-userno'))">
+    <i class="cursor-pointer"
+       th:classappend="${user.isBookmarked == '1'} ? 'fa-solid fa-star text-yellow-400' : 'fa-regular fa-star text-gray-300 hover:text-yellow-400'"></i>
+</td>
+                            <td class="px-4 py-3">
+                                <div class="flex items-center gap-3">
+                                    <!-- 이니셜을 session이 아닌 현재 반복되는 user의 이름 첫 글자로 변경 -->
+                                    <div class="w-8 h-8 rounded-full text-white flex items-center justify-center font-medium text-xs"
+                                         th:classappend="${user.profileImage != null ? user.profileImage : 'bg-gray-400'}"
+                    					 th:text="${user.userName != null and user.userName.length() > 0 ? #strings.substring(user.userName, 0, 1) : ''}">이</div>
+                                    <span class="font-medium" th:text="${user.userName}">이름</span>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3" th:text="|${user.positionName != null ? user.positionName : ''} / ${user.rankName != null ? user.rankName : ''}|">직책/직급</td>
+                            <td class="px-4 py-3" th:text="${user.organizaionName}">조직</td>
+                            <td class="px-4 py-3" th:text="${user.companyName}">회사명</td>
+                            <td class="px-4 py-3" th:text="${user.email != null ? user.email : ''}">이메일</td>
+                            <td class="px-4 py-3" th:text="${user.phoneNumber != null ? user.phoneNumber : ''}"></td>
+                            
+                            <!-- Hidden Data for JS panel population -->
+                            <input type="hidden" class="data-initial" th:value="${user.userName != null and user.userName.length() > 0 ? #strings.substring(user.userName, 0, 1) : ''}">
+                            <input type="hidden" class="data-color" th:value="${user.profileImage != null ? user.profileImage : 'bg-gray-400'}">
+                            <input type="hidden" class="data-name" th:value="${user.userName}">
+                            <input type="hidden" class="data-title" th:value="|${user.positionName != null ? user.positionName : ''} / ${user.rankName != null ? user.rankName : ''}|">
+                            <input type="hidden" class="data-org" th:value="${user.companyName}">
+                            <input type="hidden" class="data-dept" th:value="${user.organizaionName}">
+                            <input type="hidden" class="data-email" th:value="${user.email != null ? user.email : ''}">
+                            <input type="hidden" class="data-userno" th:value="${user.userNo}">
+							<input type="hidden" class="data-bookmark" th:value="${#strings.toString(user.isBookmarked) == '1' ? '1' : '0'}">
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination (추후 백엔드 페이징 객체와 연동 필요) -->
+            <div class="border-t border-gray-200 py-4 flex justify-center bg-white">
+                <button class="w-7 h-7 rounded-full bg-gray-700 text-white flex items-center justify-center text-xs">1</button>
+            </div>
+        </main>
+
+        <!-- Right Side Panel (Detail View) -->
+        <aside id="detailPanel" class="w-[380px] bg-white border-l border-gray-200 shadow-[-4px_0_15px_rgba(0,0,0,0.03)] flex flex-col transform transition-transform duration-300 translate-x-full absolute right-0 top-14 bottom-0 z-20">
+            <!-- Close Button -->
+            <div class="flex justify-end p-4 pb-0">
+                <button onclick="closePanel()" class="text-gray-400 hover:text-gray-700 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Profile Header -->
+            <div class="px-8 pb-6 relative">
+				<button id="panelStarBtn" class="absolute top-0 right-8 text-lg"
+					onclick="toggleStar(this, this.getAttribute('data-userno'))">
+					<i class="fa-regular fa-star text-gray-300 hover:text-yellow-400"></i>
+				</button>
+
+				<div class="flex items-center gap-5 mt-2">
+                    <div id="panelAvatar" class="w-20 h-20 rounded-full bg-indigo-500 text-white flex items-center justify-center font-medium text-3xl shrink-0">
+                        <!-- 동적으로 이니셜 삽입됨 -->
+                    </div>
+                    <div>
+                        <h2 id="panelName" class="text-2xl font-bold text-gray-800">이름</h2>
+                        <p id="panelTitle" class="text-gray-500 mt-1">직책/직급</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-center gap-8 py-5 border-y border-gray-100">
+                <button class="flex flex-col items-center gap-2 text-blue-600 hover:text-blue-700">
+                    <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-comment"></i>
+                    </div>
+                    <span class="text-xs">메시지</span>
+                </button>
+                <button class="flex flex-col items-center gap-2 text-blue-600 hover:text-blue-700">
+                    <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-envelope"></i>
+                    </div>
+                    <span class="text-xs">메일</span>
+                </button>
+                <button class="flex flex-col items-center gap-2 text-blue-600 hover:text-blue-700">
+                    <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-calendar-check"></i>
+                    </div>
+                    <span class="text-xs">캘린더</span>
+                </button>
+            </div>
+
+            <!-- Details Information -->
+            <div class="p-8 flex-1 overflow-y-auto space-y-6">
+                <div>
+                    <h3 class="text-gray-400 text-xs mb-1">소속</h3>
+                    <p id="panelOrg" class="text-gray-800 font-medium">회사명</p>
+                    <p id="panelDeptTitle" class="text-gray-600 mt-0.5"><span id="panelDept">조직명</span> <span class="text-gray-400 ml-1"></span></p>
+                </div>
+                
+                <div>
+                    <h3 class="text-gray-400 text-xs mb-1">이메일</h3>
+                    <a href="#" id="panelEmail" class="text-blue-500 hover:underline">email</a>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+</body>
+</html>
