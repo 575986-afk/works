@@ -19,6 +19,8 @@ public interface AuthorityMapper {
     
     public int updateDelegation(@Param("companyNo") String companyNo, @Param("userNo") String userNo);
     
+    public List<UserDomain> searchDelegationMember(@Param("companyNo") String companyNo, @Param("keyword") String keyword);
+    
     public int insertUserRole(@Param("companyNo") String companyNo, @Param("roleName") String roleName,
             @Param("roleLevel") int roleLevel, @Param("userNo") String userNo);
     

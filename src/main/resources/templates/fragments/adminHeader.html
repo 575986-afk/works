@@ -1,13 +1,75 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <div id="header" th:fragment="headerFragment">
-	<!-- 헤더 -->
+    <!-- 헤더 좌측 -->
     <a th:href="@{/dashboard}" class="headerLeft">
-        <span class="logo">W</span>
+        <span class="adminLogo">W</span>
         <span>Admin</span>
     </a>
+
+    <!-- 헤더 우측 -->
     <div class="headerRight">
-        <span class="groupName" th:text="${groupName}">연습</span>
+        <span class="groupName" th:text="${session.companyName ?: '연습'}">연습</span>
+        
+        <!-- 고객센터 -->
+        <a th:href="@{/user/notices}" class="headerIconBtn" title="고객센터">
+            <i class="fa-regular fa-circle-question"></i>
+        </a>
+
+        <!-- 프로필 드롭다운 영역 -->
+        <div class="profileWrapper">
+            <button type="button" id="profileBtn" class="profileAvatarBtn">
+                <span th:text="${not #strings.isEmpty(session.user?.name) ? #strings.substring(session.user?.name, 0, 1) : 'U'}">U</span>
+            </button>
+            <div id="profileDropdown" class="profileDropdown hidden" style="display: none;">
+                <div class="dropdownHeader">
+                    <div class="profileAvatarLarge">
+                        <span th:text="${not #strings.isEmpty(session.user?.name) ? #strings.substring(session.user?.name, 0, 1) : 'U'}">U</span>
+                    </div>
+                    <div class="profileName" th:text="${session.user?.name ?: '로그인 필요'}">홍길동</div>
+                </div>
+                <div class="dropdownBody">
+                    <a th:href="@{/home}" class="dropdownItem">
+                        <i class="fa-regular fa-id-badge"></i>
+                        <span>사용자</span>
+                    </a>
+                </div>
+                <div class="dropdownFooter">
+                    <a th:href="@{/logout}" class="dropdownItem logoutItem">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                        <span>로그아웃</span>
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- 토글 스크립트 -->
+    <script>
+    (function() {
+        const btn = document.getElementById("profileBtn");
+        const dropdown = document.getElementById("profileDropdown");
+
+        if (btn && dropdown) {
+            btn.onclick = function(e) {
+                e.stopPropagation();
+                if (dropdown.style.display === "none" || dropdown.classList.contains("hidden")) {
+                    dropdown.style.display = "block";
+                    dropdown.classList.remove("hidden");
+                } else {
+                    dropdown.style.display = "none";
+                    dropdown.classList.add("hidden");
+                }
+            };
+
+            document.onclick = function(e) {
+                if (!e.target.closest(".profileWrapper")) {
+                    dropdown.style.display = "none";
+                    dropdown.classList.add("hidden");
+                }
+            };
+        }
+    })();
+    </script>
 </div>
 </html>

@@ -3,6 +3,31 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.sist.member.MemberMapper">
+	<resultMap id="memberResultMap" type="kr.co.sist.member.MemberDomain">
+	    <id property="userNo" column="userNo"/>
+	    <result property="userId" column="userId"/>
+	    <result property="userName"
+	            column="userName"
+	            typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+	    <result property="email"
+	            column="email"
+	            typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+	    <result property="phone"
+	            column="phone"
+	            typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+	    <result property="status" column="status"/>
+	    <result property="profileImage" column="profileImage"/>
+	    <result property="workplace" column="workplace"/>
+	    <result property="jobtask" column="jobtask"/>
+	    <result property="positionNo" column="positionNo"/>
+	    <result property="positionName" column="positionName"/>
+	    <result property="rankNo" column="rankNo"/>
+	    <result property="rankName" column="rankName"/>
+	    <result property="organizationNo" column="organizationNo"/>
+	    <result property="organizationName" column="organizationName"/>
+	    <result property="companyNo" column="companyNo"/>
+	</resultMap>
+
 	<!-- 조직 조회 -->
     <select id="selectOrganization" resultType="organizationDomain">
      SELECT
@@ -19,7 +44,7 @@
     </select>
     
     <!-- 구성원 리스트 조회 -->
-    <select id="selectMemberList" resultType="memberDomain">
+    <select id="selectMemberList" resultMap="memberResultMap">
      SELECT
          u.user_no AS userNo,
          u.user_name AS userName,
@@ -55,7 +80,7 @@
 	</select>
 	
 	<!-- 구성원 상세 조회 -->
-	<select id="selectMemberDetail" resultType="memberDomain">
+	<select id="selectMemberDetail" resultMap="memberResultMap">
 	    SELECT
 	        u.user_no AS userNo,
 	        u.user_name AS userName,
@@ -86,7 +111,7 @@
 	</select>
 	
 	<!-- 아이디 확인 -->
-	<select id="selectUserById" resultType="memberDomain">
+	<select id="selectUserById" resultMap="memberResultMap">
 	    SELECT
 	        user_no AS userNo,
 	        user_id AS userId,

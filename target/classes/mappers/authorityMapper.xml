@@ -3,6 +3,25 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.sist.security.AuthorityMapper">
+
+	<resultMap id="userResultMap" type="kr.co.sist.security.UserDomain">
+        <id property="userNo" column="userNo"/>
+        <result property="userId"
+                column="userId"
+                typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+        <result property="userName"
+                column="userName"
+                typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+        <result property="email"
+                column="email"
+                typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+        <result property="position" column="position"/>
+        <result property="rank" column="rank"/>
+        <result property="roleNo" column="roleNo"/>
+        <result property="roleName" column="roleName"/>
+        <result property="roleLevel" column="roleLevel"/>
+    </resultMap>
+
     <select id="selectRole" resultType="roleDomain">
      SELECT 
      	 role_name AS roleName,
@@ -14,11 +33,12 @@
      ORDER BY role_level DESC
     </select>
     
-    <select id="selectRoleMember" resultType="authorityUserDomain">
+    <select id="selectRoleMember" resultMap="userResultMap">
 	 SELECT
 	     r.role_no AS roleNo,
 	     r.role_name AS roleName,
 	     r.user_no AS userNo,
+	     r.role_level AS roleLevel,
 	     u.user_name AS userName,
 	     u.email AS email,
 	     p.position_name AS position,
@@ -55,8 +75,32 @@
 	<update id="updateDelegation">
 	 update role
 	 set user_no=#{userNo}
-	 where role_name='최고관리자' and company_no=#{companyNo}
+	 where role_name LIKE '최고%' and company_no=#{companyNo}
 	</update>
+	
+	<select id="searchDelegationMember" resultMap="userResultMap">
+     SELECT
+        u.user_no AS userNo,
+        u.user_id AS userId,
+        u.user_name AS userName,
+        u.email AS email,
+        p.position_name AS position,
+        r.rank_name AS rank
+     FROM USERS u
+     LEFT JOIN TITLE t
+        ON u.user_no = t.user_no
+     LEFT JOIN POSITION p
+        ON t.position_no = p.position_no
+     LEFT JOIN RANK r
+        ON t.rank_no = r.rank_no
+     WHERE u.company_no = #{companyNo}
+       AND (
+            u.user_id = #{keyword, typeHandler=kr.co.sist.login.EncryptTypeHandler}
+            OR
+            u.user_name = #{keyword, typeHandler=kr.co.sist.login.EncryptTypeHandler}
+          )
+     ORDER BY u.user_name, u.user_id
+	</select>
 	
 	<insert id="insertUserRole">
 	 INSERT INTO ROLE(role_no, role_name, role_level, company_no, user_no)

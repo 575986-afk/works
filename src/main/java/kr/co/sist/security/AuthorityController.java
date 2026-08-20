@@ -117,13 +117,29 @@ public class AuthorityController {
 	// 권한 위임
 	@PostMapping("/changeDelegation")
 	@ResponseBody
-	public String changeDelegation(@RequestParam(name="targetUserId") String targetUserId
+	public String changeDelegation(@RequestParam(name="targetUserNo") String targetUserNo
 								, HttpSession session) {
 		String companyNo = (String) session.getAttribute("companyNo");
 
-		boolean result = as.changeDelegation(companyNo, targetUserId);
+		boolean result = as.changeDelegation(companyNo, targetUserNo);
 
 		return result ? "success" : "fail";
+	}
+	
+	// 권한 위임 시 검색
+	@GetMapping("/searchDelegationMember")
+	public String searchDelegationMember(
+	        @RequestParam(name = "keyword") String keyword,
+	        HttpSession session,
+	        Model model) {
+	    String companyNo = (String) session.getAttribute("companyNo");
+
+	    List<UserDomain> memberList =
+	            as.searchDelegationMember(companyNo, keyword);
+
+	    model.addAttribute("memberList", memberList);
+
+	    return "adminUser/security/delegationMemberFragment";
 	}
 	
 	//권한 위임 폼

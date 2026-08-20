@@ -71,15 +71,48 @@ body { background: #ffffff; font-family: "맑은 고딕", sans-serif; margin: 0;
 
 .guideTitle { font-size: 15px; font-weight: 700; color: #111827; margin-bottom: 8px; }
 .guideSub { font-size: 12px; color: #6b7280; margin-bottom: 24px; }
-.searchWrap { max-width: 380px; margin: 0 auto 20px; }
+.searchWrap {
+    max-width: 500px;
+    margin: 0 auto 20px;
+    display: flex;
+    gap: 8px;
+}
 .searchWrap input {
+    flex: 1;
     border: 1px solid #3b82f6;
     border-radius: 6px;
     padding: 9px 14px;
     font-size: 13px;
-    width: 100%;
     outline: none;
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+.btnSearch {
+    background-color: #6b7280;
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.btnSearch:hover {
+    background-color: #4b5563;
+}
+#memberSearchResult {
+    max-width: 500px;
+    margin: 0 auto 20px;
+    text-align: left;
+}
+.selectedMember {
+    max-width: 500px;
+    margin: 0 auto 20px;
+    padding: 10px 14px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #374151;
 }
 .btnNext {
     background-color: #2563eb;
@@ -127,7 +160,13 @@ body { background: #ffffff; font-family: "맑은 고딕", sans-serif; margin: 0;
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script type="text/javascript">
 $(function(){
-    // 아코디언 열고 닫기
+
+	// 사이드바 토글 동작
+    $(".sidebarMenu").click(function(){
+        $(this).next(".submenu").slideToggle(200);
+        $(this).find(".arrow").toggleClass("rotate");
+    });
+	
     $(".stepHeader").click(function(){
         let $body = $(this).next(".stepBody");
         let $icon = $(this).find(".toggleIcon");
@@ -136,26 +175,88 @@ $(function(){
         $icon.toggleClass("fa-chevron-down fa-chevron-up");
     });
 
-    // 이전으로 돌아가기 클릭
     $(".backLink").click(function(){
         location.href = "/adminUser/security/authority";
     });
 
-    // 1단계 다음
-    $("#nextStepBtn").click(function(){
-        let searchVal = $("#memberSearchInput").val().trim();
-        if(!searchVal) {
-            alert("위임할 구성원의 이름 또는 ID를 입력하세요.");
+    $("#searchMemberBtn").click(function(){
+        let keyword = $("#memberSearchInput").val().trim();
+
+        if(!keyword){
+
+            alert("이름 또는 ID를 입력하세요.");
+
+            $("#memberSearchResult").empty();
+            $("#selectedMember").hide();
+            $("#selectedMemberName").text("");
+
             return;
         }
+        $.ajax({
+            url: "/adminUser/security/searchDelegationMember",
+            type: "GET",
+            data: {
+                keyword: keyword
+            },
+            success: function(fragment){
+                $("#memberSearchResult").html(fragment);
+                $("#selectedMember").hide();
+                $("#selectedMemberName").text("");
+            },
+            error: function(){
+                alert("구성원 검색 중 오류가 발생했습니다.");
+            }
+        });
+    });
+    
+    $("#memberSearchInput").keydown(function(e){
+        if(e.key === "Enter"){
+            e.preventDefault();
+            $("#searchMemberBtn").click();
+        }
+    });
 
+    $(document).on(
+        "change",
+        "input[name='delegationMember']",
+        function(){
+
+            let userNo = $(this).data("user-no");
+            let userName = $(this).data("user-name");
+            let userId = $(this).data("user-id");
+
+            $("#selectedMemberName").text(
+                userName + " (" + userId + ")"
+            );
+            $("#selectedMember").show();
+            $("#nextStepBtn").data("user-no", userNo);
+            $(".memberResultItem").removeClass("selected");
+
+            $(this)
+                .closest(".memberResultItem")
+                .addClass("selected");
+        }
+    );
+
+    $("#nextStepBtn").click(function(){
+        let targetUserNo = $(this).data("user-no");
+
+        if(!targetUserNo){
+            alert("위임할 구성원을 선택하세요.");
+            return;
+        }
         $.ajax({
             url: "/adminUser/security/changeDelegation",
             type: "POST",
-            data: { targetUserId: searchVal },
+            data: {
+                targetUserNo: targetUserNo
+            },
             success: function(res){
-                // 성공 시 새로고침 (컨트롤러에서 isWaiting을 true로 넘기면 2단계가 표시됨)
-                location.reload();
+                if(res === "success"){
+                    location.reload();
+                } else {
+                    alert("권한 위임 요청에 실패했습니다.");
+                }
             },
             error: function(){
                 alert("권한 위임 요청 처리 중 오류가 발생했습니다.");
@@ -163,22 +264,25 @@ $(function(){
         });
     });
 
-    // 위임 취소
     $("#cancelDelegationBtn").click(function(){
-        if(confirm("권한 위임을 취소하시겠습니까?")){
-            $.ajax({
-                url: "/adminUser/security/cancelDelegation",
-                type: "POST",
-                success: function(res){
-                    alert("위임 요청이 취소되었습니다.");
-                    // 취소 성공 시 새로고침
-                    location.reload();
-                },
-                error: function(){
-                    alert("취소 처리 중 오류가 발생했습니다.");
-                }
-            });
+        if(!confirm("권한 위임을 취소하시겠습니까?")){
+            return;
         }
+        $.ajax({
+            url: "/adminUser/security/cancelDelegation",
+            type: "POST",
+            success: function(res){
+                if(res === "success"){
+                    alert("위임 요청이 취소되었습니다.");
+                    location.reload();
+                } else {
+                    alert("위임 요청 취소에 실패했습니다.");
+                }
+            },
+            error: function(){
+                alert("취소 처리 중 오류가 발생했습니다.");
+            }
+        });
     });
 });
 </script>
@@ -214,10 +318,20 @@ $(function(){
                     <div class="guideSub">선택한 구성원에게 메일이 발송되고, 14일 내에 수락해야 위임이 완료됩니다.</div>
                     
                     <div class="searchWrap">
-                        <input type="text" id="memberSearchInput" placeholder="이름 또는 ID 검색">
-                    </div>
-                    
-                    <button type="button" id="nextStepBtn" class="btnNext">다음</button>
+					    <input type="text" id="memberSearchInput" placeholder="이름 또는 ID 검색">
+					    <button type="button" id="searchMemberBtn" class="btnSearch">검색</button>
+					</div>
+					
+					<!-- 검색 결과 -->
+					<div id="memberSearchResult"></div>
+					
+					<!-- 선택된 구성원 -->
+					<div id="selectedMember" class="selectedMember" style="display:none;">
+					    <span>선택한 구성원 : </span>
+					    <strong id="selectedMemberName"></strong>
+					</div>
+					
+					<button type="button" id="nextStepBtn" class="btnNext">다음</button>
                 </div>
             </div>
 

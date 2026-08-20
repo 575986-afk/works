@@ -54,6 +54,30 @@ body { background: #ffffff; font-family: "맑은 고딕", sans-serif; margin: 0;
 
 <script type="text/javascript">
 let selectedRoleName = "";
+let selectedRoleLevel = 0;
+
+// roleLevel 안전 추출 함수 (HTML 속성 누락 시 텍스트 기반 2차 감지)
+function getRoleLevel($elem) {
+    if (!$elem || $elem.length === 0) return 0;
+    let lvl = $elem.attr("data-rolelevel") || $elem.data("rolelevel");
+    if (lvl !== undefined && lvl !== null && lvl !== "" && !isNaN(Number(lvl))) {
+        return Number(lvl);
+    }
+    let roleName = $elem.attr("data-rolename") || $elem.find(".roleNameText").text() || "";
+    if (roleName.indexOf("최고") !== -1) return 99;
+    if (roleName.indexOf("운영") !== -1) return 98;
+    return 0;
+}
+
+// Level 99, 98 항목의 점 3개 버튼 클라이언트 단 강제 제거
+function cleanRoleMoreButtons() {
+    $(".roleItem").each(function() {
+        let level = getRoleLevel($(this));
+        if (level === 99 || level === 98) {
+            $(this).find(".roleMoreWrap, .moreBtn, .roleDropdown").remove();
+        }
+    });
+}
 
 $(function() {
     // 사이드바 토글 동작
@@ -73,6 +97,8 @@ $(function() {
         $(this).addClass("active");
         
         selectedRoleName = $(this).attr("data-rolename");
+        selectedRoleLevel = getRoleLevel($(this));
+        
         $("#roleTitle").text(selectedRoleName);
         
         refreshTabContent();
@@ -110,6 +136,7 @@ $(function() {
 	        }
 	    });
 	});
+
 	// 권한 추가 모달 내부 [확인] 버튼 클릭 이벤트 (저장 전송)
 	$(document).on("click", "#saveRoleBtn", function() {
 	    const roleName = $("#newRoleName").val().trim();
@@ -123,11 +150,9 @@ $(function() {
 	        type: "POST",
 	        data: $("#addRoleFrm").serialize(),
 	        success: function() {
-	            // 모달 닫기
 	            const modalEl = document.getElementById("addRoleModal");
 	            const modalInstance = bootstrap.Modal.getInstance(modalEl);
 	            if (modalInstance) modalInstance.hide();
-	            // 좌측 권한 목록 새로고침
 	            loadRoleList();
 	        },
 	        error: function(xhr) {
@@ -157,7 +182,6 @@ $(function() {
 	
 	    let roleNo = $(this).closest(".roleItem").attr("data-roleno");
 	
-	    // roleNo가 없으면 전송 중단
 	    if (!roleNo) {
 	        alert("권한 번호(roleNo)가 존재하지 않습니다. 목록 태그의 data-roleno를 확인해주세요.");
 	        return;
@@ -253,8 +277,7 @@ $(function() {
 function refreshTabContent() {
     let activeTab = $(".tabItem.active").data("tab");
 
-    // 버튼 표시/비표시 상태 업데이트
-    setRoleButton(selectedRoleName);
+    setRoleButton(selectedRoleLevel);
 
     if (activeTab === "authority") {
         loadAuthority(selectedRoleName);
@@ -263,16 +286,15 @@ function refreshTabContent() {
     }
 }
 
-// 우측 상단 버튼 제어 (최고관리자일 때 '권한 위임', 그 외 '관리자 추가')
-function setRoleButton(roleName) {
+// 우측 상단 버튼 제어 (roleLevel이 99일 때 '권한 위임', 그 외 '관리자 추가')
+function setRoleButton(roleLevel) {
     $("#delegationBtn").hide();
     $("#addMemberBtn").hide();
 
     let activeTab = $(".tabItem.active").data("tab");
 
     if (activeTab === "member") {
-        let cleanName = $.trim(roleName);
-        if (cleanName === "최고관리자" || cleanName === "최고 관리자") {
+        if (Number(roleLevel) === 99) {
             $("#delegationBtn").show();
         } else {
             $("#addMemberBtn").show();
@@ -288,9 +310,14 @@ function loadRoleList() {
         success: function(result) {
             $(".deptChild").html(result);
             
+            // AJAX로 불러온 HTML에 점 3개 버튼이 남아있다면 강제 제거
+            cleanRoleMoreButtons();
+            
             let $firstRole = $(".roleItem").first();
             if ($firstRole.length > 0) {
                 selectedRoleName = $firstRole.attr("data-rolename");
+                selectedRoleLevel = getRoleLevel($firstRole);
+                
                 $("#roleTitle").text(selectedRoleName);
                 
                 refreshTabContent();
@@ -299,7 +326,7 @@ function loadRoleList() {
     });
 }
 
-// 우측 구성원 목록 불러오기 (관리자 탭)
+// 우측 구성원 목록 불러오기
 function loadMember(roleName) {
     if (!roleName) return;
     $.ajax({
@@ -312,7 +339,7 @@ function loadMember(roleName) {
     });
 }
 
-// 권한 설정 탭 불러오기 (권한 설정 탭)
+// 권한 설정 탭 불러오기
 function loadAuthority(roleName) {
     if (!roleName) return;
     $.ajax({
@@ -354,13 +381,14 @@ function loadAuthority(roleName) {
                                      class="roleItem"
                                      th:classappend="${stat.first} ? 'active' : ''"
                                      th:data-rolename="${role.roleName}"
-                                     th:data-roleno="${role.roleNo}">
+                                     th:data-roleno="${role.roleNo}"
+                                     th:data-rolelevel="${role.roleLevel}">
                                     
                                     <span class="roleNameText" th:text="${role.roleName}">최고관리자</span>
 
-                                    <!-- 최고관리자 / 운영관리자가 아닐 때만 점 세 개 버튼 노출 -->
+                                    <!-- 최고관리자(99) / 운영관리자(98)가 아닐 때만 점 세 개 버튼 노출 -->
                                     <div class="roleMoreWrap" 
-                                         th:if="${role.roleName != '최고관리자' and role.roleName != '운영관리자' and role.roleName != '최고 관리자' and role.roleName != '운영 관리자'}">
+                                         th:if="${role.roleLevel != 99 and role.roleLevel != 98}">
                                         <button type="button" class="moreBtn">
                                             <i class="fa-solid fa-ellipsis-vertical"></i>
                                         </button>
@@ -372,10 +400,10 @@ function loadAuthority(roleName) {
                                 </div>
 
                                 <th:block th:if="${#lists.isEmpty(roleList)}">
-                                    <div class="roleItem active" data-rolename="최고관리자">
+                                    <div class="roleItem active" data-rolename="최고관리자" data-rolelevel="99">
                                         <span class="roleNameText">최고관리자</span>
                                     </div>
-                                    <div class="roleItem" data-rolename="운영관리자">
+                                    <div class="roleItem" data-rolename="운영관리자" data-rolelevel="98">
                                         <span class="roleNameText">운영관리자</span>
                                     </div>
                                 </th:block>

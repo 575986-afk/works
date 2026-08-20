@@ -3,6 +3,8 @@ package kr.co.sist.dashboard;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import kr.co.sist.signup.UserDTO;
+
 @Service
 public class DashboardService {
 	
@@ -15,8 +17,8 @@ public class DashboardService {
 	}
 	
 	public String getUserName(String userNo) {
-		String userName=dm.selectUserName(userNo);
-		return userName;
+		UserDTO user = dm.selectUserName(userNo);
+        return user.getName();
 	}
 	
 }

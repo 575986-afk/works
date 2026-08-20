@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<div th:fragment="delegationMemberFragment">
+<style type="text/css">
+.searchResultWrap {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto 20px;
+    text-align: left;
+}
+.searchResultTitle {
+    font-size: 13px;
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: 10px;
+}
+.memberResultList {
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: #ffffff;
+    overflow: hidden;
+}
+.memberResultItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+.memberResultItem:last-child {
+    border-bottom: none;
+}
+.memberResultItem:hover {
+    background-color: #f9fafb;
+}
+.memberResultItem.selected {
+    background-color: #eff6ff;
+}
+.memberRadio {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.memberInfo {
+    flex: 1;
+    min-width: 0;
+}
+.memberMainInfo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+.memberName {
+    font-size: 13px;
+    font-weight: 700;
+    color: #111827;
+}
+.memberId {
+    font-size: 11px;
+    color: #6b7280;
+}
+.memberSubInfo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: #6b7280;
+}
+.memberSubInfo span {
+    display: inline-block;
+}
+.noResult {
+    padding: 25px 10px;
+    text-align: center;
+    font-size: 12px;
+    color: #9ca3af;
+}
+.selectedMemberInfo {
+    display: none;
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    font-size: 12px;
+    color: #1e40af;
+}
+</style>
+<!-- 검색 결과가 없는 경우 -->
+<div class="searchResultWrap"
+     th:if="${memberList == null or #lists.isEmpty(memberList)}">
+
+    <div class="memberResultList">
+        <div class="noResult">
+            검색 결과가 없습니다.
+        </div>
+    </div>
+
+</div>
+
+
+<!-- 검색 결과가 있는 경우 -->
+<div class="searchResultWrap"
+     th:if="${memberList != null and !#lists.isEmpty(memberList)}">
+    <div class="searchResultTitle">
+        검색 결과
+    </div>
+    <div class="memberResultList">
+        <label class="memberResultItem"
+               th:each="member : ${memberList}">
+            <input type="radio"
+                   name="delegationMember"
+                   class="memberRadio"
+                   th:value="${member.userNo}"
+                   th:data-user-no="${member.userNo}"
+                   th:data-user-name="${member.userName}"
+                   th:data-user-id="${member.userId}">
+            <div class="memberInfo">
+                <div class="memberMainInfo">
+                    <span class="memberName"
+                          th:text="${member.userName}">
+                        홍길동
+                    </span>
+                    <span class="memberId"
+                          th:text="'(' + ${member.userId} + ')'">
+                        (hong)
+                    </span>
+                </div>
+                <div class="memberSubInfo">
+                    <span th:if="${member.position != null}"
+                          th:text="${member.position}">
+                        개발팀장
+                    </span>
+                    <span th:if="${member.rank != null}"
+                          th:text="${member.rank}">
+                        과장
+                    </span>
+                    <span th:if="${member.email != null}"
+                          th:text="${member.email}">
+                        test@test.com
+                    </span>
+                </div>
+            </div>
+        </label>
+    </div>
+
+    <!-- 선택된 사용자 표시 -->
+    <div id="selectedMemberInfo"
+         class="selectedMemberInfo">
+    </div>
+
+</div>
+
+
+<script type="text/javascript">
+$(function() {
+    $(document)
+        .off("change.delegationMember", "input[name='delegationMember']")
+        .on("change.delegationMember",
+            "input[name='delegationMember']",
+    function() {
+         // 기존 선택 표시 제거
+         $(".memberResultItem").removeClass("selected");
+
+         // 현재 선택된 행 강조
+         $(this).closest(".memberResultItem")
+                .addClass("selected");
+
+         // 선택한 사용자 정보
+         let userNo = $(this).data("user-no");
+         let userName = $(this).data("user-name");
+         let userId = $(this).data("user-id");
+
+         $("#selectedUserNo").val(userNo);
+         $("#selectedMemberInfo")
+             .text(
+                 "선택된 구성원 : "
+                 + userName
+                 + " ("
+                 + userId
+                 + ")"
+             )
+             .show();
+ 	});
+});
+
+</script>
+</div>
+
+</html>

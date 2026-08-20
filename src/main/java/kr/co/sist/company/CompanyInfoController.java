@@ -20,8 +20,14 @@ public class CompanyInfoController {
     @GetMapping("/info")
     public String findCompanyData(HttpSession session, Model model) {
     	String companyNo = (String) session.getAttribute("companyNo");
+    	
+    	CompanyDomain companyData = cis.getCompanyData(companyNo);
+        
+        if (companyData == null) {
+            companyData = new CompanyDomain();
+        }
 
-    	model.addAttribute("companyData", cis.getCompanyData(companyNo));
+    	model.addAttribute("companyData", companyData);
     	
         return "adminUser/company/info";
     }

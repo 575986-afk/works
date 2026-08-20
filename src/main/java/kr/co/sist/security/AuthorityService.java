@@ -37,6 +37,10 @@ public class AuthorityService {
 		return am.updateDelegation(companyNo, userNo)==1;
 	}
 	
+	public List<UserDomain> searchDelegationMember(String companyNo, String keyword) {
+	    return am.searchDelegationMember(companyNo, keyword);
+	}
+	
 	public boolean addNewUserRole(String companyNo, String roleName, int roleLevel, String userNo) {
 		return am.insertUserRole(companyNo, roleName, roleLevel, userNo)==1;
 	}

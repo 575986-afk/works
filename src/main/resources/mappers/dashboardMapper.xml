@@ -3,13 +3,27 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.sist.dashboard.DashboardMapper">
+	<resultMap id="userResultMap" type="kr.co.sist.signup.UserDTO">
+	    <id property="userNo" column="user_no"/>
+	    <result property="userId" column="user_id"/>
+        <result property="name" column="user_name" typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+        <result property="email" column="email" typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+        <result property="tel" column="phoneNumber" typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+    </resultMap>
+    
     <select id="selectMemberCnt" resultType="int">
      select count(*) from users
 	 where company_no=#{companyNo}
     </select>
     
-    <select id="selectUserName" resultType="String">
-     select user_name from USERS
-	 where user_no=#{userNo}
-    </select>
+    <select id="selectUserName" resultMap="userResultMap">
+    SELECT
+        user_no,
+        user_id,
+        user_name,
+        email,
+        phoneNumber
+    FROM USERS
+    WHERE user_no = #{userNo}
+	</select>
 </mapper>

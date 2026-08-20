@@ -194,17 +194,15 @@ $(function(){
 			    <div class="sectionTitle">기본 정보</div>
 			    <div th:object="${companyData}">
 				    <div class="formArea">
-				        <div class="formRow">
-				            <label>기업/단체명</label>
-				            <input type="text" th:field="*{companyName}">
-				        </div>
-				
-				        <div class="formRow">
-				            <label>전화 번호</label>
-				            <input type="text" th:field="*{companyTel}">
-				        </div>
-				    </div>
-				
+					    <div class="formRow">
+					        <label>기업/단체명</label>
+					        <input type="text" th:field="*{companyName}" placeholder="기업/단체명을 입력해주세요">
+					    </div>
+					    <div class="formRow">
+					        <label>전화 번호</label>
+					        <input type="text" th:field="*{companyTel}" placeholder="전화번호를 입력해주세요">
+					    </div>
+					</div>
 				    <div class="buttonArea">
 				        <button type="submit" class="saveBtn">저장</button>
 				        <button type="button" class="cancelBtn" onclick="location.reload()">취소</button>
