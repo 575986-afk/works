@@ -11,7 +11,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import kr.co.sist.signup.AESUtil;
 import kr.co.sist.signup.UserDTO;
 import lombok.RequiredArgsConstructor;
 
@@ -48,7 +47,7 @@ public class LoginController {
 			session.setAttribute("userNo", uDTO.getUserNo());
 			session.setAttribute("companyNo", uDTO.getCompanyNo());
 			UserDTO loginUser = (UserDTO) session.getAttribute("user");
-			String decryptName=AESUtil.decrypt(loginUser.getName());
+			String decryptName=loginUser.getName();
 			
 			redirectAttributes.addFlashAttribute("loginMsg", decryptName + "님 환영합니다!");
 			

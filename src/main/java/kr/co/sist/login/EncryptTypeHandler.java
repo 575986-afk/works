@@ -48,12 +48,14 @@ public class EncryptTypeHandler extends BaseTypeHandler<String> {
     }
 
     private String decrypt(String value) {
-        if (value == null) return null;
+    	if (value == null) return null;
         try {
-            // ★ 디버깅용 출력
+            System.out.println("=== [EncryptTypeHandler] 복호화 시도 원본 값: " + value);
             String decrypted = AESUtil.decrypt(value);
+            System.out.println("=== [EncryptTypeHandler] 복호화 완료 값: " + decrypted);
             return decrypted; 
         } catch (Exception e) {
+            System.out.println("=== [EncryptTypeHandler] 복호화 실패 에러: " + e.getMessage());
             throw new RuntimeException("복호화 실패", e);
         }
     }
