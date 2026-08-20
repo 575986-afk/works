@@ -19,6 +19,7 @@ public class FindPwService {
 	private final BCryptPasswordEncoder passwordEncoder;
 	
 	public boolean processVerification(String userId, String email, HttpSession session) {
+	    
 	    String userNo = fm.selectUserPw(userId, email);
 	    
 	    if (userNo == null) {
@@ -32,23 +33,12 @@ public class FindPwService {
 	    map.put("verificationNo", verificationNo);
 	    map.put("userNo", userNo);
 	    
-	    // DB 삽입 시도
 	    int result = fm.insertCode(map);
 	    
 	    if (result > 0) {
-	    	System.out.println("======================================");
-	    	System.out.println(">>> [테스트용] 인증번호: " + verificationNo);
-	    	System.out.println("======================================");
-//	        try {
-//	            SimpleMailMessage message = new SimpleMailMessage();
-//	            message.setTo(email);
-//	            message.setSubject("[WORKS] 비밀번호 찾기 인증번호");
-//	            message.setText("인증번호는 [" + verificationNo + "] 입니다. 10분 이내에 입력해주세요.");
-//	            mailSender.send(message);
-//	        } catch (Exception e) {
-//	            e.printStackTrace();
-//	            return false;
-//	        }
+	        System.out.println("======================================");
+	        System.out.println(">>> [테스트용] 인증번호: " + verificationNo);
+	        System.out.println("======================================");
 	        session.setAttribute("userNo", userNo);
 	        return true;
 	    }
