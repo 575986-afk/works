@@ -25,12 +25,12 @@ public class PopupAddressController {
 
 	@GetMapping("popupAddr")
 	public String showAddrPopupPage(HttpSession session, Model model, RangeDTO rDTO) {
-		rDTO.setCompanyNo("CO000001");
-		rDTO.setUserNo("U000001");
+		rDTO.setCompanyNo((String)session.getAttribute("companyNo"));
+		rDTO.setUserNo((String)session.getAttribute("userNo"));
 		model.addAttribute("users", pas.getAddressList(rDTO));
-		model.addAttribute("company", pas.getCompany("CO000001"));
-		model.addAttribute("groups", pas.getGroup("U000001"));
-		model.addAttribute("organizations", pas.getOrganization("U000001"));
+		model.addAttribute("company", pas.getCompany((String)session.getAttribute("companyNo")));
+		model.addAttribute("groups", pas.getGroup((String)session.getAttribute("userNo")));
+		model.addAttribute("organizations", pas.getOrganization((String)session.getAttribute("userNo")));
 		
 		return "popup/PopupAddr";
 	}
