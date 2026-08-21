@@ -58,7 +58,7 @@
   
   
   
-  <select id="selectOrganization" resultType="kr.co.sist.userDashboard.OrganizationDomain">
+  <select id="selectOrganization" resultType="kr.co.sist.organization.OrganizationDomain">
   select * from organization where user_no=#{userNo} order by input_date desc
   </select>
   </mapper>

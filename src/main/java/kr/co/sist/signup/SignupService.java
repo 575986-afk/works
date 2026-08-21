@@ -40,6 +40,7 @@ public class SignupService {
 		
 		sDAO.insertCompanyInfo(uDTO);
 		
+		sDAO.insertRank1(uDTO);
 		
 		sDAO.insertManagerJoin(uDTO);
 		

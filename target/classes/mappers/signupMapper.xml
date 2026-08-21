@@ -33,9 +33,34 @@
         SELECT MAX(company_no) FROM company
     </selectKey>
 </insert>
-    <insert id="" parameterType="String">
-    insert into company()
+
+    <insert id="insertRank1" parameterType="String">
+    insert into rank(rank_name, priority, company_no) values('임원',1,#{companyNo})
     </insert>
+    <insert id="insertRank2" parameterType="String">
+    insert into rank(rank_name, priority, company_no) values('관리직',2,#{companyNo})
+    </insert>
+    <insert id="insertRank3" parameterType="String">
+    insert into rank(rank_name, priority, company_no) values('일반직',2,#{companyNo})
+    </insert>
+    <insert id="insertRank4" parameterType="String">
+    insert into rank(rank_name, priority, company_no) values('아르바이트',2,#{companyNo})
+    </insert>
+    
+    <insert id="insertPosition1" parameterType="String">
+    insert into position(position_name, priority, company_no) values('사장',1,#{companyNo})
+    </insert>
+    <insert id="insertPosition2" parameterType="String">
+    insert into position(position_name, priority, company_no) values('부장',2,#{companyNo})
+    </insert>
+    <insert id="insertPosition3" parameterType="String">
+    insert into position(position_name, priority, company_no) values('대리',3,#{companyNo})
+    </insert>
+    <insert id="insertPosition4" parameterType="String">
+    insert into position(position_name, priority, company_no) values('사원',4,#{companyNo})
+    </insert>
+    
+    
     <insert id="insertManagerJoin" parameterType="kr.co.sist.signup.UserDTO">
     INSERT INTO users(user_name, user_id, password, email, phoneNumber,ip, company_no, signup_Date,ACCOUNT_STATUS) 
     VALUES (#{name, typeHandler=kr.co.sist.login.EncryptTypeHandler}, #{userId}, #{password}, #{email, typeHandler=kr.co.sist.login.EncryptTypeHandler}, #{tel, typeHandler=kr.co.sist.login.EncryptTypeHandler}, #{ip}, #{companyNo, jdbcType=VARCHAR}, SYSDATE,'활성')
