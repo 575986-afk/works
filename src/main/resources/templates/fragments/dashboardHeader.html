@@ -5,7 +5,7 @@
     <div class="flex items-center gap-6">
         <!-- 1. 주소록 로고 (클릭 시 주소록 홈으로 이동) -->
         <a th:href="@{/userDashboard}" class="flex items-center gap-2 text-teal-500 font-bold text-lg hover:opacity-80">
-            <i class="fa-solid fa-address-book"></i>
+            <i class="fa-solid fa-house text-blue-500 text-2xl mb-2"></i>
             <span class="text-gray-800">홈</span>
         </a>
     
@@ -21,7 +21,7 @@
             </button>
             <div id="appLauncherDropdown" class="hidden absolute top-full right-0 mt-3 w-72 bg-white border border-gray-200 rounded-lg shadow-xl p-4 z-50">
                 <div class="grid grid-cols-3 gap-y-4 gap-x-2 text-center">
-                    <a th:href="@{/home}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
+                    <a th:href="@{/userDashboard}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
                         <i class="fa-solid fa-house text-blue-500 text-2xl mb-2"></i>
                         <span class="text-xs text-gray-700">홈</span>
                     </a>
@@ -42,7 +42,7 @@
                         <span class="text-xs text-gray-700">할 일</span>
                     </a>
                     <a th:if="${session.user != null and session.user.role_level != null and session.user.role_level ge 50}"
-                    th:href="@{/admin}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
+                    th:href="@{dashboard}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
                         <i class="fa-solid fa-user-tie text-gray-500 text-2xl mb-2"></i>
                         <span class="text-xs text-gray-700">Admin</span>
                     </a>

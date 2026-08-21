@@ -35,11 +35,11 @@
             <!-- 앱 런처 드롭다운 -->
             <div id="appLauncherDropdown" class="hidden absolute top-full right-0 mt-3 w-72 bg-white border border-gray-200 rounded-lg shadow-xl p-4 z-50">
                 <div class="grid grid-cols-3 gap-y-4 gap-x-2 text-center">
-                    <a th:href="@{/home}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
+                    <a th:href="@{/userDashboard}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
                         <i class="fa-solid fa-house text-blue-500 text-2xl mb-2"></i>
                         <span class="text-xs text-gray-700">홈</span>
                     </a>
-                    <a th:href="@{/message}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
+                    <a th:href="@{/chatting}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
                         <i class="fa-solid fa-comment text-green-500 text-2xl mb-2"></i>
                         <span class="text-xs text-gray-700">메시지</span>
                     </a>
@@ -55,8 +55,8 @@
                         <i class="fa-solid fa-circle-check text-blue-500 text-2xl mb-2"></i>
                         <span class="text-xs text-gray-700">할 일</span>
                     </a>
-                    <a th:if="${session.user != null and session.user.role != null and session.user.role >= '50'}"
-                    th:href="@{/admin}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
+                    <a th:if="${session.user != null and session.user.role_level != null and session.user.role_level ge 50}"
+                    th:href="@{dashboard}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
                         <i class="fa-solid fa-user-tie text-gray-500 text-2xl mb-2"></i>
                         <span class="text-xs text-gray-700">Admin</span>
                     </a>
@@ -89,17 +89,17 @@
 
         <!-- 프로필 -->
         <div class="relative ml-2">
-            <button id="profileBtn" class="w-8 h-8 rounded-full bg-blue-400 text-white flex items-center justify-center font-bold text-sm focus:outline-none"
-            		th:classappend="${session.user?.profileImage != null ? session.user?.profileImage : 'bg-gray-400'}"
-                    th:text="${session.user?.userName != null ? #strings.substring(session.user?.userName, 0, 1) : 'U'}">
-            </button>
+           <button id="profileBtn"
+				class="w-8 h-8 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold text-sm focus:outline-none"
+				th:text="${not #strings.isEmpty(session.user?.name) ? #strings.substring(session.user?.name, 0, 1) : 'U'}">
+			</button>
             <div id="profileDropdown" class="hidden absolute top-full right-0 mt-3 w-64 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden">
                 <div class="p-4 flex items-center gap-3 border-b border-gray-100 bg-gray-50">
-                    <div class="w-11 h-11 rounded-full bg-blue-400 text-white flex items-center justify-center font-bold text-lg"
-                    th:classappend="${session.user?.profileImage != null ? session.user?.profileImage : 'bg-gray-400'}"
-                    th:text="${session.user?.userName != null ? #strings.substring(session.user?.userName, 0, 1) : 'U'}"
-                    >U</div>
-                    <div class="font-bold text-gray-800 text-base" th:text="${session.user?.userName != null ? session.user?.userName : '로그인 필요'}">이름</div>
+                    <div
+					class="w-11 h-11 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold text-lg"
+					th:text="${not #strings.isEmpty(session.user?.name) ? #strings.substring(session.user?.name, 0, 1) : 'U'}">
+					U</div>
+                    <div class="font-bold text-gray-800 text-base" th:text="${session.user?.name != null ? session.user?.name : '로그인 필요'}">이름</div>
                 </div>
                 <div class="p-2">
                     <button class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2">
