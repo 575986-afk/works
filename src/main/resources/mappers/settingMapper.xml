@@ -20,17 +20,24 @@
     </select>
     
     <select id="selectProfile" parameterType="String" resultMap="userResultMap">
-        SELECT user_no,
-               user_id,
-               password,
-               user_name,
-               email,
-               phoneNumber,
-               ip,
-               signup_date,
-               account_status
-        FROM users
-        WHERE user_no = #{userNo, jdbcType=VARCHAR}
+        SELECT u.user_no,
+               u.user_id,
+               u.password,
+               u.user_name,
+               u.email,
+               u.phoneNumber,
+               u.ip,
+               u.signup_date,
+               u.account_status,
+               r.rank_name,
+               u.workplace,
+               u.jobtask,
+               p.position_name
+        FROM users u
+        LEFT JOIN title t on t.user_no=u.user_no 
+        LEFT JOIN rank r on t.rank_no=r.rank_no
+        LEFT JOIN position p on t.position_no=p.position_no
+        WHERE u.user_no = #{userNo, jdbcType=VARCHAR}
     </select>
    <select id="selectRankPosition" parameterType="String" resultType="titleDTO">
     SELECT 

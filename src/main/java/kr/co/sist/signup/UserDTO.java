@@ -17,7 +17,7 @@ import lombok.ToString;
 public class UserDTO {
 
 	private String userNo, userId, password, companyNo,name,email,tel,
-	passwordConfirm, userType,companyName, companyTel, ip, newPw, accountStatus,workplace, jobtask, rankNo, positionNo;
+	passwordConfirm, userType,companyName, companyTel, ip, newPw, accountStatus,workplace, jobtask, rankNo, positionNo,role;
 	private int role_level;
 	private Timestamp signupDate;
 	

@@ -15,7 +15,7 @@ public interface SignupMapper {
 	
 	 int insertUserRole(UserDTO uDTO) ;
 	 
-//	 int insertRankPosition(UserDTO uDTO);
+	 int insertUserChat(UserDTO uDTO);
 
 	 int insertCompanyInfo(UserDTO uDTO);
 	
@@ -23,5 +23,5 @@ public interface SignupMapper {
 	
 	 int insertRole(UserDTO uDTO);
 	 
-	 int insertManagerRankPosition(UserDTO uDTO);
+	 int insertManagerChat(UserDTO uDTO);
 }

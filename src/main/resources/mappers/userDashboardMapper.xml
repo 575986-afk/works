@@ -51,14 +51,14 @@
 
 
 
-  <select id="selectTodo" resultType="list">
+  <select id="selectTodo" resultType="kr.co.sist.userDashboard.TodoDomain">
   select * from todo where user_no=#{userNo} order by end_date desc
   </select>
   
   
   
   
-  <select id="selectOrganization" resultType="list">
+  <select id="selectOrganization" resultType="kr.co.sist.userDashboard.OrganizationDomain">
   select * from organization where user_no=#{userNo} order by input_date desc
   </select>
   </mapper>

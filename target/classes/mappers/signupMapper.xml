@@ -19,10 +19,12 @@
         INSERT INTO role(user_no, role_name,role_level ) 
         VALUES (#{userNo, jdbcType=VARCHAR},'일반사용자',1 )
     </insert>
-    <!-- <insert id="insertRankPosition" parameterType="kr.co.sist.signup.UserDTO" >
-        INSERT INTO title(user_no, rank_no, position_no ) VALUES (#{userNo}, 'RK000003', 'P000006')
-        
-    </insert> -->
+    
+    <insert id="insertUserChat" parameterType="kr.co.sist.signup.UserDTO" >
+        INSERT INTO CHATROOM(chatroom_name, input_date, user_no ) 
+        VALUES ('나와의 채팅',sysdate,#{userNo, jdbcType=VARCHAR})
+    </insert>
+    
     
 	<insert id="insertCompanyInfo" parameterType="kr.co.sist.signup.UserDTO">
     INSERT INTO company (company_name,company_tel)
@@ -31,7 +33,9 @@
         SELECT MAX(company_no) FROM company
     </selectKey>
 </insert>
-    
+    <insert id="" parameterType="String">
+    insert into company()
+    </insert>
     <insert id="insertManagerJoin" parameterType="kr.co.sist.signup.UserDTO">
     INSERT INTO users(user_name, user_id, password, email, phoneNumber,ip, company_no, signup_Date,ACCOUNT_STATUS) 
     VALUES (#{name, typeHandler=kr.co.sist.login.EncryptTypeHandler}, #{userId}, #{password}, #{email, typeHandler=kr.co.sist.login.EncryptTypeHandler}, #{tel, typeHandler=kr.co.sist.login.EncryptTypeHandler}, #{ip}, #{companyNo, jdbcType=VARCHAR}, SYSDATE,'활성')
@@ -45,8 +49,8 @@
         INSERT INTO role(user_no, role_name,role_level, company_no) 
         VALUES (#{userNo, jdbcType=VARCHAR},'최고운영자',99 ,#{companyNo, jdbcType=VARCHAR})
     </insert>
-    <insert id="insertManagerRankPosition" parameterType="kr.co.sist.signup.UserDTO" >
-        INSERT INTO title(user_no, rank_no, position_no ) VALUES (#{userNo,jdbcType=VARCHAR}, 'RK000002', 'P000006')
-        
+    <insert id="insertManagerChat" parameterType="kr.co.sist.signup.UserDTO" >
+        INSERT INTO CHATROOM(chatroom_name, input_date, user_no ) 
+        VALUES ('나와의 채팅',sysdate,#{userNo, jdbcType=VARCHAR})
     </insert>
 </mapper>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.sist.chat.ChatMapper">
+	<resultMap id="userResultMap" type="kr.co.sist.signup.UserDTO">
+	    <id property="userNo" column="user_no"/>
+	    <result property="userId" column="user_id"/>
+        <result property="name" column="user_name" typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+        <result property="email" column="email" typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+        <result property="tel" column="phoneNumber" typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+    </resultMap>
+    <select id="selectChatRoom" parameterType="String" resultType="ChatRoomDTO">
+   SELECT 
+        cr.chatroom_no AS chatRoomNo,
+        cr.chatroom_name AS chatRoomName,
+        c.content AS lastMessage,
+        c.send_date AS lastTime
+    FROM CHATROOM cr
+    LEFT JOIN (
+        SELECT chatroom_no, content, send_date
+        FROM (
+            SELECT chatroom_no, content, send_date,
+                   ROW_NUMBER() OVER(PARTITION BY chatroom_no ORDER BY send_date DESC) as rnum
+            FROM chatting
+        ) sub
+        WHERE sub.rnum = 1
+    ) c ON c.chatroom_no = cr.chatroom_no
+    WHERE cr.user_no = #{userNo, jdbcType=VARCHAR}
+    </select> 
+</mapper>

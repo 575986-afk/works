@@ -26,8 +26,8 @@ public class SignupService {
 		uDTO.setEmail(uDTO.getEmail());
 		
 		sDAO.insertUserJoin(uDTO);
-		
-		return sDAO.insertUserRole(uDTO);
+		sDAO.insertUserRole(uDTO);
+		return sDAO.insertUserChat(uDTO);
 	}
 	
 	@Transactional
@@ -44,6 +44,7 @@ public class SignupService {
 		sDAO.insertManagerJoin(uDTO);
 		
 	    sDAO.insertRole(uDTO);
-	    return sDAO.insertManagerRankPosition(uDTO);
+	    
+	    return sDAO.insertManagerChat(uDTO);
 	}
 }
