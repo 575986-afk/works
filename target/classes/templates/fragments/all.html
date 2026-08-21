@@ -4,9 +4,12 @@
     <span class="logo-mark">W</span>
     <span>WORKS</span>
   </a>
-  <nav class="nav-links">
+  <nav class="nav-links" th:if="${session.user == null}">
     <a th:href="@{/login}">로그인</a>
     <a th:href="@{/signupChk}">회원가입</a>
+  </nav>
+  <nav class="nav-links" th:if="${session.user != null}">
+    <a th:href="@{/logout}">로그아웃</a>
   </nav>
 </header>
 
