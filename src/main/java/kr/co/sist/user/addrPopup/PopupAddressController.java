@@ -27,6 +27,8 @@ public class PopupAddressController {
 	public String showAddrPopupPage(HttpSession session, Model model, RangeDTO rDTO) {
 		rDTO.setCompanyNo((String)session.getAttribute("companyNo"));
 		rDTO.setUserNo((String)session.getAttribute("userNo"));
+		
+		
 		model.addAttribute("users", pas.getAddressList(rDTO));
 		model.addAttribute("company", pas.getCompany((String)session.getAttribute("companyNo")));
 		model.addAttribute("groups", pas.getGroup((String)session.getAttribute("userNo")));
@@ -40,11 +42,6 @@ public class PopupAddressController {
 	public ResponseEntity<String> saveSelectedUsers(@RequestBody Map<String, List<String>> requestData) {
 	    
 	    List<String> userNos = requestData.get("userNos");
-	    
-	    // 받아온 userNos 배열 확인
-	    System.out.println("전달받은 사원 번호들: " + userNos);
-	    
-	    // DB 저장 로직 수행...
 	    
 	    return ResponseEntity.ok("success");
 	}

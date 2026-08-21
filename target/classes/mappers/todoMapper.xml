@@ -129,4 +129,8 @@
         #{todoNo}
     </foreach>
 </delete>
+
+<select id="selectName" parameterType="String" resultType="String">
+select user_name from users where user_no = #{userNo}
+</select>
 </mapper>

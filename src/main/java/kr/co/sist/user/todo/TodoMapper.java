@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface TodoMapper {
+	public String selectName(String userNo);
 	public List<TodoDomain> selectTodoList(RangeDTO rDTO);
 	public List<TodoDomain> selectrepresentativeList(RangeDTO rDTO);
 	public int insertTodo(TodoDTO tdDTO);

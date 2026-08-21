@@ -1,9 +1,12 @@
 package kr.co.sist.user.addrPopup;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import kr.co.sist.signup.AESUtil;
 
 
 @Service
@@ -14,7 +17,16 @@ public class PopupAddressService {
 
     // 주소록 조회
     public List<UserDomain> getAddressList(RangeDTO rDTO) {
-        return pam.selectAddressList(rDTO);
+    	List<UserDomain> list = new ArrayList<UserDomain>();
+    	UserDomain temp = null;
+    	for (UserDomain user : pam.selectAddressList(rDTO)) {
+    		temp = user;
+    		temp.setUserName(AESUtil.decrypt(temp.getUserName()));
+    		temp.setEmail(AESUtil.decrypt(temp.getEmail()));
+    		temp.setPhoneNumber(AESUtil.decrypt(temp.getPhoneNumber()));
+    		list.add(temp);
+    	}
+        return list;
     }
 
     // 그룹 조회

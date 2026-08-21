@@ -12,11 +12,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import jakarta.servlet.http.HttpSession;
+import kr.co.sist.signup.AESUtil;
 
 @Controller
 public class TodoController {
 	
-	@Autowired
+	@Autowired(required = false)
 	private TodoService ts;
 	
 	@GetMapping("todo")
@@ -32,7 +33,6 @@ public class TodoController {
 	    }
 		
 		List<TodoDomain> todoList = ts.getTodoList(rDTO);
-		
 		int totalCount = todoList.size();
 	    long incompleteCount = todoList.stream()
 	                                   .filter(todo -> "0".equals(todo.getStatus()))
@@ -40,6 +40,7 @@ public class TodoController {
 	    model.addAttribute("todoList", todoList);
 	    model.addAttribute("totalCount", totalCount);
 	    model.addAttribute("incompleteCount", incompleteCount);
+	    model.addAttribute("userName", AESUtil.decrypt(ts.getName(userNo)));
 		return "user/todo";
 	}
 	

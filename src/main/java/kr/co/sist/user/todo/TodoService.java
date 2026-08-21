@@ -1,10 +1,13 @@
 package kr.co.sist.user.todo;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import kr.co.sist.signup.AESUtil;
 
 @Service
 public class TodoService {
@@ -12,8 +15,20 @@ public class TodoService {
 	@Autowired(required = false)
 	private TodoMapper tm;
 	
+	public String getName(String userNo) {
+		return tm.selectName(userNo);
+	}
+	
 	public List<TodoDomain> getTodoList(RangeDTO rDTO) {
-		return tm.selectTodoList(rDTO);
+		List<TodoDomain> list = new ArrayList<TodoDomain>();
+		TodoDomain temp = null;
+    	for (TodoDomain todo : tm.selectTodoList(rDTO)) {
+    		temp = todo;
+    		temp.setUserName(AESUtil.decrypt(temp.getUserName()));
+    		list.add(temp);
+    	}
+        return list;
+		
 	}
 	
 	public TodoDomain getTodoDetail(String userNo, String todoNo) {
