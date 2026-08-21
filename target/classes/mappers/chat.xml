@@ -28,4 +28,11 @@
     ) c ON c.chatroom_no = cr.chatroom_no
     WHERE cr.user_no = #{userNo, jdbcType=VARCHAR}
     </select> 
+    
+    <select id="selectMessageList" parameterType="String" resultType="ChatRoomDTO">
+    select chatting_no, content, send_user, send_date, chatroom_no 
+    from chatting
+    WHERE CHATROOM_NO = #{chatRoomNo}
+	ORDER BY SEND_DATE ASC
+    </select>
 </mapper>

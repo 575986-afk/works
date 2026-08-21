@@ -19,12 +19,13 @@ public class ChatController {
 	@GetMapping("/chatting")
 	public String chatting(String chatRoomNo, Model model, HttpSession session) {
 	    UserDTO loginUser = (UserDTO) session.getAttribute("user");
-	    if (loginUser != null) {
-	        
-	        List<ChatRoomDTO> chatroom = cs.getChatRoomList(chatRoomNo); 
-	        model.addAttribute("chatRoomList", chatroom);
+	    if (loginUser == null) {
+	        return "redirect:/login"; 
 	    }
 	    
+	    List<ChatRoomDTO> chatroom = cs.getChatRoomList(loginUser.getUserNo()); 
+	    model.addAttribute("chatRoomList", chatroom);
+	   
 	    model.addAttribute("currentRoomId", chatRoomNo);
 	    
 	    return "works/chat/chatting";

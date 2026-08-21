@@ -104,12 +104,14 @@ public class SettingController {
             model.addAttribute("Email", currentUser.getEmail());
             model.addAttribute("workplace", currentUser.getWorkplace());
             model.addAttribute("jobtask", currentUser.getJobtask());
+            model.addAttribute("companyName", currentUser.getCompanyName());
         } else {
             model.addAttribute("userName", loginUser.getName());
             model.addAttribute("Tel", loginUser.getTel());
             model.addAttribute("Email", loginUser.getEmail());
             model.addAttribute("workplace", loginUser.getWorkplace());
             model.addAttribute("jobtask", loginUser.getJobtask());
+            model.addAttribute("companyName", "회사가 없습니다.");
         }
         if(currentTitle!=null) {
         	model.addAttribute("rank", currentTitle.getRankName());

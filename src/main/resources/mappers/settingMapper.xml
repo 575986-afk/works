@@ -32,11 +32,13 @@
                r.rank_name,
                u.workplace,
                u.jobtask,
-               p.position_name
+               p.position_name,
+               c.company_name AS companyName
         FROM users u
         LEFT JOIN title t on t.user_no=u.user_no 
         LEFT JOIN rank r on t.rank_no=r.rank_no
         LEFT JOIN position p on t.position_no=p.position_no
+        LEFT JOIN company c on c.company_no=u.company_no
         WHERE u.user_no = #{userNo, jdbcType=VARCHAR}
     </select>
    <select id="selectRankPosition" parameterType="String" resultType="titleDTO">
