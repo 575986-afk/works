@@ -25,6 +25,7 @@ public class TodoService {
     	for (TodoDomain todo : tm.selectTodoList(rDTO)) {
     		temp = todo;
     		temp.setUserName(AESUtil.decrypt(temp.getUserName()));
+    		temp.setRepresentativeUserNames(AESUtil.decrypt(temp.getRepresentativeUserNames()));
     		list.add(temp);
     	}
         return list;

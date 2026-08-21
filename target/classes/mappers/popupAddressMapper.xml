@@ -27,7 +27,6 @@ select COMPANY_NAME from COMPANY where company_no = #{ companyNo}
     <!-- 기본 조건: 같은 회사 직원만 조회 -->
     WHERE U.COMPANY_NO = #{companyNo}
     
-    <!-- (선택사항) 주소록 목록에서 로그인한 본인을 제외하고 싶다면 아래 조건을 추가하세요 -->
     
     <!-- 1. 부서(organizationNo) 클릭 시 -->
     <if test="organizationNo != null">
