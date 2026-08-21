@@ -158,25 +158,64 @@ body{
 }
 
 /* ======================
- 할일 리스트 영역 스타일
+ 리스트 영역 스타일 개선
 ====================== */
 .todo-list-container {
     margin-top: 10px;
     max-height: 400px;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .todo-item {
-    padding: 12px 14px;
-    margin-bottom: 8px;
+    padding: 14px 16px;
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: 12px;
     background: #f8fafc;
     font-size: 14px;
     color: var(--text);
     display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: background 0.15s ease;
+}
+
+.todo-item:hover {
+    background: #f1f5f9;
+}
+
+.item-title {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text);
+}
+
+.item-content {
+    font-size: 13px;
+    color: var(--sub);
+    line-height: 1.4;
+}
+
+.item-meta {
+    display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-top: 4px;
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.item-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #e2e8f0;
+    padding: 3px 8px;
+    border-radius: 6px;
+    color: #475569;
+    font-weight: 500;
 }
 
 .empty-content{
@@ -195,47 +234,15 @@ body{
     height:42px;
     opacity:.35;
 }
-
-.org-info{
-    margin-top:25px;
-    padding:18px;
-    border-radius:12px;
-    background:#f8fafc;
-    font-size:14px;
-    color:var(--sub);
-}
-
-.org-info strong{
-    display:block;
-    color:var(--text);
-    margin-bottom:8px;
-}
-
-.btn-full{
-    width:100%;
-    padding:13px;
-    border:none;
-    border-radius:10px;
-    background:var(--blue);
-    color:white;
-    font-size:14px;
-    font-weight:600;
-    cursor:pointer;
-    margin-top:25px;
-}
-
-.btn-full:hover{
-    background:#1d4ed8;
-}
 </style>
 </head>
 <body>
 
-<!-- <div th:replace="~{fragments/header :: commonHeader}"></div> -->
 <div th:replace="~{fragments/dashboardHeader :: user-header}"></div>
 
 <div class="container">
 
+    <!-- 프로필 카드 -->
     <div class="home-card">
         <div class="profile-top">
             <div class="profile-avatar">
@@ -268,7 +275,7 @@ body{
             <a href="/statusSetting">
                 <button class="profile-btn">⚙ 상태 설정</button>
             </a>
-            
+
             <button class="profile-btn" id="alarmToggleBtn" th:onclick="'toggleAlarm(' + ${isAlarmOn} + ')'">
                 <span id="alarmIcon" th:text="${isAlarmOn == 1} ? '🔕' : '🔔'">🔕</span>
                 <span id="alarmText" th:text="${isAlarmOn == 1} ? '알람 일시 정지' : '알람 켜기'">알람 일시 정지</span>
@@ -276,6 +283,7 @@ body{
         </div>
     </div>
 
+    <!-- 할 일 카드 -->
     <div class="home-card card-todo">
         <div class="card-header-row">
             <div class="card-title-group">
@@ -287,7 +295,16 @@ body{
 
         <div class="todo-list-container" th:if="${not #lists.isEmpty(todoList)}">
             <div class="todo-item" th:each="todo : ${todoList}">
-                <span th:text="${todo.content}">할일 내용</span>
+                <div class="item-title" th:text="${todo.title}">할일 제목</div>
+                <div class="item-content" th:text="${todo.content}">할일 내용</div>
+                <div class="item-meta">
+    <span class="item-date" th:if="${todo.start_date != null and todo.end_date != null}">
+        <i class="far fa-calendar-alt"></i>
+        <span th:text="${todo.start_date}"></span>
+        ~
+        <span th:text="${todo.end_date}"></span>
+    </span>
+</div>
             </div>
         </div>
 
@@ -299,12 +316,12 @@ body{
             <span>등록된 할 일이 없습니다.</span>
         </div>
     </div>
-    
-    
+
+    <!-- 조직도 카드 -->
     <div class="home-card">
         <div class="card-header-row">
             <div class="card-title-group">
-                <span>조직도 </span>
+                <span>조직도</span>
                 <span class="card-action-icon">></span>
             </div>
             <span style="color:#2563eb;">👥</span>
@@ -312,8 +329,14 @@ body{
 
         <div class="todo-list-container" th:if="${not #lists.isEmpty(organizationList)}">
             <div class="todo-item" th:each="organization : ${organizationList}">
-                <span th:text="${organization.organization_name}">조직도 이름 </span><br>
-                <span th:text="${organization.organization_description}">조직도 내용</span>
+                <div class="item-title" th:text="${organization.organizationName}">조직 이름</div>
+                <div class="item-content" th:text="${organization.description}">조직 내용</div>
+                <div class="item-meta">
+                    <span class="item-date">
+                        <i class="far fa-clock"></i>
+                        <span th:text="${#dates.format(organization.inputDate, 'yyyy-MM-dd')}">가입일</span>
+                    </span>
+                </div>
             </div>
         </div>
 
@@ -325,42 +348,6 @@ body{
             <span>등록된 조직도가 없습니다.</span>
         </div>
     </div>
-
-   <!-- <div class="home-card">
-        <div class="card-header-row">
-            <div class="card-title-group">
-                <span>조직도</span>
-                <span class="card-action-icon">></span>
-            </div>
-            <span style="color:#0f9d8b;">👥</span>
-        </div>
-
-        <div class="org-info">
-            <div class="todo-list-container" th:if="${not #lists.isEmpty(organizationList)}">
-            <div class="todo-item" th:each="organization : ${organizationList}">
-                <span th:text="${organization.organization_name}">조직도 이름 </span><br>
-                <span th:text="${organization.organization_description}">조직도 내용</span>
-            </div>
-        </div>
-        
-         <div class="empty-content" th:if="${#lists.isEmpty(organizationList)}">
-            <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-            </svg>
-            <span>등록된 조직도가 없습니다.</span>
-        </div>
-        </div>
-
-        <div class="empty-content" style="height:170px;">
-            <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <circle cx="12" cy="7" r="4"></circle>
-                <path d="M5.5 21a6.5 6.5 0 0 1 13 0"></path>
-            </svg>
-            <span>조직원을 확인하세요.</span>
-        </div>
-
-    </div> -->
 
 </div>
 

@@ -14,7 +14,7 @@ import lombok.ToString;
 @ToString
 public class OrganizationDomain {
 
-    private String organizationNo, organizationName, organizationDesc, companyNo, userNo, leaderName;
+    private String organizationNo, organizationName, description,organizationDesc, companyNo, userNo, leaderName;
     private Timestamp inputDate;
     private int memberCount;
 }

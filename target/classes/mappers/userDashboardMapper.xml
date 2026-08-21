@@ -52,13 +52,24 @@
 
 
   <select id="selectTodo" resultType="kr.co.sist.userDashboard.TodoDomain">
-  select * from todo where user_no=#{userNo} order by end_date desc
+  select title, 
+  content, 
+  status, 
+  start_date,
+   end_date, 
+   bookmark 
+   from todo 
+   where user_no=#{userNo} order by end_date desc
   </select>
   
   
   
   
   <select id="selectOrganization" resultType="kr.co.sist.organization.OrganizationDomain">
-  select * from organization where user_no=#{userNo} order by input_date desc
+  select organization_name AS organizationName, 
+  organization_description AS description, 
+  input_date AS inputDate
+  from organization where user_no=#{userNo} 
+  order by input_date desc
   </select>
   </mapper>
