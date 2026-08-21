@@ -238,6 +238,7 @@
 			    <button type="button"
 			            id="openAddressBookBtn"
 			            class="btn btn-outline-secondary"
+			            th:onclick="|openAddressPopup('@{/popupAddr}')|"
 			            style="font-size:13px; white-space:nowrap; width:75px; height:38px;">
 			        주소록
 			    </button>
@@ -289,6 +290,26 @@
 </div>
 
 <script type="text/javascript">
+//팝업 창 오픈 함수
+function openAddressPopup(url) {
+    const title = "AddressBookPopup";
+    const specs = "width=850,height=600,left=200,top=100,scrollbars=yes,resizable=yes";
+    window.open(url, title, specs);
+}
+window.addRepresentative = function(userName, userNo) {
+    console.log("=== 주소록 팝업에서 선택된 마스터 ===", userName, userNo);
+    
+    if (!userNo) return;
+
+    // 마스터 1명 지정
+    window.selectedMasterId = userNo;
+
+    // UI 업데이트
+    $("#emptyMasterText").hide();
+    $("#selectedMasterName").text(userName);
+    $("#selectedMasterItem").css("display", "flex");
+};
+
 $(function(){
     let originalMemberListHtml = "";
 

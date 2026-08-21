@@ -99,7 +99,6 @@
             SYSDATE
         )
     </insert>
-
     <!-- 그룹 추가시 그룹멤버에도 넣기 -->
     <insert id="insertGroupMember">
         INSERT INTO groupsmember (

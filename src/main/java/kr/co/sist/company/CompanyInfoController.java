@@ -21,6 +21,10 @@ public class CompanyInfoController {
     public String findCompanyData(HttpSession session, Model model) {
     	String companyNo = (String) session.getAttribute("companyNo");
     	
+    	if (companyNo == null) {
+            return "redirect:/login";
+        }
+    	
     	CompanyDomain companyData = cis.getCompanyData(companyNo);
         
         if (companyData == null) {
@@ -36,6 +40,10 @@ public class CompanyInfoController {
     @PostMapping("/changeData")
 	public String changeCompanyData(CompanyDTO company, HttpSession session) {
     	String companyNo = (String) session.getAttribute("companyNo");
+    	
+    	if (companyNo == null) {
+            return "redirect:/login";
+        }
 
     	cis.setCompanyData(company, companyNo);
     	

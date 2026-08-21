@@ -85,28 +85,40 @@ function openAddressPopup(url) {
     window.open(url, title, specs);
 }
 
-// 팝업 연동 콜백 함수
-function receiveSelectedUser(userNo) {
-    if (!userNo) return;
-    
-    $.ajax({
-        url: "/adminUser/security/addAdminMember",
-        type: "POST",
-        data: {
-            userNo: userNo,
-            roleName: selectedRoleName,
-            roleLevel: selectedRoleLevel
-        },
-        success: function(result) {
-            alert("관리자가 정상적으로 추가되었습니다.");
-            loadMember(selectedRoleName);
-        },
-        error: function(xhr) {
-            console.error("관리자 추가 실패:", xhr);
-            alert("관리자 추가 중 오류가 발생했습니다.");
-        }
-    });
-}
+//팀원의 popupaddressBook.js에서 호출하는 함수
+//※ 파라미터 순서 주의: 1번째 인자가 userName, 2번째 인자가 userNo 입니다.
+window.addRepresentative = function(userName, userNo) {
+	console.log("=== 팝업에서 수신된 사용자 ===");
+	console.log("이름:", userName, " | userNo:", userNo);
+	console.log("현재 권한 그룹:", selectedRoleName, " | Level:", selectedRoleLevel);
+	
+	if (!userNo) {
+	    console.warn("userNo가 전달되지 않았습니다.");
+	    return;
+	}
+	
+	// 서버로 1명씩 권한 추가 요청
+	$.ajax({
+	    url: "/adminUser/security/addNewUserRole",
+	    type: "POST",
+	    data: {
+	        roleName: selectedRoleName,
+	        roleLevel: selectedRoleLevel,
+	        userNo: userNo // 2번째 파라미터인 userNo를 서버로 전송
+	    },
+	    success: function(result) {
+	        if (result === "success") {
+	            // 오른쪽 관리자 구성원 리스트 갱신
+	            loadMember(selectedRoleName);
+	        } else {
+	            console.error(userName + " 님 관리자 추가 실패");
+	        }
+	    },
+	    error: function(xhr) {
+	        console.error("관리자 추가 중 오류 발생:", xhr.responseText);
+	    }
+	});
+};
 
 $(function() {
     // 사이드바 토글 동작

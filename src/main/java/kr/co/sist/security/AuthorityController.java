@@ -165,22 +165,22 @@ public class AuthorityController {
     }
 	
 	// 사용자 권한 추가
-    @PostMapping("/addNewUserRole")
+	@PostMapping("/addNewUserRole")
 	@ResponseBody
 	public String addNewUserRole(HttpSession session,
-			@RequestParam(name = "roleName") String roleName,
-			@RequestParam(name = "roleLevel") int roleLevel,
-			@RequestParam(name = "userNo") String userNo) {
-		String companyNo = (String) session.getAttribute("companyNo");
+	        @RequestParam(name = "roleName") String roleName,
+	        @RequestParam(name = "roleLevel") int roleLevel,
+	        @RequestParam(name = "userNo") String userNo) {
 
-		boolean result =
-				as.addNewUserRole(
-						companyNo,
-						roleName,
-						roleLevel,
-						userNo);
+	    String companyNo = (String) session.getAttribute("companyNo");
 
-		return result ? "success" : "fail";
+	    System.out.println(">>> addNewUserRole - companyNo: " + companyNo 
+	                       + ", roleName: " + roleName 
+	                       + ", roleLevel: " + roleLevel 
+	                       + ", userNo: " + userNo);
+	    // DB에 Insert
+	    boolean result = as.addNewUserRole(companyNo, roleName, roleLevel, userNo);
+	    return result ? "success" : "fail";
 	}
 
 	// 사용자 권한 삭제
