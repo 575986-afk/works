@@ -41,10 +41,10 @@
     insert into rank(rank_name, priority, company_no) values('관리직',2,#{companyNo})
     </insert>
     <insert id="insertRank3" parameterType="String">
-    insert into rank(rank_name, priority, company_no) values('일반직',2,#{companyNo})
+    insert into rank(rank_name, priority, company_no) values('일반직',3,#{companyNo})
     </insert>
     <insert id="insertRank4" parameterType="String">
-    insert into rank(rank_name, priority, company_no) values('아르바이트',2,#{companyNo})
+    insert into rank(rank_name, priority, company_no) values('아르바이트',4,#{companyNo})
     </insert>
     
     <insert id="insertPosition1" parameterType="String">
