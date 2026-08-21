@@ -41,6 +41,14 @@ public class SignupService {
 		sDAO.insertCompanyInfo(uDTO);
 		
 		sDAO.insertRank1(uDTO);
+		sDAO.insertRank2(uDTO);
+		sDAO.insertRank3(uDTO);
+		sDAO.insertRank4(uDTO);
+		
+		sDAO.insertPosition1(uDTO);
+		sDAO.insertPosition2(uDTO);
+		sDAO.insertPosition3(uDTO);
+		sDAO.insertPosition4(uDTO);
 		
 		sDAO.insertManagerJoin(uDTO);
 		

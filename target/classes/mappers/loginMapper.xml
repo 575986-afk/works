@@ -21,7 +21,7 @@
            u.company_no AS companyNo,
            u.signup_date AS signupDate,
            r.role_level,
-           c.compnay_name
+           c.company_name
     FROM users u
     LEFT JOIN role r on r.user_no=u.user_no
     LEFT JOIN company c on c.company_no=u.company_no
