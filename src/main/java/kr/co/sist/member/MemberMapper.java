@@ -28,10 +28,10 @@ public interface MemberMapper {
     public MemberDomain selectUserById(@Param("userId") String userId);
 
     // 직급 조회
-    public List<RankDomain> selectRankList();
+    public List<RankDomain> selectRankList(@Param("companyNo") String companyNo);
 
     // 직책 조회
-    public List<PositionDomain> selectPositionList();
+    public List<PositionDomain> selectPositionList(@Param("companyNo") String companyNo);
     
     // 구성원 등록
     // 구성원 정보 등록

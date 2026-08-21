@@ -59,8 +59,8 @@ public class MemberAddController {
 
         String companyNo = (String) session.getAttribute("companyNo");
 
-        model.addAttribute("rankList",ms.getRankList());
-        model.addAttribute("positionList",ms.getPositionList());
+        model.addAttribute("rankList",ms.getRankList(companyNo));
+        model.addAttribute("positionList",ms.getPositionList(companyNo));
         model.addAttribute("deptList",ms.getOrganizationList(companyNo));
         
         // 수정 모드인 경우 회원 정보 조회

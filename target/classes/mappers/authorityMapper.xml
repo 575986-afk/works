@@ -6,9 +6,7 @@
 
 	<resultMap id="userResultMap" type="kr.co.sist.security.UserDomain">
         <id property="userNo" column="userNo"/>
-        <result property="userId"
-                column="userId"
-                typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+        <result property="userId" column="userId"/>
         <result property="userName"
                 column="userName"
                 typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
@@ -23,14 +21,34 @@
     </resultMap>
 
     <select id="selectRole" resultType="roleDomain">
-     SELECT 
-     	 role_name AS roleName,
-     	 MIN(role_no) AS roleNo,
-     	 role_level AS roleLevel
-     FROM ROLE
-     WHERE company_no = #{companyNo}
-     GROUP BY role_name, role_level
-     ORDER BY role_level DESC
+     SELECT roleName, roleNo, roleLevel
+     FROM (
+         SELECT 
+             v.role_name AS roleName,
+             MIN(r.role_no) AS roleNo,
+             v.role_level AS roleLevel
+         FROM (
+             SELECT '최고운영자' AS role_name, 99 AS role_level FROM DUAL
+             UNION ALL
+             SELECT '운영관리자' AS role_name, 98 AS role_level FROM DUAL
+         ) v
+         LEFT JOIN ROLE r 
+                ON r.company_no = #{companyNo} 
+               AND r.role_level = v.role_level
+         GROUP BY v.role_name, v.role_level
+
+         UNION ALL
+
+         SELECT 
+             role_name AS roleName,
+             MIN(role_no) AS roleNo,
+             role_level AS roleLevel
+         FROM ROLE
+         WHERE company_no = #{companyNo}
+           AND role_level NOT IN (98, 99)
+         GROUP BY role_name, role_level
+     )
+     ORDER BY roleLevel DESC
     </select>
     
     <select id="selectRoleMember" resultMap="userResultMap">
@@ -73,10 +91,37 @@
 	</delete>
 	
 	<update id="updateDelegation">
-	 update role
-	 set user_no=#{userNo}
-	 where role_name LIKE '최고%' and company_no=#{companyNo}
+     UPDATE ROLE
+        SET user_no = #{receiverUserNo}
+      WHERE role_level = 99
+        AND company_no = #{companyNo}
+        AND user_no = #{senderUserNo}
 	</update>
+	<!-- 현재 권한 가진 관리자 조회 -->
+	<select id="selectCurrentAdmin" resultType="roleDomain">
+     SELECT
+        role_no AS roleNo,
+        role_name AS roleName,
+        role_level AS roleLevel,
+        company_no AS companyNo,
+        user_no AS userNo
+     FROM ROLE
+     WHERE company_no = #{companyNo}
+       AND role_level = 99
+       AND user_no IS NOT NULL
+	</select>
+	<!-- 권한 받을 사람 조회 -->
+	<select id="selectDelegationReceiver"
+        resultMap="userResultMap">
+     SELECT
+        u.user_no AS userNo,
+        u.user_id AS userId,
+        u.user_name AS userName,
+        u.email AS email
+     FROM USERS u
+     WHERE u.user_no = #{userNo}
+       AND u.company_no = #{companyNo}
+	</select>
 	
 	<select id="searchDelegationMember" resultMap="userResultMap">
      SELECT
@@ -95,7 +140,7 @@
         ON t.rank_no = r.rank_no
      WHERE u.company_no = #{companyNo}
        AND (
-            u.user_id = #{keyword, typeHandler=kr.co.sist.login.EncryptTypeHandler}
+            u.user_id = #{userId}
             OR
             u.user_name = #{keyword, typeHandler=kr.co.sist.login.EncryptTypeHandler}
           )

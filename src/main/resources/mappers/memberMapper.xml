@@ -129,6 +129,7 @@
 	        rank_name AS rankName,
 	        priority
 	    FROM RANK
+	    WHERE company_no = #{companyNo}
 	    ORDER BY priority
 	</select>
 	<!-- position 조회-->
@@ -138,6 +139,7 @@
 	        position_name AS positionName,
 	        priority
 	    FROM POSITION
+	    WHERE company_no = #{companyNo}
 	    ORDER BY priority
 	</select>
 	

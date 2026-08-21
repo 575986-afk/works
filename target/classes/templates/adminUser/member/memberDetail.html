@@ -294,8 +294,8 @@ $(function(){
                         <tr>
                             <th>email</th>
                             <td th:text="${member.email}"></td>
-                            <th></th>
-                            <td></td>
+                            <th>휴대폰</th>
+                            <td th:text="${(member.phone ?: '-')}">010-1234-5678</td>
                         </tr>
                         <tr>
                             <th>조직/직책</th>
@@ -307,10 +307,10 @@ $(function(){
                             <td th:text="${(member.rankName ?: '-')}">아르바이트</td>
                         </tr>
                         <tr>
+                            <th>근무처</th>
+                            <td th:text="${(member.workplace ?: '-')}">개발팀</td>
                             <th>담당 업무</th>
                             <td th:text="${(member.jobtask ?: '-')}">개발</td>
-                            <th>휴대폰</th>
-                            <td th:text="${(member.phone ?: '-')}">010-1234-5678</td>
                         </tr>
                     </table>
                 </div>

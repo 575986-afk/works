@@ -7,6 +7,7 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
 <link rel="stylesheet" th:href="@{/css/common.css}">
 <style type="text/css">
@@ -50,13 +51,11 @@ body { background: #ffffff; font-family: "맑은 고딕", sans-serif; margin: 0;
 .authMenuList { color: #334155; line-height: 2.2; }
 </style>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-
 <script type="text/javascript">
 let selectedRoleName = "";
 let selectedRoleLevel = 0;
 
-// roleLevel 안전 추출 함수 (HTML 속성 누락 시 텍스트 기반 2차 감지)
+// roleLevel 추출 함수
 function getRoleLevel($elem) {
     if (!$elem || $elem.length === 0) return 0;
     let lvl = $elem.attr("data-rolelevel") || $elem.data("rolelevel");
@@ -75,6 +74,36 @@ function cleanRoleMoreButtons() {
         let level = getRoleLevel($(this));
         if (level === 99 || level === 98) {
             $(this).find(".roleMoreWrap, .moreBtn, .roleDropdown").remove();
+        }
+    });
+}
+
+// 주소록 팝업 오픈 함수 (th:onclick에 의해 실행됨)
+function openAddressPopup(url) {
+    const title = "AddressBookPopup";
+    const specs = "width=850,height=600,left=200,top=100,scrollbars=yes,resizable=yes";
+    window.open(url, title, specs);
+}
+
+// 팝업 연동 콜백 함수
+function receiveSelectedUser(userNo) {
+    if (!userNo) return;
+    
+    $.ajax({
+        url: "/adminUser/security/addAdminMember",
+        type: "POST",
+        data: {
+            userNo: userNo,
+            roleName: selectedRoleName,
+            roleLevel: selectedRoleLevel
+        },
+        success: function(result) {
+            alert("관리자가 정상적으로 추가되었습니다.");
+            loadMember(selectedRoleName);
+        },
+        error: function(xhr) {
+            console.error("관리자 추가 실패:", xhr);
+            alert("관리자 추가 중 오류가 발생했습니다.");
         }
     });
 }
@@ -112,55 +141,55 @@ $(function() {
         refreshTabContent();
     });
 
-    // 권한 위임 버튼
+    // 권한 위임 버튼 클릭 (최고관리자 99)
     $("#delegationBtn").click(function() {
         location.href = "/adminUser/security/changeDelegationForm";
     });
 
-    // 권한 추가 모달
-	$(document).on("click", "#addRoleBtn", function() {
-	    $.ajax({
-	        url: "/adminUser/security/addRoleForm",
-	        type: "GET",
-	        success: function(result) {
-	            $("#modalContainer").html(result);
-	            const modalEl = document.getElementById("addRoleModal");
-	            if (modalEl) {
-	                let addModal = new bootstrap.Modal(modalEl);
-	                addModal.show();
-	            }
-	        },
-	        error: function(xhr) {
-	            console.error("폼 로드 실패:", xhr);
-	            alert("권한 추가 폼을 불러오는데 실패했습니다.");
-	        }
-	    });
-	});
+    // 권한 추가 모달 호출
+    $(document).on("click", "#addRoleBtn", function() {
+        $.ajax({
+            url: "/adminUser/security/addRoleForm",
+            type: "GET",
+            success: function(result) {
+                $("#modalContainer").html(result);
+                const modalEl = document.getElementById("addRoleModal");
+                if (modalEl) {
+                    let addModal = new bootstrap.Modal(modalEl);
+                    addModal.show();
+                }
+            },
+            error: function(xhr) {
+                console.error("폼 로드 실패:", xhr);
+                alert("권한 추가 폼을 불러오는데 실패했습니다.");
+            }
+        });
+    });
 
-	// 권한 추가 모달 내부 [확인] 버튼 클릭 이벤트 (저장 전송)
-	$(document).on("click", "#saveRoleBtn", function() {
-	    const roleName = $("#newRoleName").val().trim();
-	    if (!roleName) {
-	        alert("권한명을 입력해주세요.");
-	        $("#newRoleName").focus();
-	        return;
-	    }
-	    $.ajax({
-	        url: "/adminUser/security/addRole",
-	        type: "POST",
-	        data: $("#addRoleFrm").serialize(),
-	        success: function() {
-	            const modalEl = document.getElementById("addRoleModal");
-	            const modalInstance = bootstrap.Modal.getInstance(modalEl);
-	            if (modalInstance) modalInstance.hide();
-	            loadRoleList();
-	        },
-	        error: function(xhr) {
-	            console.error("권한 저장 실패:", xhr);
-	            alert("권한 저장 중 오류가 발생했습니다.");
-	        }
-	    });
-	});
+    // 권한 추가 모달 저장
+    $(document).on("click", "#saveRoleBtn", function() {
+        const roleName = $("#newRoleName").val().trim();
+        if (!roleName) {
+            alert("권한명을 입력해주세요.");
+            $("#newRoleName").focus();
+            return;
+        }
+        $.ajax({
+            url: "/adminUser/security/addRole",
+            type: "POST",
+            data: $("#addRoleFrm").serialize(),
+            success: function() {
+                const modalEl = document.getElementById("addRoleModal");
+                const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                if (modalInstance) modalInstance.hide();
+                loadRoleList();
+            },
+            error: function(xhr) {
+                console.error("권한 저장 실패:", xhr);
+                alert("권한 저장 중 오류가 발생했습니다.");
+            }
+        });
+    });
 
     // 더보기 드롭다운 토글
     $(document).on("click", ".moreBtn", function(e) {
@@ -176,73 +205,70 @@ $(function() {
     });
 
     // 권한명 수정 모달
-	$(document).on("click", ".editRoleCmd", function(e) {
-	    e.stopPropagation();
-	    $(".roleDropdown").hide();
+    $(document).on("click", ".editRoleCmd", function(e) {
+        e.stopPropagation();
+        $(".roleDropdown").hide();
 	
-	    let roleNo = $(this).closest(".roleItem").attr("data-roleno");
+        let roleNo = $(this).closest(".roleItem").attr("data-roleno");
 	
-	    if (!roleNo) {
-	        alert("권한 번호(roleNo)가 존재하지 않습니다. 목록 태그의 data-roleno를 확인해주세요.");
-	        return;
-	    }
+        if (!roleNo) {
+            alert("권한 번호(roleNo)가 존재하지 않습니다.");
+            return;
+        }
 	
-	    $.ajax({
-	        url: "/adminUser/security/changeRoleNameForm",
-	        type: "GET",
-	        data: { roleNo: roleNo },
-	        success: function(result) {
-	            $("#modalContainer").html(result);
-	            
-	            let editEl = document.getElementById("editRoleModal");
-	            if (editEl) {
-	                let editModal = new bootstrap.Modal(editEl);
-	                editModal.show();
-	            } else {
-	                alert("changeRoleNameForm.html 내 id='editRoleModal' 태그를 확인하세요.");
-	            }
-	        },
-	        error: function(xhr) {
-	            console.error("수정 폼 로드 실패:", xhr);
-	            alert("수정 폼을 불러오는 중 오류가 발생했습니다.");
-	        }
-	    });
-	});
+        $.ajax({
+            url: "/adminUser/security/changeRoleNameForm",
+            type: "GET",
+            data: { roleNo: roleNo },
+            success: function(result) {
+                $("#modalContainer").html(result);
+                let editEl = document.getElementById("editRoleModal");
+                if (editEl) {
+                    let editModal = new bootstrap.Modal(editEl);
+                    editModal.show();
+                }
+            },
+            error: function(xhr) {
+                console.error("수정 폼 로드 실패:", xhr);
+                alert("수정 폼을 불러오는 중 오류가 발생했습니다.");
+            }
+        });
+    });
 
     // 권한 삭제
-	$(document).on("click", ".deleteRoleCmd", function(e) {
-	    e.stopPropagation();
-	    $(".roleDropdown").hide();
+    $(document).on("click", ".deleteRoleCmd", function(e) {
+        e.stopPropagation();
+        $(".roleDropdown").hide();
 	
-	    let $roleItem = $(this).closest(".roleItem");
-	    let roleNo = $roleItem.attr("data-roleno");
-	    let roleName = $roleItem.attr("data-rolename");
+        let $roleItem = $(this).closest(".roleItem");
+        let roleNo = $roleItem.attr("data-roleno");
+        let roleName = $roleItem.attr("data-rolename");
 	
-	    if (!roleNo) {
-	        alert("삭제할 권한 번호(roleNo)가 존재하지 않습니다.");
-	        return;
-	    }
-	    if (confirm(`'${roleName}' 권한을 삭제하시겠습니까?`)) {
-	        $.ajax({
-	            url: "/adminUser/security/removeRole",
-	            type: "POST",
-	            data: { roleNo: roleNo },
-	            success: function(result) {
-	                if (result === "success") {
-	                    loadRoleList();
-	                } else {
-	                    alert("권한 삭제 처리에 실패했습니다.");
-	                }
-	            },
-	            error: function(xhr) {
-	                console.error("삭제 실패:", xhr);
-	                alert("권한 삭제 처리 중 오류가 발생했습니다.");
-	            }
-	        });
-	    }
-	});
+        if (!roleNo) {
+            alert("삭제할 권한 번호(roleNo)가 존재하지 않습니다.");
+            return;
+        }
+        if (confirm(`'${roleName}' 권한을 삭제하시겠습니까?`)) {
+            $.ajax({
+                url: "/adminUser/security/removeRole",
+                type: "POST",
+                data: { roleNo: roleNo },
+                success: function(result) {
+                    if (result === "success") {
+                        loadRoleList();
+                    } else {
+                        alert("권한 삭제 처리에 실패했습니다.");
+                    }
+                },
+                error: function(xhr) {
+                    console.error("삭제 실패:", xhr);
+                    alert("권한 삭제 처리 중 오류가 발생했습니다.");
+                }
+            });
+        }
+    });
     
- 	// 권한명 수정 모달 내부 저장 처리
+    // 권한명 수정 저장
     $(document).on("click", "#saveEditRoleBtn", function() {
         const roleName = $("#editRoleName").val().trim();
         if (!roleName) {
@@ -310,7 +336,6 @@ function loadRoleList() {
         success: function(result) {
             $(".deptChild").html(result);
             
-            // AJAX로 불러온 HTML에 점 3개 버튼이 남아있다면 강제 제거
             cleanRoleMoreButtons();
             
             let $firstRole = $(".roleItem").first();
@@ -319,7 +344,6 @@ function loadRoleList() {
                 selectedRoleLevel = getRoleLevel($firstRole);
                 
                 $("#roleTitle").text(selectedRoleName);
-                
                 refreshTabContent();
             }
         }
@@ -384,7 +408,7 @@ function loadAuthority(roleName) {
                                      th:data-roleno="${role.roleNo}"
                                      th:data-rolelevel="${role.roleLevel}">
                                     
-                                    <span class="roleNameText" th:text="${role.roleName}">최고관리자</span>
+                                    <span class="roleNameText" th:text="${role.roleName}">최고운영자</span>
 
                                     <!-- 최고관리자(99) / 운영관리자(98)가 아닐 때만 점 세 개 버튼 노출 -->
                                     <div class="roleMoreWrap" 
@@ -423,7 +447,7 @@ function loadAuthority(roleName) {
                                 </div>
                             
                                 <div class="tabRight">
-                                    <button id="addMemberBtn" style="display:none;" class="btn btn-primary btn-sm">관리자 추가</button>
+                                    <button id="addMemberBtn" style="display:none;" class="btn btn-primary btn-sm" th:onclick="|openAddressPopup('@{/popupAddr}')|">관리자 추가</button>
                                     <button id="delegationBtn" style="display:none;" class="btn btn-primary btn-sm">권한 위임</button>
                                 </div>
                             </div>

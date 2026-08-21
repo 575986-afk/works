@@ -29,7 +29,7 @@
                     <div class="profileName" th:text="${session.user?.name ?: '로그인 필요'}">홍길동</div>
                 </div>
                 <div class="dropdownBody">
-                    <a th:href="@{/home}" class="dropdownItem">
+                    <a th:href="@{/userDashboard}" class="dropdownItem">
                         <i class="fa-regular fa-id-badge"></i>
                         <span>사용자</span>
                     </a>

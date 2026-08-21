@@ -42,13 +42,13 @@ public class MemberService {
     }
 
     // 직급 목록 조회
-    public List<RankDomain> getRankList() {
-        return mm.selectRankList();
+    public List<RankDomain> getRankList(String companyNo) {
+        return mm.selectRankList(companyNo);
     }
 
     // 직책 목록 조회
-    public List<PositionDomain> getPositionList() {
-        return mm.selectPositionList();
+    public List<PositionDomain> getPositionList(String companyNo) {
+        return mm.selectPositionList(companyNo);
     }
 
     // 구성원 추가

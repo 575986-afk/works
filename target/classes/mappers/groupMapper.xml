@@ -6,6 +6,19 @@
 
 <mapper namespace="kr.co.sist.group.GroupMapper">
 
+	<resultMap id="userResultMap" type="kr.co.sist.group.GroupDomain">
+        <id property="userNo" column="userNo"/>
+        <result property="leaderName"
+                column="leaderName"
+                typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+        <result property="groupNo" column="groupNo"/>
+        <result property="groupName" column="groupName"/>
+        <result property="groupDesc" column="groupDesc"/>
+        <result property="companyNo" column="companyNo"/>
+        <result property="inputDate" column="inputDate"/>
+        <result property="memberCount" column="memberCount"/>
+    </resultMap>
+
     <!-- 그룹 검색 -->
     <select id="selectGroup" resultType="groupDomain">
         SELECT

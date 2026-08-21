@@ -117,11 +117,11 @@ public class AuthorityController {
 	// 권한 위임
 	@PostMapping("/changeDelegation")
 	@ResponseBody
-	public String changeDelegation(@RequestParam(name="targetUserNo") String targetUserNo
+	public String changeDelegation(@RequestParam(name="selectedUserNo") String selectedUserNo
 								, HttpSession session) {
 		String companyNo = (String) session.getAttribute("companyNo");
 
-		boolean result = as.changeDelegation(companyNo, targetUserNo);
+		boolean result = as.changeDelegation(companyNo, selectedUserNo);
 
 		return result ? "success" : "fail";
 	}
