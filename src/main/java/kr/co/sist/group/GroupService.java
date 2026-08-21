@@ -1,5 +1,6 @@
 package kr.co.sist.group;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,12 +74,24 @@ public class GroupService {
         return cnt1 == 1 && cnt2 == 1;
     }
 
-    // 그룹 삭제
+    // [수정] 그룹 삭제 (다중 삭제)
+    @Transactional
+    public boolean deleteGroup(List<String> groupNos) {
+        if (groupNos == null || groupNos.isEmpty()) {
+            return false;
+        }
+        int cnt1 = gm.deleteGroupMemberAll(groupNos);
+        int cnt2 = gm.deleteGroup(groupNos);
+        return cnt1 >= 0 && cnt2 > 0;
+    }
+
+    // [수정] 그룹 삭제 (단건 삭제 - 기존 코드 호환용 오버로딩)
     @Transactional
     public boolean deleteGroup(String groupNo) {
-        int cnt1 = gm.deleteGroupMemberAll(groupNo);
-        int cnt2 = gm.deleteGroup(groupNo);
-        return cnt1 >= 0 && cnt2 == 1;
+        if (groupNo == null || groupNo.trim().isEmpty()) {
+            return false;
+        }
+        return deleteGroup(Arrays.asList(groupNo));
     }
 
     // =========================================================
@@ -149,16 +162,11 @@ public class GroupService {
         // 1. 기존 구성원 중 모달에서 빠진 사람 삭제
         // -----------------------------------------------------
         for (GroupMemberDomain currentMember : currentMemberList) {
-
-            String currentUserNo =
-                    currentMember.getUserNo();
-
+            String currentUserNo = currentMember.getUserNo();
             boolean exists = false;
 
             if (newUserNoList != null) {
-
                 for (String newUserNo : newUserNoList) {
-
                     if (currentUserNo.equals(newUserNo)) {
                         exists = true;
                         break;

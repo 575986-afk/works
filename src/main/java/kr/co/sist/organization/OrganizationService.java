@@ -1,5 +1,6 @@
 package kr.co.sist.organization;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +66,7 @@ public class OrganizationService {
     }
 
     // 조직 마스터 변경
-    // 상세보기에서 "조직 마스터 변경" 버튼을 눌렀을 때 사용
+    // 상세보기에서 "조직장 변경" 버튼을 눌렀을 때 사용
     @Transactional
     public boolean setOrganizationLeader(String organizationNo, String userNo) {
         int cnt1 = gm.updateOrganizationMemberLeader(organizationNo, userNo);
@@ -73,12 +74,24 @@ public class OrganizationService {
         return cnt1 == 1 && cnt2 == 1;
     }
 
-    // 조직 삭제
+    // [수정] 그룹 삭제 (다중 삭제)
+    @Transactional
+    public boolean deleteOrganization(List<String> organizationNos) {
+        if (organizationNos == null || organizationNos.isEmpty()) {
+            return false;
+        }
+        int cnt1 = gm.deleteOrganizationMemberAll(organizationNos);
+        int cnt2 = gm.deleteOrganization(organizationNos);
+        return cnt1 >= 0 && cnt2 > 0;
+    }
+    
+    // [수정] 그룹 삭제 (단건 삭제 - 기존 코드 호환용 오버로딩)
     @Transactional
     public boolean deleteOrganization(String organizationNo) {
-        int cnt1 = gm.deleteOrganizationMemberAll(organizationNo);
-        int cnt2 = gm.deleteOrganization(organizationNo);
-        return cnt1 >= 0 && cnt2 == 1;
+        if (organizationNo == null || organizationNo.trim().isEmpty()) {
+            return false;
+        }
+        return deleteOrganization(Arrays.asList(organizationNo));
     }
 
     // =========================================================
@@ -149,16 +162,11 @@ public class OrganizationService {
         // 1. 기존 구성원 중 모달에서 빠진 사람 삭제
         // -----------------------------------------------------
         for (OrganizationMemberDomain currentMember : currentMemberList) {
-
-            String currentUserNo =
-                    currentMember.getUserNo();
-
+            String currentUserNo = currentMember.getUserNo();
             boolean exists = false;
 
             if (newUserNoList != null) {
-
                 for (String newUserNo : newUserNoList) {
-
                     if (currentUserNo.equals(newUserNo)) {
                         exists = true;
                         break;

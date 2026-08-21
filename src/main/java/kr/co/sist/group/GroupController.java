@@ -24,15 +24,10 @@ public class GroupController {
 
     // 그룹 조회
     @GetMapping("/group")
-    public String showAllGroup(
-            Model model,
-            HttpSession session) {
+    public String showAllGroup(Model model, HttpSession session) {
 
-        String companyNo =
-                (String) session.getAttribute("companyNo");
-
-        List<GroupDomain> groupList =
-                gs.getAllGroup(companyNo);
+        String companyNo = (String) session.getAttribute("companyNo");
+        List<GroupDomain> groupList = gs.getAllGroup(companyNo);
 
         model.addAttribute("groupList", groupList);
 
@@ -50,20 +45,14 @@ public class GroupController {
             Model model,
             HttpSession session) {
 
-        String companyNo =
-                (String) session.getAttribute("companyNo");
+        String companyNo = (String) session.getAttribute("companyNo");
 
         List<GroupDomain> groupList;
 
         if (keyword.trim().isEmpty()) {
-
-            groupList =
-                    gs.getAllGroup(companyNo);
-
+            groupList = gs.getAllGroup(companyNo);
         } else {
-
-            groupList =
-                    gs.getGroup(companyNo, keyword);
+            groupList = gs.getGroup(companyNo, keyword);
         }
 
         model.addAttribute("groupList", groupList);
@@ -94,21 +83,19 @@ public class GroupController {
     public String addGroup(
             @RequestParam("groupName") String groupName,
             @RequestParam(value = "groupDescription", required = false) String groupDescription,
-            @RequestParam(value = "groupLeaderNo", required = false) String groupLeaderNo,
+            @RequestParam(value = "userNo", required = false) String userNo,
             HttpSession session) {
 
-        String companyNo =
-                (String) session.getAttribute("companyNo");
+        String companyNo = (String) session.getAttribute("companyNo");
 
         GroupDTO gDTO = GroupDTO.builder()
                 .groupName(groupName)
                 .groupDescription(groupDescription)
                 .companyNo(companyNo)
-                .userNo(groupLeaderNo)
+                .userNo(userNo)
                 .build();
 
-        boolean result =
-                gs.createGroup(gDTO);
+        boolean result = gs.createGroup(gDTO);
 
         return result ? "success" : "fail";
     }
@@ -134,14 +121,10 @@ public class GroupController {
             Model model,
             HttpSession session) {
 
-        String companyNo =
-                (String) session.getAttribute("companyNo");
+        String companyNo = (String) session.getAttribute("companyNo");
 
-        GroupDomain groupDetail =
-                gs.getGroupDetail(groupNo, companyNo);
-
-        List<GroupMemberDomain> memberList =
-                gs.getGroupMember(groupNo);
+        GroupDomain groupDetail = gs.getGroupDetail(groupNo, companyNo);
+        List<GroupMemberDomain> memberList = gs.getGroupMember(groupNo);
 
         model.addAttribute("groupDetail", groupDetail);
         model.addAttribute("memberList", memberList);
@@ -159,8 +142,7 @@ public class GroupController {
             @RequestParam("groupNo") String groupNo,
             @RequestParam("userNo") String userNo) {
 
-        boolean result =
-                gs.deleteGroupMember(groupNo, userNo);
+        boolean result = gs.deleteGroupMember(groupNo, userNo);
 
         return result ? "success" : "fail";
     }
@@ -174,21 +156,23 @@ public class GroupController {
             @RequestParam("groupNo") String groupNo,
             @RequestParam("userNo") String userNo) {
 
-        boolean result =
-                gs.setGroupLeader(groupNo, userNo);
+        boolean result = gs.setGroupLeader(groupNo, userNo);
 
         return result ? "success" : "fail";
     }
 
 
-    // 그룹 삭제
+    // 그룹 삭제 (단건/다중 통합)
     @PostMapping("/deleteGroup")
     @ResponseBody
     public String deleteGroup(
-            @RequestParam("groupNo") String groupNo) {
+            @RequestParam(value = "groupNo", required = false) List<String> groupNos) {
 
-        boolean result =
-                gs.deleteGroup(groupNo);
+        if (groupNos == null || groupNos.isEmpty()) {
+            return "fail";
+        }
+
+        boolean result = gs.deleteGroup(groupNos);
 
         return result ? "success" : "fail";
     }
@@ -213,26 +197,16 @@ public class GroupController {
                     value = "userNo",
                     required = false) String[] userNo) {
 
-        GroupMemberSaveDTO saveDTO =
-                new GroupMemberSaveDTO();
-
+        GroupMemberSaveDTO saveDTO = new GroupMemberSaveDTO();
         saveDTO.setGroupNo(groupNo);
 
         if (userNo != null) {
-
-            saveDTO.setUserNoList(
-                    List.of(userNo)
-            );
-
+            saveDTO.setUserNoList(List.of(userNo));
         } else {
-
-            saveDTO.setUserNoList(
-                    List.of()
-            );
+            saveDTO.setUserNoList(List.of());
         }
 
-        boolean result =
-                gs.saveGroupMember(saveDTO);
+        boolean result = gs.saveGroupMember(saveDTO);
 
         return result ? "success" : "fail";
     }

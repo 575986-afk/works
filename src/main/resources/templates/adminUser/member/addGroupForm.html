@@ -17,8 +17,8 @@
             <!-- 그룹 번호 -->
             <input type="hidden" id="groupNo" name="groupNo" th:value="${group != null ? group.groupNo : ''}">
             
-            <!-- 기존 마스터 ID 보관용 hidden 필드 -->
-            <input type="hidden" id="initialMasterUserNo" th:value="${group != null ? group.userNo : ''}">
+            <!-- ★ [핵심 수정] 선택된 마스터 userNo를 직접 전달받을 hidden 필드 -->
+            <input type="hidden" id="selectedMasterId" name="userNo" th:value="${group != null ? group.userNo : ''}">
 
             <!-- 그룹명 -->
             <div class="formRow mb-3">
@@ -44,9 +44,9 @@
 
             <!-- 마스터 설정 -->
             <div class="formRow mb-3">
-                <label style="font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 6px; display: block;">마스터</label>
+                <label style="font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 6px; display: block;">마스터 <span style="color: #ef4444;">*</span></label>
                 <div class="d-flex gap-2 mb-2">
-                    <input type="text" id="masterSearchInput" class="form-control" placeholder="이름 또는 ID 검색" style="font-size: 13px; height: 40px;">
+                    <input type="text" id="masterSearchInput" class="form-control" placeholder="주소록 버튼을 이용해 주세요" readonly style="font-size: 13px; height: 40px; background-color: #f9fafb;">
                     <button type="button" id="openMasterSelectBtn" class="btn btn-outline-secondary" th:onclick="|openAddressPopup('@{/popupAddr}')|" style="font-size: 13px; white-space: nowrap; width: 80px; height: 40px;">주소록</button>
                 </div>
 
@@ -86,24 +86,23 @@
         const specs = "width=850,height=600,left=200,top=100,scrollbars=yes,resizable=yes";
         window.open(url, title, specs);
     }
+    
+    // ★ 주소록 콜백 함수: hidden 태그(#selectedMasterId)에 직접 userNo를 바인딩합니다.
     window.addRepresentative = function(userName, userNo) {
-        console.log("=== 주소록 팝업에서 선택된 마스터 ===", userName, userNo);
+        console.log("=== 주소록 선택 완료 ===", userName, userNo);
         
         if (!userNo) return;
 
-        // 마스터 1명 지정
-        window.selectedMasterId = userNo;
+        // 1. hidden 필드에 userNo 세팅
+        $("#selectedMasterId").val(userNo);
 
-        // UI 업데이트
+        // 2. UI 업데이트
         $("#emptyMasterText").hide();
         $("#selectedMasterName").text(userName);
         $("#selectedMasterItem").css("display", "flex");
     };
     
     $(function(){
-        // 기존 마스터 ID 세팅
-        window.selectedMasterId = $("#initialMasterUserNo").val() || "";
-
         // 1. 글자 수 카운팅
         $(document).off("input", "#groupNameInput").on("input", "#groupNameInput", function(){
             $("#groupNameLen").text($(this).val().length);
@@ -119,14 +118,14 @@
             $("#addGroupFormArea").empty();
         });
 
-        // 4. 마스터 삭제 (X 버튼 클릭)
+        // 3. 마스터 삭제 (X 버튼 클릭시 hidden 값도 초기화)
         $(document).off("click", "#btnRemoveMaster").on("click", "#btnRemoveMaster", function(){
-            window.selectedMasterId = "";
+            $("#selectedMasterId").val(""); // 마스터 ID 제거
             $("#selectedMasterItem").hide();
             $("#emptyMasterText").show();
         });
 
-        // 5. 저장 / 수정 처리
+        // 4. 저장 / 수정 처리
         $(document).off("click", "#btnSaveGroup").on("click", "#btnSaveGroup", function(e){
             e.preventDefault();
 
@@ -134,13 +133,18 @@
             const groupName = $.trim($("#groupNameInput").val());
             const groupDescription = $.trim($("#groupDescInput").val());
             
-            // 새로 선택한 마스터 ID가 없으면 기존 ID 활용
-            let masterNo = window.selectedMasterId || $.trim($("#initialMasterUserNo").val());
+            // hidden 필드에서 userNo를 직접 꺼내옴
+            const masterNo = $.trim($("#selectedMasterId").val());
 
-            // 그룹명 필수 검사
+            // 유효성 검사
             if(!groupName) {
                 alert("그룹명을 입력해 주세요.");
                 $("#groupNameInput").focus();
+                return;
+            }
+
+            if(!masterNo) {
+                alert("그룹 마스터를 지정해 주세요.");
                 return;
             }
 
@@ -150,6 +154,9 @@
             params.append("groupName", groupName);
             params.append("groupDescription", groupDescription);
             params.append("userNo", masterNo);
+
+            console.log("=== 서버로 전송되는 파라미터 ===");
+            console.log("groupNo:", groupNo, "groupName:", groupName, "userNo:", masterNo);
 
             const targetUrl = groupNo ? "/adminUser/member/modifyGroup" : "/adminUser/member/addGroup";
 

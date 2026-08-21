@@ -296,18 +296,58 @@ function openAddressPopup(url) {
     const specs = "width=850,height=600,left=200,top=100,scrollbars=yes,resizable=yes";
     window.open(url, title, specs);
 }
+//모달 내 총 구성원 수 업데이트
+function updateModalMemberCount() {
+    const count = $(".editMemberListBox .editMemberItem").length;
+    $("#modalMemberCount").text(count);
+}
+//팝업에서 호출하는 콜백 함수
 window.addRepresentative = function(userName, userNo) {
-    console.log("=== 주소록 팝업에서 선택된 마스터 ===", userName, userNo);
-    
     if (!userNo) return;
 
-    // 마스터 1명 지정
-    window.selectedMasterId = userNo;
+    // 그룹 멤버 수정 모달 -> 멤버 목록에 추가
+    if ($("#editMemberModal").is(":visible")) {
 
-    // UI 업데이트
-    $("#emptyMasterText").hide();
-    $("#selectedMasterName").text(userName);
-    $("#selectedMasterItem").css("display", "flex");
+        // 중복 체크 (이미 목록에 추가된 사원 제외)
+        let isDuplicate = false;
+        $(".editMemberListBox .editMemberItem").each(function() {
+            if (String($(this).data("userno")) === String(userNo)) {
+                isDuplicate = true;
+                return false; // loop break
+            }
+        });
+
+        if (isDuplicate) return;
+
+        // 새 멤버 HTML 태그 추가
+        const newMemberHtml = `
+            <div class="editMemberItem" data-userno="${userNo}" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #f3f4f6;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <input type="checkbox" class="edit-member-chk" value="${userNo}" style="width: 14px; height: 14px;">
+                    <div style="width: 38px; height: 38px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 18px;">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 14px; font-weight: 700; color: #111827;">${userName}</div>
+                    </div>
+                </div>
+                <i class="fa-solid fa-xmark btnRemoveEditMember" style="color: #ef4444; cursor: pointer; font-size: 16px; padding: 4px;"></i>
+            </div>
+        `;
+
+        $(".editMemberListBox").append(newMemberHtml);
+        updateModalMemberCount();
+        $("#selectedMemberPreview").val(`${userName} 님이 추가되었습니다.`);
+
+    } 
+    // 그룹 추가/수정 모달 -> 그룹 마스터 지정
+    else {
+        window.selectedMasterId = userNo;
+        $("#userNo, #masterUserNo, #selectedMasterId").val(userNo);
+        $("#emptyMasterText").hide();
+        $("#selectedMasterName").text(userName);
+        $("#selectedMasterItem").css("display", "flex");
+    }
 };
 
 $(function(){
@@ -399,7 +439,7 @@ $(function(){
     });
 
     // 그룹 삭제
-    $(document).on("click", "#btnDeleteGroup", function(){
+    $(document).off("click", "#btnDeleteGroup").on("click", "#btnDeleteGroup", function(){
         var groupNo = $(this).data("groupno");
 
         if(confirm("정말로 이 그룹을 삭제하시겠습니까?")) {
@@ -408,10 +448,16 @@ $(function(){
 
             axios.post("/adminUser/member/deleteGroup", params)
             .then(function(res){
-                location.reload();
+                if (res.data === "success") {
+                    alert("그룹이 삭제되었습니다.");
+                    location.reload();
+                } else {
+                    alert("그룹 삭제에 실패했습니다.");
+                }
             })
             .catch(function(err){
                 console.error("삭제 중 오류:", err);
+                alert("그룹 삭제 중 오류가 발생했습니다.");
             });
         }
     });
@@ -482,7 +528,7 @@ $(function(){
 	    $("#addGroupFormArea").empty();
 	});
 	
-	// 그룹/마스터 수정 모달 열기 (통합 및 마스터 ID 완벽 바인딩)
+	// 그룹/마스터 수정 모달 열기
 	$(document).off("click", "#openEditGroupBtn").on("click", "#openEditGroupBtn", function() {
 	    const $this = $(this);
 	    const groupNo = $this.data("groupno") || $("#btnDeleteGroup").data("groupno");
@@ -564,9 +610,14 @@ $(function(){
         isFetching = true;
         currentPage++;
         const groupNo = $("#btnDeleteGroup").data("groupno");
+        const searchKey = $.trim($("#detailMemberSearchKey").val());
 
         axios.get("/adminUser/member/getMemberList", {
-            params: { groupNo: groupNo, page: currentPage }
+            params: { 
+            	groupNo: groupNo, 
+            	page: currentPage,
+            	keyword: searchKey
+            }
         })
         .then(function(res){
             if (res.data && res.data.length > 0) {

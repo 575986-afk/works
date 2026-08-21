@@ -6,8 +6,23 @@
 
 <mapper namespace="kr.co.sist.organization.OrganizationMapper">
 
-    <!-- 그룹 검색 -->
-    <select id="selectOrganization" resultType="organizationDomain">
+	<resultMap id="userResultMap" type="kr.co.sist.organization.OrganizationDomain">
+        <id property="userNo" column="userNo"/>
+        <result property="leaderName"
+                column="leaderName"
+                typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+    </resultMap>
+    
+    <!-- 구성원 조회용 ResultMap -->
+	<resultMap id="organizationMemberResultMap" type="kr.co.sist.organization.OrganizationMemberDomain">
+	    <result property="userName" 
+	            column="userName" 
+	            typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+	    <result property="email" column="email" typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+	</resultMap>
+
+    <!-- 조직 검색 -->
+    <select id="selectOrganization" resultMap="userResultMap">
         SELECT
             g.organization_no AS organizationNo,
             g.organization_name AS organizationName,
@@ -39,8 +54,8 @@
         ORDER BY g.organization_no DESC
     </select>
 
-    <!-- 그룹 전체 조회 -->
-    <select id="selectAllOrganization" resultType="organizationDomain">
+    <!-- 조직 전체 조회 -->
+    <select id="selectAllOrganization" resultMap="userResultMap">
         SELECT
             g.organization_no AS organizationNo,
             g.organization_name AS organizationName,
@@ -61,7 +76,7 @@
         ORDER BY g.organization_no DESC
     </select>
 
-    <!-- 그룹 추가 -->
+    <!-- 조직 추가 -->
     <insert id="insertOrganization" parameterType="organizationDTO">
         <selectKey keyProperty="organizationNo"
                    resultType="String"
@@ -87,7 +102,7 @@
         )
     </insert>
 
-    <!-- 그룹 추가시 그룹멤버에도 넣기 -->
+    <!-- 조직 추가시 조직멤버에도 넣기 -->
     <insert id="insertOrganizationMember">
         INSERT INTO organizationmember (
             organization_no,
@@ -101,7 +116,7 @@
         )
     </insert>
 
-    <!-- 기존 그룹에 멤버 추가 -->
+    <!-- 기존 조직에 멤버 추가 -->
     <insert id="insertOrganizationMemberForEdit">
         INSERT INTO organizationmember (
             organization_no,
@@ -119,8 +134,8 @@
         WHERE g.organization_no = #{organizationNo}
     </insert>
 
-    <!-- 그룹 상세 정보 조회 -->
-    <select id="selectOrganizationDetail" resultType="organizationDomain">
+    <!-- 조직 상세 정보 조회 -->
+    <select id="selectOrganizationDetail" resultMap="userResultMap">
         SELECT
             g.organization_no AS organizationNo,
             g.organization_name AS organizationName,
@@ -141,9 +156,8 @@
           AND g.company_no = #{companyNo}
     </select>
 
-    <!-- 그룹 구성원 조회 -->
-    <select id="selectOrganizationMember"
-            resultType="organizationMemberDomain">
+    <!-- 조직 구성원 조회 -->
+    <select id="selectOrganizationMember" resultMap="organizationMemberResultMap">
         SELECT
             gm.organization_no AS organizationNo,
             gm.ORGMEMBER_NO AS userNo,
@@ -169,14 +183,14 @@
         ORDER BY gm.is_leader DESC
     </select>
 
-    <!-- 그룹 구성원 삭제 -->
+    <!-- 조직 구성원 삭제 -->
     <delete id="deleteOrganizationMember">
         DELETE FROM organizationmember
         WHERE organization_no = #{organizationNo}
           AND ORGMEMBER_NO = #{userNo}
     </delete>
 
-    <!-- 그룹장 변경 - 별도 "그룹 마스터 변경" 기능 -->
+    <!-- 조직장 변경 - 별도 "조직 마스터 변경" 기능 -->
     <update id="updateOrganizationMemberLeader">
         UPDATE organizationmember
         SET is_leader =
@@ -187,26 +201,32 @@
         WHERE organization_no = #{organizationNo}
     </update>
 
-    <!-- organization 테이블의 그룹장 변경 -->
+    <!-- organization 테이블의 조직장 변경 -->
     <update id="updateOrganizationLeader">
         UPDATE organization
         SET user_no = #{userNo}
         WHERE organization_no = #{organizationNo}
     </update>
 
-    <!-- 그룹 삭제 전 구성원 삭제 -->
-    <delete id="deleteOrganizationMemberAll">
+    <!-- 조직 삭제 전 구성원 삭제 (단건/다중 통합) -->
+    <delete id="deleteOrganizationMemberAll" parameterType="list">
         DELETE FROM organizationmember
-        WHERE organization_no = #{organizationNo}
+        WHERE organization_no IN
+        <foreach item="organizationNo" collection="organizationNos" open="(" separator="," close=")">
+            #{organizationNo}
+        </foreach>
     </delete>
 
-    <!-- 그룹 삭제 -->
-    <delete id="deleteOrganization">
+    <!-- 조직 삭제 (단건/다중 통합) -->
+    <delete id="deleteOrganization" parameterType="list">
         DELETE FROM organization
-        WHERE organization_no = #{organizationNo}
+        WHERE organization_no IN
+        <foreach item="organizationNo" collection="organizationNos" open="(" separator="," close=")">
+            #{organizationNo}
+        </foreach>
     </delete>
 
-    <!-- 그룹 정보 수정 -->
+    <!-- 조직 정보 수정 -->
 	<update id="updateOrganization" parameterType="organizationDTO">
 	    UPDATE organization
 	    <set>
@@ -223,7 +243,7 @@
 	      </if>
 	</update>
 
-    <!-- 그룹/그룹마스터 수정용 그룹 마스터 변경 -->
+    <!-- 조직/조직마스터 수정용 조직 마스터 변경 -->
     <update id="updateOrganizationLeaderForEdit">
         UPDATE organization
         SET user_no = #{userNo}
@@ -231,7 +251,7 @@
           AND company_no = #{companyNo}
     </update>
 
-    <!-- 그룹/그룹마스터 수정용 organizationmember 마스터 변경 -->
+    <!-- 조직/조직마스터 수정용 organizationmember 마스터 변경 -->
     <update id="updateOrganizationMemberLeaderForEdit">
         UPDATE organizationmember
         SET is_leader =

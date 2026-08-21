@@ -18,9 +18,17 @@
         <result property="inputDate" column="inputDate"/>
         <result property="memberCount" column="memberCount"/>
     </resultMap>
+    
+    <!-- 구성원 조회용 ResultMap -->
+	<resultMap id="groupMemberResultMap" type="kr.co.sist.group.GroupMemberDomain">
+	    <result property="userName" 
+	            column="userName" 
+	            typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+	    <result property="email" column="email" typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+	</resultMap>
 
     <!-- 그룹 검색 -->
-    <select id="selectGroup" resultType="groupDomain">
+    <select id="selectGroup" resultMap="userResultMap">
         SELECT
             g.groups_no AS groupNo,
             g.groups_name AS groupName,
@@ -53,7 +61,7 @@
     </select>
 
     <!-- 그룹 전체 조회 -->
-    <select id="selectAllGroup" resultType="groupDomain">
+    <select id="selectAllGroup" resultMap="userResultMap">
         SELECT
             g.groups_no AS groupNo,
             g.groups_name AS groupName,
@@ -132,7 +140,7 @@
     </insert>
 
     <!-- 그룹 상세 정보 조회 -->
-    <select id="selectGroupDetail" resultType="groupDomain">
+    <select id="selectGroupDetail" resultMap="userResultMap">
         SELECT
             g.groups_no AS groupNo,
             g.groups_name AS groupName,
@@ -154,8 +162,7 @@
     </select>
 
     <!-- 그룹 구성원 조회 -->
-    <select id="selectGroupMember"
-            resultType="groupMemberDomain">
+    <select id="selectGroupMember" resultMap="groupMemberResultMap">
         SELECT
             gm.groups_no AS groupNo,
             gm.grp_member_no AS userNo,
@@ -206,16 +213,22 @@
         WHERE groups_no = #{groupNo}
     </update>
 
-    <!-- 그룹 삭제 전 구성원 삭제 -->
-    <delete id="deleteGroupMemberAll">
+    <!-- 그룹 삭제 전 구성원 삭제 (단건/다중 통합) -->
+    <delete id="deleteGroupMemberAll" parameterType="list">
         DELETE FROM groupsmember
-        WHERE groups_no = #{groupNo}
+        WHERE groups_no IN
+        <foreach item="groupNo" collection="groupNos" open="(" separator="," close=")">
+            #{groupNo}
+        </foreach>
     </delete>
 
-    <!-- 그룹 삭제 -->
-    <delete id="deleteGroup">
+    <!-- 그룹 삭제 (단건/다중 통합) -->
+    <delete id="deleteGroup" parameterType="list">
         DELETE FROM groups
-        WHERE groups_no = #{groupNo}
+        WHERE groups_no IN
+        <foreach item="groupNo" collection="groupNos" open="(" separator="," close=")">
+            #{groupNo}
+        </foreach>
     </delete>
 
     <!-- 그룹 정보 수정 -->

@@ -38,11 +38,11 @@ public interface GroupMapper {
 	// 그룹장 변경 - GROUPS
 	public int updateGroupLeader(@Param("groupNo") String groupNo, @Param("userNo") String userNo);
 
-	// 그룹 삭제 전 구성원 전체 삭제
-	public int deleteGroupMemberAll(@Param("groupNo") String groupNo);
+	// [수정] 그룹 삭제 전 구성원 전체 삭제 (단건/다중 통합)
+	public int deleteGroupMemberAll(@Param("groupNos") List<String> groupNos);
 
-	// 그룹 삭제
-	public int deleteGroup(@Param("groupNo") String groupNo);
+	// [수정] 그룹 삭제 (단건/다중 통합)
+	public int deleteGroup(@Param("groupNos") List<String> groupNos);
 	
 	//그룹 수정
 	public int updateGroup(GroupDTO gDTO);

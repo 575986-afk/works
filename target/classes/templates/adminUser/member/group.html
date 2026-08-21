@@ -130,31 +130,34 @@ $(function(){
         toggleDeleteBtn();
     });
 
-    // 선택 항목 삭제 버튼 클릭 이벤트
-    $("#btnDeleteSelected").click(function(){
-        const checkedList = $(".group-chk:checked");
-        if(checkedList.length === 0) return;
-
-        if (confirm("선택한 " + checkedList.length + "개의 그룹을 삭제하시겠습니까?")) {
-            const requests = [];
-            checkedList.each(function(){
-                const groupNo = $(this).val();
-                const params = new URLSearchParams();
-                params.append("groupNo", groupNo);
-                requests.push(axios.post("/adminUser/member/deleteGroup", params));
-            });
-
-            Promise.all(requests)
-            .then(function(responses){
-                alert("선택한 그룹이 삭제되었습니다.");
-                location.reload();
-            })
-            .catch(function(error){
-                console.error("삭제 실패:", error);
-                alert("그룹 삭제 중 오류가 발생했습니다.");
-            });
-        }
-    });
+    // 선택 항목 삭제 버튼 클릭 이벤트 (단일 요청 다중 삭제 방식으로 수정)
+	$("#btnDeleteSelected").click(function(){
+	    const checkedList = $(".group-chk:checked");
+	    if(checkedList.length === 0) return;
+	
+	    if (confirm("선택한 " + checkedList.length + "개의 그룹을 삭제하시겠습니까?")) {
+	        // 하나의 URLSearchParams 객체에 선택된 모든 groupNo를 추가
+	        const params = new URLSearchParams();
+	        checkedList.each(function(){
+	            params.append("groupNo", $(this).val()); // groupNo=G001&groupNo=G002&...
+	        });
+	
+	        // 서버로 단 1번만 POST 요청
+	        axios.post("/adminUser/member/deleteGroup", params)
+	        .then(function(response){
+	            if (response.data === "success") {
+	                alert("선택한 그룹이 삭제되었습니다.");
+	                location.reload();
+	            } else {
+	                alert("그룹 삭제에 실패했습니다.");
+	            }
+	        })
+	        .catch(function(error){
+	            console.error("삭제 실패:", error);
+	            alert("그룹 삭제 중 오류가 발생했습니다.");
+	        });
+	    }
+	});
 
     // 그룹 상세 보기
     $(document).on("click", ".groupRow", function(e){
@@ -293,7 +296,7 @@ $(function(){
                                 </thead>
                                 <tbody>
                                     <tr th:if="${#lists.isEmpty(groupList)}">
-                                        <td colspan="3" style="text-align:center;">등록된 그룹이 없습니다.</td>
+                                        <td colspan="4" style="text-align:center;">등록된 그룹이 없습니다.</td>
                                     </tr>
 
                                     <tr class="groupRow" 

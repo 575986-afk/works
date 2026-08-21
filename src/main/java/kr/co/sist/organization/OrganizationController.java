@@ -24,11 +24,8 @@ public class OrganizationController {
     @GetMapping("/organization")
     public String showAllOrganization(Model model, HttpSession session) {
         
-    	String companyNo =
-                (String) session.getAttribute("companyNo");
-
-        List<OrganizationDomain> organizationList =
-        		os.getAllOrganization(companyNo);
+    	String companyNo = (String) session.getAttribute("companyNo");
+        List<OrganizationDomain> organizationList = os.getAllOrganization(companyNo);
 
         model.addAttribute("organizationList", organizationList);
         
@@ -44,20 +41,14 @@ public class OrganizationController {
 		    Model model,
 		    HttpSession session) {
 		
-		String companyNo =
-		        (String) session.getAttribute("companyNo");
+		String companyNo = (String) session.getAttribute("companyNo");
 		
 		List<OrganizationDomain> organizationList;
 		
 		if (keyword.trim().isEmpty()) {
-		
-		    organizationList =
-		    		os.getAllOrganization(companyNo);
-		
+		    organizationList = os.getAllOrganization(companyNo);
 		} else {
-		
-		    organizationList =
-		    		os.getOrganization(companyNo, keyword);
+		    organizationList = os.getOrganization(companyNo, keyword);
 		}
 		
 		model.addAttribute("organizationList", organizationList);
@@ -85,21 +76,19 @@ public class OrganizationController {
     public String addOrganization(
             @RequestParam("organizationName") String organizationName,
             @RequestParam(value = "organizationDescription", required = false) String organizationDescription,
-            @RequestParam(value = "organizationLeaderNo", required = false) String organizationLeaderNo,
+            @RequestParam(value = "userNo", required = false) String userNo,
             HttpSession session) {
 
-        String companyNo =
-                (String) session.getAttribute("companyNo");
+        String companyNo = (String) session.getAttribute("companyNo");
 
         OrganizationDTO gDTO = OrganizationDTO.builder()
                 .organizationName(organizationName)
                 .organizationDescription(organizationDescription)
                 .companyNo(companyNo)
-                .userNo(organizationLeaderNo)
+                .userNo(userNo)
                 .build();
 
-        boolean result =
-        		os.createOrganization(gDTO);
+        boolean result = os.createOrganization(gDTO);
 
         return result ? "success" : "fail";
     }
@@ -121,14 +110,10 @@ public class OrganizationController {
             Model model,
             HttpSession session) {
 
-        String companyNo =
-                (String) session.getAttribute("companyNo");
+        String companyNo = (String) session.getAttribute("companyNo");
 
-        OrganizationDomain organizationDetail =
-        		os.getOrganizationDetail(organizationNo, companyNo);
-
-        List<OrganizationMemberDomain> memberList =
-        		os.getOrganizationMember(organizationNo);
+        OrganizationDomain organizationDetail = os.getOrganizationDetail(organizationNo, companyNo);
+        List<OrganizationMemberDomain> memberList = os.getOrganizationMember(organizationNo);
 
         model.addAttribute("organizationDetail", organizationDetail);
         model.addAttribute("memberList", memberList);
@@ -145,20 +130,22 @@ public class OrganizationController {
             @RequestParam("organizationNo") String organizationNo,
             @RequestParam("userNo") String userNo) {
 
-        boolean result =
-        		os.deleteOrganizationMember(organizationNo, userNo);
+        boolean result = os.deleteOrganizationMember(organizationNo, userNo);
 
         return result ? "success" : "fail";
     }
     
-    // 조직 삭제
+    // 조직 삭제 (단건/다중 통합)
     @PostMapping("/deleteOrganization")
     @ResponseBody
     public String deleteOrganization(
-            @RequestParam("organizationNo") String organizationNo) {
+    		@RequestParam(value = "organizationNo", required = false) List<String> organizationNos) {
 
-        boolean result =
-        		os.deleteOrganization(organizationNo);
+    	if (organizationNos == null || organizationNos.isEmpty()) {
+            return "fail";
+        }
+
+        boolean result = os.deleteOrganization(organizationNos);
 
         return result ? "success" : "fail";
     }
@@ -182,26 +169,16 @@ public class OrganizationController {
                     value = "userNo",
                     required = false) String[] userNo) {
 
-        OrganizationMemberSaveDTO saveDTO =
-                new OrganizationMemberSaveDTO();
-
+        OrganizationMemberSaveDTO saveDTO = new OrganizationMemberSaveDTO();
         saveDTO.setOrganizationNo(organizationNo);
 
         if (userNo != null) {
-
-            saveDTO.setUserNoList(
-                    List.of(userNo)
-            );
-
+            saveDTO.setUserNoList(List.of(userNo));
         } else {
-
-            saveDTO.setUserNoList(
-                    List.of()
-            );
+            saveDTO.setUserNoList(List.of());
         }
 
-        boolean result =
-        		os.saveOrganizationMember(saveDTO);
+        boolean result = os.saveOrganizationMember(saveDTO);
 
         return result ? "success" : "fail";
     }
@@ -215,8 +192,7 @@ public class OrganizationController {
             @RequestParam("organizationNo") String organizationNo,
             @RequestParam("userNo") String userNo) {
 
-        boolean result =
-        		os.setOrganizationLeader(organizationNo, userNo);
+        boolean result = os.setOrganizationLeader(organizationNo, userNo);
 
         return result ? "success" : "fail";
     }

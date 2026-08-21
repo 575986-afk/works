@@ -99,7 +99,6 @@ $(function(){
         $(".searchBtn").show();
         $("#searchOrgKeyword").val("").trigger("keyup");
     });
-
     $("#searchOrgKeyword").on("keyup", function(){
         var value = $(this).val().toLowerCase().trim();
         $("tbody tr.orgRow").filter(function() {
@@ -131,33 +130,35 @@ $(function(){
         toggleDeleteBtn();
     });
 
-    // 돋보기 옆 삭제 버튼 클릭 이벤트
-    $("#btnDeleteSelected").click(function(){
-        const checkedList = $(".org-chk:checked");
-        if(checkedList.length === 0) return;
+ 	// 선택 항목 삭제 버튼 클릭 이벤트 (단일 요청 다중 삭제 방식으로 수정)
+	$("#btnDeleteSelected").click(function(){
+	    const checkedList = $(".org-chk:checked");
+	    if(checkedList.length === 0) return;
+	
+	    if (confirm("선택한 " + checkedList.length + "개의 그룹을 삭제하시겠습니까?")) {
+	        // 하나의 URLSearchParams 객체에 선택된 모든 organizationNo를 추가
+	        const params = new URLSearchParams();
+	        checkedList.each(function(){
+	            params.append("organizationNo", $(this).val());
+	        });
+	
+	        // 서버로 단 1번만 POST 요청
+	        axios.post("/adminUser/member/deleteOrganization", params)
+	        .then(function(response){
+	            if (response.data === "success") {
+	                alert("선택한 그룹이 삭제되었습니다.");
+	                location.reload();
+	            } else {
+	                alert("그룹 삭제에 실패했습니다.");
+	            }
+	        })
+	        .catch(function(error){
+	            console.error("삭제 실패:", error);
+	            alert("그룹 삭제 중 오류가 발생했습니다.");
+	        });
+	    }
+	});
 
-        if (confirm("선택한 " + checkedList.length + "명의 조직원을 삭제하시겠습니까?")) {
-            const requests = [];
-            checkedList.each(function(){
-                const organizationNo = $(this).val();
-                const params = new URLSearchParams();
-                params.append("organizationNo", organizationNo);
-                requests.push(axios.post("/adminUser/member/deleteOrganization", params));
-            });
-
-            Promise.all(requests)
-            .then(function(responses){
-                alert("선택한 조직원이 삭제되었습니다.");
-                location.reload();
-            })
-            .catch(function(error){
-                console.error("삭제 실패:", error);
-                alert("조직 삭제 중 오류가 발생했습니다.");
-            });
-        }
-    });
-
-    // 조직 상세 보기
     // 조직 상세 보기
 	$(document).on("click", ".orgRow", function(e){
 	    if($(e.target).is("input[type='checkbox']")){
@@ -176,7 +177,7 @@ $(function(){
 	    }
 	});
 
-    $(document).on("click", "#detailModalArea .closeBtn", function(e){
+    $(document).on("click", "#detailModalArea .closeBtn, #detailModalArea .closeDetailModalBtn", function(e){
         e.preventDefault();
         $("#detailModalArea").empty();
     });
@@ -195,6 +196,7 @@ $(function(){
         })
         .catch(function(error){
             console.error(error);
+            alert("조직 추가 폼을 불러오는 중 오류가 발생했습니다.");
         });
     });
     
@@ -218,6 +220,7 @@ $(function(){
         }, {
             threshold: 0.1
         });
+        
         orgObserver.observe(orgSentinel);
     }
 

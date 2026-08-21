@@ -1,15 +1,28 @@
 <!-- 상세보기 전용 스타일 -->
 <style type="text/css">
+.orgDetailModalOverlay{
+	display: flex !important;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 9999;
+}
+
 .orgDetailCard {
     width: 100%;
     max-width: 680px;
-    margin: 20px auto;
     background: #fff;
     border: 1px solid #d1d5db;
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     overflow: hidden;
+    max-height: 90vh; /* 화면 높이 초과 방지 */
+    display: flex;
+    flex-direction: column;
 }
+
 .cardHeader { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px 10px 24px; }
 .cardHeader h3 { font-size: 20px; font-weight: 700; margin: 0; color: #1f2937; }
 .closeBtn { color: #9ca3af; font-size: 22px; text-decoration: none; cursor: pointer; }
@@ -53,7 +66,6 @@
 
 .cardFooter { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; margin-top: 15px; border-top: 1px solid #f3f4f6; }
 
-/* 모달 중앙 정렬 CSS 적용 */
 .customModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:10000; }
 .customModalContent { 
     width:520px; 
@@ -73,7 +85,7 @@
 .customModalBody { padding:20px; }
 </style>
 
-<!-- 상세보기 카드 본문 -->
+<div class="orgDetailModalOverlay" id="orgDetailModalOverlay">
 <div class="orgDetailCard">
     <div class="cardHeader">
         <h3>조직 상세보기</h3>
@@ -101,7 +113,6 @@
             <input type="text" id="detailMemberSearchKey" placeholder="조직 멤버 검색">
             <i class="fa-solid fa-magnifying-glass"></i>
         </div>
-        <!-- 조직장 변경 버튼 ID 부여 -->
         <button type="button" id="openChangeLeaderModalBtn" class="btn btn-sm btn-outline-secondary">조직장 변경</button>
     </div>
 
@@ -143,20 +154,23 @@
         </div>
         <div style="display:flex; gap:8px;">
             <button type="button" id="openEditMemberModalBtn" class="btn btn-outline-secondary btn-sm">멤버 수정</button>
-            <button type="button" id="openEditOrganizationBtn"
-            		 class="btn btn-outline-secondary btn-sm"
-            		 th:data-organizationno="${organizationDetail?.organizationNo}"
+            
+            <button type="button" 
+            		id="openEditOrganizationBtn"
+            		class="btn btn-outline-secondary btn-sm"
+            		th:data-organizationno="${organizationDetail?.organizationNo}"
 			        th:data-organizationname="${organizationDetail?.organizationName}"
 			        th:data-organizationdesc="${organizationDetail?.organizationDesc}"
-			        th:data-organizationleaderno="${organizationDetail?.userNo}">조직 수정</button>
+			        th:data-organizationleaderno="${organizationDetail?.userNo}">
+				조직 수정
+			</button>
         </div>
     </div>
 </div>
+</div>
 
-<!-- 동적으로 로드될 조직 수정 모달 폼 영역 -->
 <div id="addOrganizationFormArea"></div>
 
-<!-- 조직장 변경 모달 -->
 <div id="changeLeaderModal" class="customModal">
     <div class="customModalContent" style="width: 480px; border-radius: 12px;">
         <div class="customModalHeader" style="border-bottom: none; padding: 24px 24px 12px 24px;">
@@ -215,8 +229,19 @@
         
         <div class="customModalBody" style="padding: 0 24px 24px 24px;">
             <div class="d-flex gap-2 mb-3">
-                <input type="text" class="form-control" placeholder="조직 멤버를 추가해 주세요" style="font-size: 13px; height: 38px; border-color: #d1d5db;">
-                <button type="button" class="btn btn-outline-secondary" style="font-size: 13px; white-space: nowrap; width: 75px; height: 38px;">주소록</button>
+                <input type="text"
+                	   id="selectedMemberPreview"
+			           class="form-control" 
+			           placeholder="주소록에서 조직 멤버를 추가해 주세요"
+			           readonly 
+			           style="font-size: 13px; height: 38px; border-color: #d1d5db;">
+                <button type="button" 
+                	    id="openAddressBookBtn"
+			            class="btn btn-outline-secondary"
+			            th:onclick="|openAddressPopup('@{/popupAddr}')|"
+                	    style="font-size: 13px; white-space: nowrap; width: 75px; height: 38px;">
+                	    주소록
+                </button>
             </div>
 
             <div style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
@@ -265,6 +290,66 @@
 </div>
 
 <script type="text/javascript">
+//팝업 창 오픈 함수
+function openAddressPopup(url) {
+    const title = "AddressBookPopup";
+    const specs = "width=850,height=600,left=200,top=100,scrollbars=yes,resizable=yes";
+    window.open(url, title, specs);
+}
+//모달 내 총 구성원 수 업데이트
+function updateModalMemberCount() {
+    const count = $(".editMemberListBox .editMemberItem").length;
+    $("#modalMemberCount").text(count);
+}
+//팝업에서 호출하는 콜백 함수
+window.addRepresentative = function(userName, userNo) {
+    if (!userNo) return;
+
+    // 그룹 멤버 수정 모달 -> 멤버 목록에 추가
+    if ($("#editMemberModal").is(":visible")) {
+
+        // 중복 체크 (이미 목록에 추가된 사원 제외)
+        let isDuplicate = false;
+        $(".editMemberListBox .editMemberItem").each(function() {
+            if (String($(this).data("userno")) === String(userNo)) {
+                isDuplicate = true;
+                return false; // loop break
+            }
+        });
+
+        if (isDuplicate) return;
+
+        // 새 멤버 HTML 태그 추가
+        const newMemberHtml = `
+            <div class="editMemberItem" data-userno="${userNo}" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #f3f4f6;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <input type="checkbox" class="edit-member-chk" value="${userNo}" style="width: 14px; height: 14px;">
+                    <div style="width: 38px; height: 38px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 18px;">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 14px; font-weight: 700; color: #111827;">${userName}</div>
+                    </div>
+                </div>
+                <i class="fa-solid fa-xmark btnRemoveEditMember" style="color: #ef4444; cursor: pointer; font-size: 16px; padding: 4px;"></i>
+            </div>
+        `;
+
+        $(".editMemberListBox").append(newMemberHtml);
+        updateModalMemberCount();
+        $("#selectedMemberPreview").val(`${userName} 님이 추가되었습니다.`);
+
+    } 
+    // 조직 추가/수정 모달 -> 조직장 지정
+    else {
+        window.selectedMasterId = userNo;
+        $("#userNo, #masterUserNo, #selectedMasterId").val(userNo);
+        $("#emptyMasterText").hide();
+        $("#selectedMasterName").text(userName);
+        $("#selectedMasterItem").css("display", "flex");
+    }
+};
+
 $(function(){
     let originalMemberListHtml = "";
 
@@ -284,7 +369,7 @@ $(function(){
         $("#detailModalArea").empty();
     });
 
-    $(document).on("click", "#groupDetailModalOverlay", function(e){
+    $(document).on("click", "#orgDetailModalOverlay", function(e){
         if (e.target === this) {
             $("#detailModalArea").empty();
         }
@@ -325,7 +410,7 @@ $(function(){
         });
     });
 
-    // 구성원 및 조직 삭제
+    // 구성원 삭제
     $(document).off("click", ".btnDeleteMember").on("click", ".btnDeleteMember", function(e){
         e.preventDefault();
         
@@ -363,10 +448,16 @@ $(function(){
 
             axios.post("/adminUser/member/deleteOrganization", params)
             .then(function(res){
-                location.reload();
+            	if (res.data === "success") {
+                    alert("그룹이 삭제되었습니다.");
+                    location.reload();
+                } else {
+                    alert("그룹 삭제에 실패했습니다.");
+                }
             })
             .catch(function(err){
                 console.error("삭제 중 오류:", err);
+                alert("조직 삭제 중 오류가 발생했습니다.");
             });
         }
     });
@@ -457,17 +548,21 @@ $(function(){
 	        const $area = $("#addOrganizationFormArea");
 	        $area.html(response.data);
 	
+	     	// 1) input 태그 값 세팅
 	        $area.find("#organizationNo").val(organizationNo);
 	        $area.find("#organizationNameInput").val(organizationName).trigger("input");
 	        $area.find("#organizationDescInput").val(organizationDesc).trigger("input");
 	         
+	     	// 2) 타이틀 및 버튼 변경
 	        $area.find("#modalTitle").text("조직 수정");
 	        $area.find("#btnSaveOrganization").text("수정");
 	
+	     	// 3) 마스터 정보 세팅 (window 전역변수 + form 내부 hidden 값 전체 동시 업데이트)
 	        if (organizationLeaderNo) {
 	            const leaderStr = String(organizationLeaderNo);
 	            window.selectedMasterId = leaderStr; 
 	            
+	         	// 모달 내부 input 태그가 존재할 경우 값 세팅 (Form 검사 통과용)
 	            $area.find("#userNo, #masterUserNo, #selectedMasterId, #initialMasterUserNo").val(leaderStr);
 
 	            $area.find("#selectedMasterName").text(masterName);
@@ -481,6 +576,7 @@ $(function(){
 	            $area.find("#emptyMasterText").show();
 	        }
 	
+	     	// 4) 모달 출력
 	        $area.find("#organizationAddEditModal").show();
 	    })
 	    .catch(function(error) {
@@ -514,7 +610,6 @@ $(function(){
 	function loadMoreOrgMembers() {
 	    isOrgMemberFetching = true;
 	    orgMemberPage++;
-
 	    const organizationNo = $("#btnDeleteOrganization").data("organizationno");
 	    const searchKey = $.trim($("#detailMemberSearchKey").val());
 

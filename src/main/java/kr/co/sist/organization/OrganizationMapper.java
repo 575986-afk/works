@@ -38,11 +38,11 @@ public interface OrganizationMapper {
 	// 조직장 변경 - organization
 	public int updateOrganizationLeader(@Param("organizationNo") String organizationNo, @Param("userNo") String userNo);
 
-	// 조직 삭제 전 구성원 전체 삭제
-	public int deleteOrganizationMemberAll(@Param("organizationNo") String organizationNo);
+	// [수정] 조직 삭제 전 구성원 전체 삭제 (단건/다중 통합)
+	public int deleteOrganizationMemberAll(@Param("organizationNos") List<String> organizationNos);
 
-	// 조직 삭제
-	public int deleteOrganization(@Param("organizationNo") String organizationNo);
+	// [수정] 조직 삭제 (단건/다중 통합)
+	public int deleteOrganization(@Param("organizationNos") List<String> organizationNos);
 	
 	//조직 수정
 	public int updateOrganization(OrganizationDTO gDTO);
