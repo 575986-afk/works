@@ -28,6 +28,11 @@ public class ChatController {
 	   
 	    model.addAttribute("currentRoomId", chatRoomNo);
 	    
+	    if (chatRoomNo != null && !chatRoomNo.isEmpty()) {
+	    } else {
+	        model.addAttribute("currentRoomName", "채팅방을 선택해주세요");
+	    }
+	    
 	    return "works/chat/chatting";
 	}
 	

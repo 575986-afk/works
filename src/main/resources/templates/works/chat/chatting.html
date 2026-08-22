@@ -256,26 +256,25 @@
             </div>
             
             <div class="room-list">
-                <div class="room-item" 
-			     th:each="room : ${chatRoomList}" 
-			     th:classappend="${room.chatRoomNo !=null} ? 'active'"
-			     th:onclick="|location.href='@{/chatting(chatRoomNo=${room.chatRoomNo})}'|">
-			    
-			    <div class="room-avatar" th:text="${#strings.substring(room.chatRoomName, 0, 1)}"></div>
-			    
-			    <div class="room-info">
-			        <div class="room-info-top">
-			            <span class="room-name" th:text="${room.chatRoomName}"></span>
-			        </div>
-			        <div class="room-preview" th:text="${room.lastMessage}"></div>
-			            <span class="room-time" th:text="${room.lastTime}"></span>
-			    </div>
-			    
-			</div>
+    <div class="room-item" 
+         th:each="room : ${chatRoomList}" 
+         th:classappend="${room.chatRoomNo == currentRoomId} ? 'active'"
+         th:onclick="|location.href='@{/chatting(chatRoomNo=${room.chatRoomNo})}'|">
+        
+        <div class="room-avatar" th:text="${#strings.substring(room.chatRoomName, 0, 1)}"></div>
+        
+        <div class="room-info">
+            <div class="room-info-top">
+                <span class="room-name" th:text="${room.chatRoomName}"></span>
             </div>
+            <div class="room-preview" th:text="${room.lastMessage}"></div>
+            <span class="room-time" th:text="${room.lastTime}"></span>
+        </div>
+        
+    </div>
+</div>
         </aside>
 
-        <!-- 우측 대화창 -->
         <main class="chat-area">
             <div class="chat-header">
                 <div class="chat-room-title">
