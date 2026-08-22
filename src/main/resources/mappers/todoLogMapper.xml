@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.sist.todoaudit.ToDoLogMapper">
+
+	<resultMap id="todoLogResultMap" type="kr.co.sist.todoaudit.ToDoLogListDomain">
+	    <result property="userName"
+	            column="userName"
+	            typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+	    <result property="email"
+	            column="email"
+	            typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+	</resultMap>
+	<!-- 할일로그 리스트 조회 -->
+	<select id="selectAllToDoLog" resultMap="todoLogResultMap">
+	 SELECT t.DUTY AS duty,
+	 		t.INPUT_DATE AS inputDate,
+			u.user_name AS userName,
+			u.email AS email
+	 FROM TODOLOG t
+	 LEFT JOIN users u
+			ON t.user_no = u.user_no
+	</select>
+
+</mapper>

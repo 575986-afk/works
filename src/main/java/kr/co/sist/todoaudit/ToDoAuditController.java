@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +24,9 @@ import jakarta.servlet.http.HttpSession;
 @Controller
 @RequestMapping("/adminUser/audit")
 public class ToDoAuditController {
+	
+	@Autowired(required = false)
+	private ToDoLogService tdls;
 
 	// 할일 로그 페이지
 	@GetMapping("/todoAudit")
@@ -42,48 +46,7 @@ public class ToDoAuditController {
             endDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy. MM. dd"));
         }
 
-        // 임시 데이터
-        List<Map<String, String>> logList = new ArrayList<>();
-
-        Map<String, String> log1 = new HashMap<>();
-        log1.put("logNo", "LOG_1001");
-        log1.put("title", "요청 할 일 테스트");
-        log1.put("task", "할 일 미완료 변경");
-        log1.put("userName", "홍길동");
-        log1.put("userEmail", "test1@practice-6.by-works.net");
-        log1.put("date", "2026-07-16");
-        log1.put("time", "T15:51:44+09:00");
-        logList.add(log1);
-
-        Map<String, String> log2 = new HashMap<>();
-        log2.put("logNo", "LOG_1002");
-        log2.put("title", "요청 할 일 테스트");
-        log2.put("task", "할 일 완료");
-        log2.put("userName", "홍길동");
-        log2.put("userEmail", "test1@practice-6.by-works.net");
-        log2.put("date", "2026-07-16");
-        log2.put("time", "T15:49:50+09:00");
-        logList.add(log2);
-
-        Map<String, String> log3 = new HashMap<>();
-        log3.put("logNo", "LOG_1003");
-        log3.put("title", "요청 할 일 테스트");
-        log3.put("task", "할 일 수정");
-        log3.put("userName", "홍길동");
-        log3.put("userEmail", "test1@practice-6.by-works.net");
-        log3.put("date", "2026-07-16");
-        log3.put("time", "T15:49:08+09:00");
-        logList.add(log3);
-
-        Map<String, String> log4 = new HashMap<>();
-        log4.put("logNo", "LOG_1004");
-        log4.put("title", "1234");
-        log4.put("task", "할 일 삭제");
-        log4.put("userName", "홍길동");
-        log4.put("userEmail", "test1@practice-6.by-works.net");
-        log4.put("date", "2026-07-16");
-        log4.put("time", "T15:24:49+09:00");
-        logList.add(log4);
+        List<ToDoLogListDomain> logList = tdls.getAllToDoLogList();
 
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
