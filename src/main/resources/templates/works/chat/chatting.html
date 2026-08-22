@@ -50,7 +50,7 @@
     </style>
 </head>
 <body>
-    <!-- 대시보드 헤더 직접 삽입 (프래그먼트 오류 원천 차단) -->
+    <!-- 대시보드 헤더 -->
     <header class="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 shrink-0 z-50 relative">
         <div class="flex items-center gap-6">
             <a th:href="@{/userDashboard}" class="flex items-center gap-2 text-teal-500 font-bold text-lg hover:opacity-80">
@@ -175,7 +175,6 @@
 
         <!-- 메인 채팅 영역 -->
         <main class="chat-area">
-            <!-- 채팅방 선택 시 해당 방 이름 표시, 미선택 시 '메시지' 표시 -->
             <div class="chat-header">
                 <span th:text="${currentRoomName != null ? currentRoomName : '메시지'}">메시지</span>
             </div>
@@ -195,11 +194,11 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         const currentRoomNo = '[[${currentRoomId}]]';
-        const myName = '[[${session.user.name}]]';
+        const myName = '[[${session.user.name}]]';        // 내 이름 (예: 나미리)
+        const myUserNo = '[[${session.user.userNo}]]';    // 내 유저 번호 (예: 50 또는 U000050)
         let isSubmitting = false;
 
         $(document).ready(function() {
-            // 드롭다운 스크립트 결합
             const appLauncherBtn = document.getElementById('appLauncherBtn');
             const appLauncherDropdown = document.getElementById('appLauncherDropdown');
             const notiBtn = document.getElementById('notiBtn');
@@ -298,7 +297,11 @@
                 }
 
                 data.forEach(msg => {
-                    let isMy = (String(msg.sendUser) === String(myName));
+                    let sender = String(msg.sendUser ? msg.sendUser : '');
+                    
+                    // 이름이 일치하거나, 유저 번호(아이디)가 포함/일치하면 내 메시지로 판정
+                    let isMy = (sender === String(myName) || sender === String(myUserNo) || sender.includes(String(myUserNo)));
+                    
                     let senderName = msg.sendUser ? msg.sendUser : '';
                     let avatarChar = senderName ? senderName.charAt(0) : '?';
 
