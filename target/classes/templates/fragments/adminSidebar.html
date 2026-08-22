@@ -16,7 +16,9 @@
                     <i class="fa-solid fa-chevron-down arrow"></i>
                 </div>
                 <ul class="submenu">
-                    <li><a th:href="@{/adminUser/company/info}">회사 정보</a></li>
+                    <li th:if="${session.user.role_level >= 99}">
+					    <a th:href="@{/adminUser/company/info}">회사 정보</a>
+					</li>
                 </ul>
             </div>
 
@@ -30,10 +32,18 @@
                     <i class="fa-solid fa-chevron-down arrow"></i>
                 </div>
                 <ul class="submenu">
-                    <li><a th:href="@{/adminUser/member/member}">구성원</a></li>
-                    <li><a th:href="@{/adminUser/member/organization}">조직</a></li>
-                    <li><a th:href="@{/adminUser/member/group}">그룹</a></li>
-                    <li><a th:href="@{/adminUser/member/title}">직책/직급</a></li>
+                    <li th:if="${session.user.role_level >= 50}">
+					    <a th:href="@{/adminUser/member/member}">구성원</a>
+					</li>
+					<li th:if="${session.user.role_level >= 50}">
+					    <a th:href="@{/adminUser/member/organization}">조직</a>
+					</li>
+					<li th:if="${session.user.role_level >= 50}">
+					    <a th:href="@{/adminUser/member/group}">그룹</a>
+					</li>
+					<li th:if="${session.user.role_level >= 98}">
+					    <a th:href="@{/adminUser/member/title}">직책/직급</a>
+					</li>
                 </ul>
             </div>
 
@@ -47,7 +57,9 @@
                     <i class="fa-solid fa-chevron-down arrow"></i>
                 </div>
                 <ul class="submenu">
-                    <li><a th:href="@{/adminUser/security/authority}">관리자 권한</a></li>
+                    <li th:if="${session.user.role_level >= 99}">
+					    <a th:href="@{/adminUser/security/authority}">관리자 권한</a>
+					</li>
                 </ul>
             </div>
         </div>
@@ -66,7 +78,9 @@
                     <i class="fa-solid fa-chevron-down arrow"></i>
                 </div>
                 <ul class="submenu">
-                    <li><a th:href="@{/adminUser/service/calendar}">캘린더</a></li>
+                    <li th:if="${session.user.role_level >= 98}">
+					    <a th:href="@{/adminUser/service/calendar}">캘린더</a>
+					</li>
                 </ul>
             </div>
 
@@ -80,10 +94,18 @@
                     <i class="fa-solid fa-chevron-down arrow"></i>
                 </div>
                 <ul class="submenu">
-                    <li><a th:href="@{/adminUser/audit/loginAudit}">로그인</a></li>
-                    <li><a th:href="@{/adminUser/audit/calAudit}">캘린더</a></li>
-                    <li><a th:href="@{/adminUser/audit/todoAudit}">할일</a></li>
-                    <li><a th:href="@{/adminUser/audit/addrAudit}">주소록</a></li>
+                    <li th:if="${session.user.role_level >= 99}">
+					    <a th:href="@{/adminUser/audit/loginAudit}">로그인</a>
+					</li>
+					<li th:if="${session.user.role_level >= 99}">
+					    <a th:href="@{/adminUser/audit/calAudit}">캘린더</a>
+					</li>
+					<li th:if="${session.user.role_level >= 99}">
+					    <a th:href="@{/adminUser/audit/todoAudit}">할일</a>
+					</li>
+					<li th:if="${session.user.role_level >= 99}">
+					    <a th:href="@{/adminUser/audit/addrAudit}">주소록</a>
+					</li>
                 </ul>
             </div>
         </div>

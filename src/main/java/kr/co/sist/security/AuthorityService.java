@@ -33,8 +33,33 @@ public class AuthorityService {
 		return am.deleteRole(companyNo, roleNo)==1;
 	}
 	
-	public boolean changeDelegation(String companyNo, String userNo) {
-		return am.updateDelegation(companyNo, userNo)==1;
+	public boolean changeDelegation(
+	        String receiverUserNo,
+	        String companyNo) {
+
+	    // 1. 현재 최고관리자 조회
+	    RoleDomain currentAdmin = am.selectCurrentAdmin(companyNo);
+	    if (currentAdmin == null) {
+	        return false;
+	    }
+	    String senderUserNo = currentAdmin.getUserNo();
+
+	    // 2. 위임받을 사람 조회
+	    UserDomain receiver = am.selectDelegationReceiver(companyNo, receiverUserNo);
+	    if (receiver == null) {
+	        return false;
+	    }
+
+	    // 3. 최고관리자 권한을 receiver에게 변경
+	    return am.updateDelegation(receiverUserNo,companyNo,senderUserNo) == 1;
+	}
+	
+	public RoleDomain getCurrentAdmin(String companyNo) {
+	    return am.selectCurrentAdmin(companyNo);
+	}
+
+	public UserDomain getDelegationReceiver(String companyNo, String userNo) {
+	    return am.selectDelegationReceiver(companyNo, userNo);
 	}
 	
 	public List<UserDomain> searchDelegationMember(String companyNo, String keyword) {

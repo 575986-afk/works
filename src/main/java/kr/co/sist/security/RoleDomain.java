@@ -11,6 +11,6 @@ import lombok.ToString;
 @Getter
 @ToString
 public class RoleDomain {
-	private String roleNo, roleName;
+	private String roleNo, roleName, userNo, userName, email;
 	private int roleLevel;
 }

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.sist.audit.AuditMapper">
+
+	<resultMap id="emailResultMap" type="kr.co.sist.audit.AuditEmailDomain">
+	    <result property="email"
+	            column="email"
+	            typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+	</resultMap>
+
+    <!-- 관리자 이메일 조회 -->
+    <select id="selectEmail" parameterType="String" resultMap="emailResultMap">
+     SELECT email
+     FROM USERS
+     WHERE user_no = #{userNo}
+    </select>
+
+    <!-- 인증번호 저장 -->
+    <insert id="insertCode" parameterType="java.util.Map">
+     INSERT INTO VERIFICATIONCODE (
+         VERIFICATION_NO,
+         INPUT_DATE,
+         USER_NO
+     )
+     VALUES (
+         #{verificationNo},
+         SYSDATE,
+         #{userNo, jdbcType=VARCHAR}
+     )
+    </insert>
+
+    <!-- 현재 사용자의 가장 최근 인증번호 확인 -->
+    <select id="selectNumber" resultType="int">
+     SELECT COUNT(*)
+     FROM (
+         SELECT verification_no
+         FROM VERIFICATIONCODE
+         WHERE user_no = #{userNo}
+           AND input_date >= SYSDATE - (10 / 1440)
+         ORDER BY input_date DESC
+     )
+     WHERE ROWNUM = 1
+       AND verification_no = #{verificationNo}
+    </select>
+
+</mapper>

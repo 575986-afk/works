@@ -127,9 +127,21 @@ $(function(){
     });
     // 4. 재전송 버튼 클릭 이벤트
     $("#resendBtn").click(function(){
-        alert("인증 번호가 재전송되었습니다.");
-        // AJAX 재전송 요청 처리 가능
-    });
+	    $.ajax({
+	        url: "/adminUser/audit/resend",
+	        type: "POST",
+	        success: function(response) {
+	            if (response === "success") {
+	                alert("인증번호가 재전송되었습니다.");
+	            } else {
+	                alert("인증번호 재전송에 실패했습니다.");
+	            }
+	        },
+	        error: function() {
+	            alert("인증번호 재전송에 실패했습니다.");
+	        }
+	    });
+	});
     // 4자리 모두 입력 시 hidden input에 조합 후 자동 제출 준비
     function checkAndSubmit() {
         var code = "";
@@ -138,7 +150,7 @@ $(function(){
         });
         if (code.length === 4) {
             $("#otpCode").val(code);
-            // $("#otpForm").submit(); // 필요 시 폼 자동 제출 활성화
+            $("#otpForm").submit();
         }
     }
 });
@@ -154,14 +166,14 @@ $(function(){
             전송된 인증 번호를 입력해주세요.
         </h2>
         <!-- 4자리 인증번호 입력 폼 -->
-        <form id="otpForm" action="/auth/verify" method="post">
+        <form id="otpForm" th:action="@{/adminUser/audit/verify}" method="post">
             <div class="otp-container">
                 <input type="text" class="otp-input" maxlength="1" pattern="[0-9]*" inputmode="numeric" autofocus autocomplete="off">
                 <input type="text" class="otp-input" maxlength="1" pattern="[0-9]*" inputmode="numeric" autocomplete="off">
                 <input type="text" class="otp-input" maxlength="1" pattern="[0-9]*" inputmode="numeric" autocomplete="off">
                 <input type="text" class="otp-input" maxlength="1" pattern="[0-9]*" inputmode="numeric" autocomplete="off">
             </div>
-            <input type="hidden" name="otpCode" id="otpCode">
+            <input type="hidden" name="num" id="otpCode">
         </form>
         <p class="timer-text">10분 이내로 입력해주세요.</p>
         <button type="button" class="resend-btn" id="resendBtn">재전송</button>

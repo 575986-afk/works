@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import jakarta.servlet.http.HttpSession;
+import kr.co.sist.mail.MailService;
 
 @Controller
 @RequestMapping("/adminUser/security")
@@ -19,6 +20,8 @@ public class AuthorityController {
 	
 	@Autowired(required = false)
 	private AuthorityService as;
+	@Autowired(required = false)
+	private MailService ms;
 	
 	// 화면 조회
 	@GetMapping("/authority")
@@ -121,7 +124,12 @@ public class AuthorityController {
 								, HttpSession session) {
 		String companyNo = (String) session.getAttribute("companyNo");
 
-		boolean result = as.changeDelegation(companyNo, selectedUserNo);
+		boolean result = as.changeDelegation(selectedUserNo, companyNo);
+		
+		if (result) {
+		    session.setAttribute("delegationWaiting", true);
+		    session.setAttribute("delegationReceiverUserNo", selectedUserNo);
+		}
 
 		return result ? "success" : "fail";
 	}
@@ -144,24 +152,74 @@ public class AuthorityController {
 	
 	//권한 위임 폼
     @GetMapping("/changeDelegationForm")
-    public String changeDelegationForm(Model model) {
-        
-        // DB에서 현재 보낸 위임 요청이 있는지 확인 (있으면 true, 없으면 false)
-        boolean isWaiting = false; // 테스트용 (DB 연동 시 조회 결과에 따라 true/false)
+    public String changeDelegationForm(HttpSession session, Model model) {
+
+        Boolean isWaiting =
+                (Boolean) session.getAttribute("delegationWaiting");
+
+        if (isWaiting == null) {
+            isWaiting = false;
+        }
+
+        System.out.println(">>> isWaiting = " + isWaiting);
+
+        model.addAttribute("isWaiting", isWaiting);
 
         if (isWaiting) {
-            // 위임 요청이 존재하면 2단계(대기 화면)용 데이터 전달
-            model.addAttribute("isWaiting", true);
-            model.addAttribute("senderInfo", "홍길동 testtest@practice-6.by-works.com");
-            model.addAttribute("receiverName", "김철수");
-            model.addAttribute("receiverInfo", "김철수 test1@practice-6.by-works.net");
-            model.addAttribute("deadlineDate", "2026년 8월 27일까지 수락 필요");
-        } else {
-            // 위임 요청이 없으면 1단계(처음 화면) 표시
-            model.addAttribute("isWaiting", false);
+
+            String companyNo =
+                    (String) session.getAttribute("companyNo");
+            String receiverUserNo =
+                    (String) session.getAttribute("delegationReceiverUserNo");
+
+            System.out.println(">>> companyNo = " + companyNo);
+            System.out.println(">>> receiverUserNo = " + receiverUserNo);
+
+            RoleDomain currentAdmin =
+                    as.getCurrentAdmin(companyNo);
+            UserDomain receiver =
+                    as.getDelegationReceiver(companyNo, receiverUserNo);
+
+            System.out.println(">>> currentAdmin = " + currentAdmin);
+            System.out.println(">>> receiver = " + receiver);
+
+            model.addAttribute("senderInfo",
+                    currentAdmin.getUserName() + " " + currentAdmin.getEmail());
+            model.addAttribute("receiverName",
+                    receiver.getUserName());
+            model.addAttribute("receiverInfo",
+                    receiver.getUserName() + " " + receiver.getEmail());
         }
 
         return "adminUser/security/changeDelegation";
+    }
+    // 권한 위임 다음으로 눌러서 2단계 열기
+    @PostMapping("/startDelegation")
+    @ResponseBody
+    public String startDelegation(
+            @RequestParam("selectedUserNo") String selectedUserNo,
+            HttpSession session) {
+    	
+    	String companyNo =
+                (String) session.getAttribute("companyNo");
+
+        UserDomain receiver =
+                as.getDelegationReceiver(companyNo, selectedUserNo);
+
+        boolean mailResult =
+                ms.sendDelegationMail(
+                        receiver.getEmail(),
+                        receiver.getUserName()
+                );
+
+        if (!mailResult) {
+            return "fail";
+        }
+
+        session.setAttribute("delegationWaiting", true);
+        session.setAttribute("delegationReceiverUserNo", selectedUserNo);
+
+        return "success";
     }
 	
 	// 사용자 권한 추가

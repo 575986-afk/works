@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>2단계 인증</title>
+
 <style type="text/css">
 * {
     box-sizing: border-box;
@@ -77,11 +78,16 @@ body {
     color: #88929e;
     letter-spacing: 0.3px;
 }
-
+/* 인증번호 발송 실패 메시지 */
+.error-message {
+    margin-top: 18px;
+    font-size: 13px;
+    color: #e74c3c;
+}
 </style>
 </head>
-<body>
 
+<body>
 <div class="auth-wrapper">
     <!-- 메인 카드 -->
     <div class="auth-card">
@@ -89,22 +95,33 @@ body {
             안전한 접근을 위해<br>
             2단계 인증을 진행합니다.
         </h2>
-        <p class="auth-subtitle">인증번호를 받을 수단을 선택해 주세요.</p>
-
-        <!-- 인증 수단 박스 -->
-        <div class="method-card" onclick="location.href='send.html'">
-            <div class="icon-box">
-                <!-- SVG 이메일 & 체크 아이콘 -->
-                <svg width="44" height="44" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="6" y="15" width="36" height="25" rx="5" fill="#EBF3FE" stroke="#B8D5FC" stroke-width="2"/>
-                    <path d="M7 17L24 29L41 17" stroke="#B8D5FC" stroke-width="2" stroke-linecap="round"/>
-                    <circle cx="24" cy="14" r="7" fill="#00C73C"/>
-                    <path d="M21 14L23 16L27 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+        <p class="auth-subtitle">
+            인증번호를 받을 수단을 선택해 주세요.
+        </p>
+        <!-- 인증 수단 -->
+        <form th:action="@{/adminUser/audit/send}" method="post">
+            <div class="method-card"
+                 onclick="this.closest('form').submit()">
+                <div class="icon-box">
+                    <!-- SVG 이메일 & 체크 아이콘 -->
+                    <svg width="44" height="44" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="6" y="15" width="36" height="25" rx="5" fill="#EBF3FE" stroke="#B8D5FC" stroke-width="2"/>
+                        <path d="M7 17L24 29L41 17" stroke="#B8D5FC" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="24" cy="14" r="7" fill="#00C73C"/>
+                        <path d="M21 14L23 16L27 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="method-title">
+                    이메일로 인증
+                </div>
+                <div class="method-detail"
+                     th:text="${maskedEmail}">
+                    fa******@naver.com
+                </div>
             </div>
-            <div class="method-title">이메일로 인증</div>
-            <div class="method-detail" th:text="${maskedEmail}">fa*******@na*******</div>
-        </div>
+        </form>
+        <!-- 발송 실패 메시지 -->
+        <div class="error-message" th:if="${msg}" th:text="${msg}"></div>
     </div>
 </div>
 

@@ -19,6 +19,15 @@
         <result property="roleName" column="roleName"/>
         <result property="roleLevel" column="roleLevel"/>
     </resultMap>
+    
+	<resultMap id="roleResultMap" type="kr.co.sist.security.RoleDomain">
+        <result property="userName"
+                column="userName"
+                typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+        <result property="email"
+                column="email"
+                typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+    </resultMap>
 
     <select id="selectRole" resultType="roleDomain">
      SELECT roleName, roleNo, roleLevel
@@ -98,17 +107,21 @@
         AND user_no = #{senderUserNo}
 	</update>
 	<!-- 현재 권한 가진 관리자 조회 -->
-	<select id="selectCurrentAdmin" resultType="roleDomain">
+	<select id="selectCurrentAdmin" resultMap="roleResultMap">
      SELECT
-        role_no AS roleNo,
-        role_name AS roleName,
-        role_level AS roleLevel,
-        company_no AS companyNo,
-        user_no AS userNo
-     FROM ROLE
-     WHERE company_no = #{companyNo}
-       AND role_level = 99
-       AND user_no IS NOT NULL
+        r.role_no AS roleNo,
+        r.role_name AS roleName,
+        r.role_level AS roleLevel,
+        r.company_no AS companyNo,
+        r.user_no AS userNo,
+        u.user_name AS userName,
+        u.email AS email
+     FROM ROLE r
+     JOIN USERS u
+	     ON r.user_no = u.user_no
+     WHERE r.company_no = #{companyNo}
+       AND r.role_level = 99
+       AND r.user_no IS NOT NULL
 	</select>
 	<!-- 권한 받을 사람 조회 -->
 	<select id="selectDelegationReceiver"
@@ -140,7 +153,7 @@
         ON t.rank_no = r.rank_no
      WHERE u.company_no = #{companyNo}
        AND (
-            u.user_id = #{userId}
+            u.user_id = #{keyword}
             OR
             u.user_name = #{keyword, typeHandler=kr.co.sist.login.EncryptTypeHandler}
           )

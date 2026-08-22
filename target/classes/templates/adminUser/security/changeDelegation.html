@@ -216,14 +216,12 @@ $(function(){
         }
     });
 
-    $(document).on(
-        "change",
-        "input[name='delegationMember']",
-        function(){
-
+    $(document).on("change", "input[name='delegationMember']", function(){
             let userNo = $(this).data("user-no");
             let userName = $(this).data("user-name");
             let userId = $(this).data("user-id");
+            
+            $("#selectedUserNo").val(userNo);
 
             $("#selectedMemberName").text(
                 userName + " (" + userId + ")"
@@ -232,34 +230,35 @@ $(function(){
             $("#nextStepBtn").data("user-no", userNo);
             $(".memberResultItem").removeClass("selected");
 
-            $(this)
-                .closest(".memberResultItem")
-                .addClass("selected");
+            $(this).closest(".memberResultItem").addClass("selected");
         }
     );
 
     $("#nextStepBtn").click(function(){
-        let targetUserNo = $(this).data("user-no");
+
+        let targetUserNo = $("#selectedUserNo").val();
 
         if(!targetUserNo){
             alert("위임할 구성원을 선택하세요.");
             return;
         }
+
         $.ajax({
-            url: "/adminUser/security/changeDelegation",
+            url: "/adminUser/security/startDelegation",
             type: "POST",
             data: {
-                targetUserNo: targetUserNo
+                selectedUserNo: targetUserNo
             },
             success: function(res){
+
                 if(res === "success"){
                     location.reload();
                 } else {
-                    alert("권한 위임 요청에 실패했습니다.");
+                    alert("다음 단계로 이동할 수 없습니다.");
                 }
             },
             error: function(){
-                alert("권한 위임 요청 처리 중 오류가 발생했습니다.");
+                alert("처리 중 오류가 발생했습니다.");
             }
         });
     });
@@ -330,6 +329,8 @@ $(function(){
 					    <span>선택한 구성원 : </span>
 					    <strong id="selectedMemberName"></strong>
 					</div>
+					<!-- 선택된 구성원의 userNo -->
+					<input type="hidden" id="selectedUserNo" name="selectedUserNo">
 					
 					<button type="button" id="nextStepBtn" class="btnNext">다음</button>
                 </div>
