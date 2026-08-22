@@ -44,11 +44,11 @@ public class AuthorityController {
 	
     // 권한 구성원 조회
  	@GetMapping("/findRoleMember")
- 	public String findRoleMember(@RequestParam(name="roleName") String roleName,
+ 	public String findRoleMember(@RequestParam(name="roleLevel") String roleLevel,
  								HttpSession session, Model model) {
  		String companyNo=(String)session.getAttribute("companyNo");
  		
- 		List<UserDomain> roleMemberList=as.getRoleMember(companyNo, roleName);
+ 		List<UserDomain> roleMemberList=as.getRoleMember(companyNo, roleLevel);
  		model.addAttribute("roleMemberList", roleMemberList);
  		
  		return "adminUser/security/memberFragment";

@@ -71,7 +71,7 @@
 	 LEFT JOIN RANK k
         ON t.rank_no = k.rank_no
 	 WHERE r.company_no = #{companyNo}
-	   AND r.role_name = #{roleName}
+	   AND r.role_level = #{roleLevel}
 	   AND r.user_no IS NOT NULL
 	</select>
 	

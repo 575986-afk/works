@@ -365,12 +365,18 @@ function loadRoleList() {
 // 우측 구성원 목록 불러오기
 function loadMember(roleName) {
     if (!roleName) return;
+
     $.ajax({
         url: "/adminUser/security/findRoleMember",
         type: "GET",
-        data: { roleName: roleName },
+        data: {
+            roleLevel: selectedRoleLevel
+        },
         success: function(result) {
             $("#contentArea").html(result);
+        },
+        error: function(xhr) {
+            console.error("관리자 목록 조회 실패:", xhr);
         }
     });
 }

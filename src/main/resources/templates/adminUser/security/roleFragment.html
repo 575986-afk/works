@@ -4,7 +4,8 @@
      class="roleItem"
      th:classappend="${stat.first} ? 'active' : ''"
      th:data-rolename="${role.roleName}"
-     th:data-roleno="${role.roleNo}">
+     th:data-roleno="${role.roleNo}"
+     th:data-rolelevel="${role.roleLevel}">
     
     <span class="roleNameText" th:text="${role.roleName}">최고관리자</span>
 

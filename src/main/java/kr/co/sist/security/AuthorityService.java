@@ -16,8 +16,8 @@ public class AuthorityService {
 		return list;
 	}
 	
-	public List<UserDomain> getRoleMember(String companyNo, String roleName){
-		List<UserDomain> list=am.selectRoleMember(companyNo, roleName);
+	public List<UserDomain> getRoleMember(String companyNo, String roleLevel){
+		List<UserDomain> list=am.selectRoleMember(companyNo, roleLevel);
 		return list;
 	}
 	

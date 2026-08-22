@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Param;
 public interface AuthorityMapper {
 	public List<RoleDomain> selectRole(@Param("companyNo") String companyNo);
 
-    public List<UserDomain> selectRoleMember(@Param("companyNo") String companyNo, @Param("roleName") String roleName);
+    public List<UserDomain> selectRoleMember(@Param("companyNo") String companyNo, @Param("roleLevel") String roleLevel);
     
     public int insertRole(RoleDTO rDTO);
     
