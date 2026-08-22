@@ -93,36 +93,18 @@ select COMPANY_NAME from COMPANY where company_no = #{ companyNo}
 	</select>
 	
 	<select id="getContactsByKeyword" parameterType="String" resultType="addrPopupUserDomain">
-    <bind name="pattern" value="'%' + keyword + '%'" />
-    
     SELECT u.USER_NO userNo, 
            u.USER_NAME userName, 
            u.PHONENUMBER phoneNumber, 
            g.GROUPS_NAME groupsName, 
            o.ORGANIZATION_NAME organizaionName
     FROM users u
-    <!-- 화면 출력용 기본 조인 (기존 코드 유지) -->
+    <!-- 화면 출력용 기본 조인 -->
     LEFT JOIN ORGANIZATION o ON u.user_no = o.user_no
     LEFT JOIN GROUPS g ON u.user_no = g.user_no
     
-    WHERE u.USER_NAME LIKE #{pattern} 
-       OR u.PHONENUMBER LIKE #{pattern} 
-       
-       <!-- 1. 조직명 검색 시: ORGANIZATIONMEMBER를 통해 소속 사원 목록 반환 -->
-       OR u.USER_NO IN (
-           SELECT om.ORGMEMBER_NO 
-           FROM ORGANIZATIONMEMBER om
-           JOIN ORGANIZATION org ON om.ORGANIZATION_NO = org.ORGANIZATION_NO
-           WHERE org.ORGANIZATION_NAME LIKE #{pattern}
-       )
-       
-       <!-- 2. 그룹명 검색 시: GROUPSMEMBER를 통해 소속 사원 목록 반환 -->
-       OR u.USER_NO IN (
-           SELECT gm.GRP_MEMBER_NO 
-           FROM GROUPSMEMBER gm
-           JOIN GROUPS grp ON gm.GROUPS_NO = grp.GROUPS_NO
-           WHERE grp.GROUPS_NAME LIKE #{pattern}
-       )
+    <!-- 같은 회사 직원만 가져오도록 수정 -->
+    WHERE u.COMPANY_NO = #{companyNo}
 </select>
 
 </mapper>

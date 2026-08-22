@@ -48,8 +48,9 @@ public class PopupAddressController {
 	
 	@GetMapping("/address/search")
 	@ResponseBody
-	public List<UserDomain> searchContacts(String keyword) {
-	    return pas.searchContactsByKeyword(keyword); 
+	public List<UserDomain> searchContacts(HttpSession session, String keyword) {
+	    String companyNo = (String) session.getAttribute("companyNo"); // 세션에서 회사 번호 가져오기
+	    return pas.searchContactsByKeyword(keyword, companyNo); // 서비스로 함께 전달
 	}
 	
 	

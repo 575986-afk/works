@@ -16,7 +16,7 @@ public interface AddressMapper {
 
 	public String selectCompany(String companyNo);
 
-	public List<UserDomain> getContactsByKeyword(String keyword);
+	public List<UserDomain> getContactsByKeyword(String companyNo);
 
 	public int insertBookmark(UserDTO uDTO);
 

@@ -35,8 +35,9 @@ public class AddressController {
     // 자동완성 검색용 AJAX 매핑 추가
     @GetMapping("/address/main/search")
     @ResponseBody
-    public List<UserDomain> searchContacts(String keyword) {
-        return as.searchContactsByKeyword(keyword);
+    public List<UserDomain> searchContacts(HttpSession session, String keyword) {
+    	String companyNo = (String) session.getAttribute("companyNo"); // 세션에서 회사 번호 가져오기
+        return as.searchContactsByKeyword(keyword, companyNo); // 서비스로 함께 전달
     }
     
     @GetMapping("addressDetail")

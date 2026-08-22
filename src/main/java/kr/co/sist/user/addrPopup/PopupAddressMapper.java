@@ -13,5 +13,5 @@ public interface PopupAddressMapper {
 
 	public 	List<OrganizationDomain> selectOrganization(String userNo);
 	
-	public 	List<UserDomain> getContactsByKeyword(String keyword);
+	public List<UserDomain> getContactsByKeyword(String companyNo);
 }
