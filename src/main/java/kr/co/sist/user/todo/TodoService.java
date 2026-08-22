@@ -1,7 +1,9 @@
 package kr.co.sist.user.todo;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,16 +22,29 @@ public class TodoService {
 	}
 	
 	public List<TodoDomain> getTodoList(RangeDTO rDTO) {
-		List<TodoDomain> list = new ArrayList<TodoDomain>();
-		TodoDomain temp = null;
-    	for (TodoDomain todo : tm.selectTodoList(rDTO)) {
-    		temp = todo;
-    		temp.setUserName(AESUtil.decrypt(temp.getUserName()));
-    		temp.setRepresentativeUserNames(AESUtil.decrypt(temp.getRepresentativeUserNames()));
-    		list.add(temp);
-    	}
-        return list;
-		
+	    List<TodoDomain> list = new ArrayList<>();
+	    
+	    for (TodoDomain todo : tm.selectTodoList(rDTO)) {
+	        todo.setUserName(AESUtil.decrypt(todo.getUserName()));
+	        
+	        todo.setRepresentativeUserNames(decryptMultipleNames(todo.getRepresentativeUserNames()));
+	        
+	        list.add(todo);
+	    }
+	    return list;
+	}
+	
+	private String decryptMultipleNames(String encryptedNames) {
+	    // null이거나 빈 문자열인 경우 그대로 반환
+	    if (encryptedNames == null || encryptedNames.trim().isEmpty()) {
+	        return encryptedNames;
+	    }
+	    
+	    // 한 명이든 여러 명이든 split(",")이 알아서 배열로 만들어줌
+	    return Arrays.stream(encryptedNames.split(","))
+	            .map(String::trim)        // 각 데이터 앞뒤 공백 제거
+	            .map(AESUtil::decrypt)    // 각각 복호화 수행
+	            .collect(Collectors.joining(", ")); // 다시 쉼표와 공백으로 연결
 	}
 	
 	public TodoDomain getTodoDetail(String userNo, String todoNo) {
