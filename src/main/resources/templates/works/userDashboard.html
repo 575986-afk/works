@@ -285,10 +285,10 @@ body{
     <!-- 할 일 카드 -->
     <div class="home-card card-todo">
         <div class="card-header-row">
-            <div class="card-title-group">
+            <a href="/todo" class="card-title-group">
                 <span>할 일</span>
                 <span class="card-action-icon">></span>
-            </div>
+            </a>
             <span style="color:#2563eb;">✓</span>
         </div>
 
@@ -297,13 +297,13 @@ body{
                 <div class="item-title" th:text="${todo.title}">할일 제목</div>
                 <div class="item-content" th:text="${todo.content}">할일 내용</div>
                 <div class="item-meta">
-    <span class="item-date" th:if="${todo.start_date != null and todo.end_date != null}">
-        <i class="far fa-calendar-alt"></i>
-        <span th:text="${todo.start_date}"></span>
-        ~
-        <span th:text="${todo.end_date}"></span>
-    </span>
-</div>
+			    <span class="item-date" th:if="${todo.start_date != null or todo.end_date != null}">
+			        <i class="far fa-calendar-alt"></i>
+			        <span th:if="${todo.start_date != null}" th:text="${todo.start_date}"></span>
+			        <span th:if="${todo.start_date != null and todo.end_date != null}"> ~ </span>
+			        <span th:if="${todo.end_date != null}" th:text="${todo.end_date}"></span>
+				    </span>
+				</div>
             </div>
         </div>
 
@@ -319,10 +319,10 @@ body{
     <!-- 조직도 카드 -->
     <div class="home-card">
         <div class="card-header-row">
-            <div class="card-title-group">
+            <a th:href="@{/addressBook}" class="card-title-group">
                 <span>조직도</span>
                 <span class="card-action-icon">></span>
-            </div>
+            </a>
             <span style="color:#2563eb;">👥</span>
         </div>
 

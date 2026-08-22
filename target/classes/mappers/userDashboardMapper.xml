@@ -51,16 +51,15 @@
 
 
 
-  <select id="selectTodo" resultType="kr.co.sist.userDashboard.TodoDomain">
-  select title, 
-  content, 
-  status, 
-  start_date,
-   end_date, 
-   bookmark 
-   from todo 
-   where user_no=#{userNo} order by end_date desc
-  </select>
+ <select id="selectTodo" resultType="kr.co.sist.userDashboard.TodoDomain">
+  select title, content, status, 
+         TO_CHAR(start_date, 'YYYY-MM-DD') AS start_date,
+         TO_CHAR(end_date, 'YYYY-MM-DD') AS end_date, 
+         bookmark 
+  from todo 
+  where user_no=#{userNo} 
+  order by end_date desc
+</select>
   
   
   

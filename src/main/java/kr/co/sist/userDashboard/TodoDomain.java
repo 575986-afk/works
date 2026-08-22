@@ -1,6 +1,7 @@
 package kr.co.sist.userDashboard;
 
 import java.security.Timestamp;
+import java.time.LocalDateTime;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -12,5 +13,5 @@ import lombok.ToString;
 public class TodoDomain {
 
 	private String todo_no, user_no, title, content, status, bookmark;
-	private Timestamp start_date, end_date;
+	private String start_date, end_date;
 }
