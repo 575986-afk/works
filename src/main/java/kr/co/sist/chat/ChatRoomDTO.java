@@ -1,8 +1,5 @@
 package kr.co.sist.chat;
 
-
-import java.security.Timestamp;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -11,9 +8,13 @@ import lombok.ToString;
 @Setter
 @ToString
 public class ChatRoomDTO {
-	
-	private String chatRoomNo, chatRoomName, lastMessage, content;
-	private Timestamp lastTime, sendTime;
-	private int cnt;
+    private String chatRoomNo;
+    private String chatRoomName;
+    private String lastMessage;
+    private String lastTime; 
 
+    private String chattingNo;
+    private String content;
+    private String sendUser;
+    private String sendDate; 
 }

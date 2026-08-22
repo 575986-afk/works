@@ -5,6 +5,9 @@ import java.util.List;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import jakarta.servlet.http.HttpSession;
 import kr.co.sist.signup.UserDTO;
@@ -17,7 +20,7 @@ public class ChatController {
 	private final ChatService cs;
 
 	@GetMapping("/chatting")
-	public String chatting(String chatRoomNo, Model model, HttpSession session) {
+	public String chatting(@RequestParam(value = "chatRoomNo", required = false) String chatRoomNo, Model model, HttpSession session) {
 	    UserDTO loginUser = (UserDTO) session.getAttribute("user");
 	    if (loginUser == null) {
 	        return "redirect:/login"; 
@@ -25,15 +28,44 @@ public class ChatController {
 	    
 	    List<ChatRoomDTO> chatroom = cs.getChatRoomList(loginUser.getUserNo()); 
 	    model.addAttribute("chatRoomList", chatroom);
-	   
 	    model.addAttribute("currentRoomId", chatRoomNo);
 	    
 	    if (chatRoomNo != null && !chatRoomNo.isEmpty()) {
-	    } else {
-	        model.addAttribute("currentRoomName", "채팅방을 선택해주세요");
+	        for (ChatRoomDTO room : chatroom) {
+	            if (room.getChatRoomNo().equals(chatRoomNo)) {
+	                model.addAttribute("currentRoomName", room.getChatRoomName());
+	                break;
+	            }
+	        }
 	    }
 	    
 	    return "works/chat/chatting";
+	}
+	
+	@GetMapping("/chat/messages")
+	@ResponseBody
+	public List<ChatRoomDTO> getMessages(@RequestParam("chatRoomNo") String chatRoomNo) {
+	    return cs.getMessageList(chatRoomNo);
+	}
+	
+	@PostMapping("/chat/send")
+	@ResponseBody
+	public String sendMessage(@RequestParam("chatRoomNo") String chatRoomNo, 
+	                          @RequestParam("content") String content, 
+	                          HttpSession session) {
+	    UserDTO loginUser = (UserDTO) session.getAttribute("user");
+	    if (loginUser == null) {
+	        return "FAIL";
+	    }
+	    
+	    ChatRoomDTO cDTO = new ChatRoomDTO();
+	    cDTO.setChatRoomNo(chatRoomNo);
+	    cDTO.setContent(content);
+	    cDTO.setSendUser(loginUser.getName()); 
+	    
+	    int cnt = cs.sendMessage(cDTO); 
+	    
+	    return cnt > 0 ? "SUCCESS" : "FAIL";
 	}
 	
 	//채팅방 리스트

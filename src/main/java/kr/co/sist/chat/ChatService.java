@@ -13,13 +13,15 @@ public class ChatService {
 	private final ChatMapper cm;
 
 	public List<ChatRoomDTO> getChatRoomList(String userNo){
-		List<ChatRoomDTO> list=cm.selectChatRoom(userNo);
-		return list;
+		return cm.selectChatRoom(userNo);
 	}
 	
 	public List<ChatRoomDTO> getMessageList(String chatRoomNo){
-		List<ChatRoomDTO> list=null;
-		return list;
+		return cm.selectMessageList(chatRoomNo);
+	}
+	
+	public int sendMessage(ChatRoomDTO cDTO) {
+		return cm.insertMessage(cDTO);
 	}
 	
 	public List<ChatRoomDTO> searchUser(String userName) {
@@ -32,10 +34,6 @@ public class ChatService {
 		return cnt;
 	}
 	
-	public int sendMessage(String chatRoomNo, String content) {
-		int cnt=0;
-		return cnt;
-	}
 	
 	public int createChat(ChatRoomDTO crDTO) {
 		int cnt=0;
