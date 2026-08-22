@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title>환경설정</title>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -21,7 +23,7 @@
         .settings-wrapper {
             display: flex;
             flex: 1;
-            margin-top: 60px;
+            margin-top: 0px;
         }
         
         /* 콘텐츠 영역 왼쪽 정렬 고정 */
@@ -317,7 +319,7 @@ $(function(){
 <body>
 
     <!-- 공통 헤더 -->
-    <div th:replace="~{fragments/header :: commonHeader}"></div>
+  <div th:replace="~{fragments/dashboardHeader :: user-header}"></div>
 
     <div class="settings-wrapper">
         <!-- 사이드바 -->

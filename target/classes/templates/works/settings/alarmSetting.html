@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>환경설정 - 알림</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* 기본 레이아웃 및 폰트 설정 */
         body {
@@ -16,7 +18,7 @@
         /* 전체 컨테이너 (헤더 높이 60px 만큼 상단 여백 부여) */
         .main-container {
             display: flex;
-            margin-top: 60px;
+            margin-top: 0px;
             min-height: calc(100vh - 60px);
             box-sizing: border-box;
         }
@@ -224,7 +226,7 @@
 <body>
 
     <!-- 공통 헤더 조각 호출 -->
-    <div th:replace="~{fragments/header :: commonHeader}"></div>
+  <div th:replace="~{fragments/dashboardHeader :: user-header}"></div>
     
     <!-- 메인 레이아웃 (사이드바 + 콘텐츠) -->
     <div class="main-container">

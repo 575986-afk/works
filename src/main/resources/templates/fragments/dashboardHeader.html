@@ -75,20 +75,14 @@
 
         <!-- 프로필 (에러 방지 ?. 적용) -->
         <div class="relative ml-2">
-            <!-- <button id="profileBtn" class="w-8 h-8 rounded-full bg-blue-400 text-white flex items-center justify-center font-bold text-sm focus:outline-none"
-            		th:classappend="${session.user?.profileImage != null ? session.user?.profileImage : 'bg-gray-400'}"
-                    th:text="${not #strings.isEmpty(session.user?.userName) ? #strings.substring(session.user?.userName, 0, 1) : 'U'}">
-            </button> -->
+           
 			<button id="profileBtn"
 				class="w-8 h-8 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold text-sm focus:outline-none"
 				th:text="${not #strings.isEmpty(session.user?.name) ? #strings.substring(session.user?.name, 0, 1) : 'U'}">
 			</button>
 			<div id="profileDropdown" class="hidden absolute top-full right-0 mt-3 w-64 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden">
                <div class="p-4 flex items-center gap-3 border-b border-gray-100 bg-gray-50">
-                  <!--    <div class="w-11 h-11 rounded-full bg-blue-400 text-white flex items-center justify-center font-bold text-lg"
-                    th:classappend="${session.user?.profileImage != null ? session.user?.profileImage : 'bg-gray-400'}"
-                    th:text="${session.user?.userName != null ? #strings.substring(session.user?.userName, 0, 1) : 'U'}"
-                    >U</div> -->
+                  
 				<div
 					class="w-11 h-11 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold text-lg"
 					th:text="${not #strings.isEmpty(session.user?.name) ? #strings.substring(session.user?.name, 0, 1) : 'U'}">
