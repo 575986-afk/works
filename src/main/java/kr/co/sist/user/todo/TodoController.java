@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import jakarta.servlet.http.HttpSession;
@@ -45,7 +46,7 @@ public class TodoController {
 	}
 	
 	@PostMapping("addTodo")
-	public String  addTodo(TodoDTO tdDTO, HttpSession session, Model model) {
+	public String addTodo(TodoDTO tdDTO, HttpSession session) {
 		tdDTO.setUserNo((String) session.getAttribute("userNo"));
 		ts.createTodo(tdDTO);
 		return "redirect:/todo";
@@ -73,5 +74,17 @@ public class TodoController {
 		ts.changeTodoStatus(status, todoNo);
 		return "redirect:/todo";
 	}
+	
+	@GetMapping("/getTodoLogs")
+    @ResponseBody
+    public List<TodoLogDomain> getTodoLogs(@RequestParam("todoNo") String todoNo, HttpSession session) {
+        // 세션에서 로그인한 사용자 번호를 가져옴 (설정에 맞게 수정하세요)
+        String userNo = (String) session.getAttribute("userNo"); 
+        
+        // 서비스 호출
+        List<TodoLogDomain> todoLog = ts.getTodoLog(todoNo, userNo);
+        
+        return todoLog; // JSON 형태로 클라이언트에 응답됩니다.
+    }
 
 }

@@ -69,7 +69,6 @@ public class TodoService {
 	@Transactional
 	public boolean deleteTodos(List<String> todoNos) {
 		if (todoNos != null && !todoNos.isEmpty()) {
-			tm.deleteTodoRepresentatives(todoNos);
 			tm.deleteTodos(todoNos);
 			return true;
 		}
@@ -79,6 +78,21 @@ public class TodoService {
 	public boolean changeTodoStatus(String status, String todoNo) {
 		boolean flag = tm.updateTodoStatus(status, todoNo) == 1;
 		return flag;
+	}
+	
+	public List<TodoLogDomain> getTodoLog(String todoNo, String userNo) {
+		
+
+		List<TodoLogDomain> list = new ArrayList<>();
+
+		for (TodoLogDomain todolog : tm.selectTodolog(todoNo, userNo)) {
+			todolog.setUserName(AESUtil.decrypt(todolog.getUserName()));
+
+			todolog.setUserName(decryptMultipleNames(todolog.getUserName()));
+
+			list.add(todolog);
+		}
+		return list;
 	}
 	
 }

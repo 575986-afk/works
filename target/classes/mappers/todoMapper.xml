@@ -13,6 +13,7 @@
 		t.start_date AS
 		startDate,
 		t.end_date AS endDate,
+		t.isdeleted AS isdeleted,
 		u2.user_name AS userName,
 		(
 		SELECT
@@ -61,8 +62,9 @@
 				)
 			</if>
 			<if test="keyword != null and keyword != ''">
-            AND t.title LIKE '%' || #{keyword} || '%'
-        </if>
+				AND t.title LIKE '%' || #{keyword} || '%'
+			</if>
+			AND T.isdeleted = '0'
 		</where>
 	</select>
 	<select id="selectrepresentativeList"
@@ -76,7 +78,8 @@
 		<!-- 1. 시퀀스 숫자를 'td000000' 형태의 문자열로 가공해서 DTO의 todoNo 필드(String)에 저장 -->
 		<selectKey keyProperty="todoNo" resultType="String"
 			order="BEFORE">
-			SELECT 'TD' || TO_CHAR(seq_todo_no.NEXTVAL, 'FM000000') FROM DUAL
+			SELECT 'TD' || TO_CHAR(seq_todo_no.NEXTVAL, 'FM000000') FROM
+			DUAL
 		</selectKey>
 
 		<!-- 2. 위에서 만든 #{todoNo}를 첫 번째 파라미터로 넣어서 INSERT -->
@@ -104,33 +107,48 @@
 
 	<!-- 담당자 매핑 테이블 (그대로 사용하시면 됩니다) -->
 	<insert id="insertTodoRepresentative">
-		insert into REPRESENTATIVE (representative_no, todo_no, user_no)
+		insert into REPRESENTATIVE (representative_no,
+		todo_no, user_no)
 		values (#{representUserNo}, #{todoNo}, #{userNo})
 	</insert>
-	
+
 	<update id="updateTodoStatus">
-    UPDATE todo
-    SET status = #{status}
-    WHERE todo_no = #{todoNo}
-</update>
-<delete id="deleteTodoRepresentatives" parameterType="java.util.List">
-    DELETE FROM REPRESENTATIVE
-    WHERE TODO_NO IN
-    <foreach collection="list" item="todoNo" open="(" separator="," close=")">
-        #{todoNo}
-    </foreach>
-</delete>
+		UPDATE todo
+		SET status = #{status}
+		WHERE todo_no = #{todoNo}
+	</update>
 
-<!-- 2. 할 일(todo) 데이터 삭제 -->
-<delete id="deleteTodos" parameterType="java.util.List">
-    DELETE FROM todo
-    WHERE todo_no IN
-    <foreach collection="list" item="todoNo" open="(" separator="," close=")">
-        #{todoNo}
-    </foreach>
-</delete>
+	<!-- 2. 할 일(todo) 데이터 삭제 -->
+	<delete id="deleteTodos" parameterType="java.util.List">
+		update todo
+		set isdeleted = 1
+		WHERE todo_no IN
+		<foreach collection="list" item="todoNo" open="("
+			separator="," close=")">
+			#{todoNo}
+		</foreach>
+	</delete>
 
-<select id="selectName" parameterType="String" resultType="String">
-select user_name from users where user_no = #{userNo}
-</select>
+	<select id="selectName" parameterType="String"
+		resultType="String">
+		select user_name from users where user_no = #{userNo}
+	</select>
+
+	<insert id="insertTodoLog">
+		INSERT INTO todolog (duty, representative_no, input_date, todo_no, user_no)
+		VALUES (
+		#{duty},
+		#{representativeNo, jdbcType=VARCHAR},
+		systimestamp,
+		#{todoNo},
+		#{userNo}
+		)
+	</insert>
+	<select id="selectTodolog" resultType="todoLogDomain">
+	select t.duty duty, t.representative_no representativeNo, t.input_date inputDate, u.user_name userName
+	from todolog t
+	left join users u on t.user_no = u.user_no
+	where t.todo_no = #{todoNo} and t.user_no = #{userNo}
+	</select>
+	
 </mapper>

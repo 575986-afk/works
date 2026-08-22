@@ -10,6 +10,6 @@ import lombok.Data;
 @Alias("usertodoDomain")
 @Data
 public class TodoDomain {
-	private String userName, todoNo, title, content, status, representativeUserNames;
+	private String userName, todoNo, title, content, status, representativeUserNames, isdeleted;
 	private Timestamp startDate, endDate;
 }

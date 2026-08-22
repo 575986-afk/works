@@ -19,35 +19,35 @@ document.addEventListener('DOMContentLoaded', () => {
         if (profileDropdown) profileDropdown.classList.add('hidden');
     }
 
-	if (searchInput) {
-	        searchInput.addEventListener('click', (e) => { 
-	            e.stopPropagation(); 
-	            closeAllDropdowns(); 
-	            searchDropdown.classList.remove('hidden'); 
-	        });
+    if (searchInput) {
+        searchInput.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeAllDropdowns();
+            searchDropdown.classList.remove('hidden');
+        });
 
-	        // ==========================================
-	        // [새로 추가] 검색창 엔터키 입력 시 검색 로직
-	        // ==========================================
-	        searchInput.addEventListener('keypress', function(e) {
-	            if (e.key === "Enter") {
-	                e.preventDefault(); // 기본 폼 제출 방지
-	                const keyword = this.value.trim();
-	                
-	                // 현재 URL의 기존 파라미터(userNo, representativeUserNo 등) 유지
-	                const urlParams = new URLSearchParams(window.location.search);
-	                
-	                if (keyword) {
-	                    urlParams.set("keyword", keyword);
-	                } else {
-	                    urlParams.delete("keyword");
-	                }
-	                
-	                // 검색어가 반영된 URL로 리다이렉트
-	                window.location.href = "/todo?" + urlParams.toString();
-	            }
-	        });
-	    }
+        // ==========================================
+        // [새로 추가] 검색창 엔터키 입력 시 검색 로직
+        // ==========================================
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === "Enter") {
+                e.preventDefault(); // 기본 폼 제출 방지
+                const keyword = this.value.trim();
+
+                // 현재 URL의 기존 파라미터(userNo, representativeUserNo 등) 유지
+                const urlParams = new URLSearchParams(window.location.search);
+
+                if (keyword) {
+                    urlParams.set("keyword", keyword);
+                } else {
+                    urlParams.delete("keyword");
+                }
+
+                // 검색어가 반영된 URL로 리다이렉트
+                window.location.href = "/todo?" + urlParams.toString();
+            }
+        });
+    }
     if (appLauncherBtn) appLauncherBtn.addEventListener('click', (e) => { e.stopPropagation(); const isHidden = appLauncherDropdown.classList.contains('hidden'); closeAllDropdowns(); if (isHidden) appLauncherDropdown.classList.remove('hidden'); });
     if (notiBtn) notiBtn.addEventListener('click', (e) => { e.stopPropagation(); const isHidden = notiDropdown.classList.contains('hidden'); closeAllDropdowns(); if (isHidden) notiDropdown.classList.remove('hidden'); });
     if (profileBtn) profileBtn.addEventListener('click', (e) => { e.stopPropagation(); const isHidden = profileDropdown.classList.contains('hidden'); closeAllDropdowns(); if (isHidden) profileDropdown.classList.remove('hidden'); });
@@ -209,7 +209,71 @@ document.addEventListener('DOMContentLoaded', () => {
                 detailPanel.classList.remove('hidden');
                 detailPanel.classList.add('flex');
             }
-        });
+
+            const currentTodoNo = item.dataset.no; // 선택된 할 일 번호
+            const logContainer = document.getElementById('todoLogContainer');
+            const logCountText = document.getElementById('todoLogCount');
+
+            if (logContainer && currentTodoNo) {
+                // 로딩 중 표시 (선택 사항)
+                logContainer.innerHTML = '<p class="text-[13.5px] text-gray-500">작업 내역을 불러오는 중...</p>';
+
+                fetch(`/getTodoLogs?todoNo=${currentTodoNo}`)
+                    .then(response => {
+                        if (!response.ok) throw new Error("네트워크 응답이 실패했습니다.");
+                        // 데이터가 없으면 빈 문자열이 반환될 수 있으므로 text로 먼저 받음
+                        return response.text();
+                    })
+                    .then(text => {
+                        logContainer.innerHTML = ''; // 초기화
+
+                        if (!text) {
+                            logCountText.textContent = '0';
+                            logContainer.innerHTML = '<p class="text-[13.5px] text-gray-500">작업 내역이 없습니다.</p>';
+                            return;
+                        }
+
+                        // JSON 파싱 (이제 List 반환이므로 배열 객체가 됩니다)
+                        const logList = JSON.parse(text);
+
+                        // 데이터가 비어있는 배열([])일 경우의 처리
+                        if (!Array.isArray(logList) || logList.length === 0) {
+                            logCountText.textContent = '0';
+                            logContainer.innerHTML = '<p class="text-[13.5px] text-gray-500">작업 내역이 없습니다.</p>';
+                            return;
+                        }
+
+                        // 1. 작업 내역 총 건수를 배열의 길이로 업데이트
+                        logCountText.textContent = logList.length;
+
+                        // 2. 반복문을 사용해 HTML 문자열 누적 생성
+                        let logsHtml = '';
+                        logList.forEach(log => {
+                            logsHtml += `
+								         <div class="border-b border-gray-200/60 pb-4">
+								         <p class="text-[11.5px] text-gray-400 mb-1">
+								                  ${log.input_date || '날짜 없음'}
+								           </p>
+										   <p class="text-[13.5px] text-gray-700">
+										       <span class="font-bold text-gray-800">${log.userName || '알 수 없는 사용자'}</span>님이 
+										       ${log.duty || '작업'}했습니다.
+										   </p>
+								                   </div>
+								                      `;
+                        });
+
+                        // 3. 컨테이너에 누적된 HTML 한 번에 삽입
+                        logContainer.innerHTML = logsHtml;
+                    })
+                    .catch(error => {
+                        console.error('작업 내역 불러오기 실패:', error);
+                        logContainer.innerHTML = '<p class="text-[13.5px] text-red-500">작업 내역을 불러오는데 실패했습니다.</p>';
+                    });
+            }
+
+
+
+        });// item.addEventListener
     });
 
 
