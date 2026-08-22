@@ -499,7 +499,10 @@ $(function(){
         updateModalMemberCount();
     });
 
-    $(document).on("click", "#saveMemberEditBtn", function(){
+    $(document).off("click", "#saveMemberEditBtn").on("click", "#saveMemberEditBtn", function(e){
+    	e.preventDefault();
+        e.stopImmediatePropagation();
+        
         const organizationNo = $("#btnDeleteOrganization").data("organizationno");
         const remainingUserNos = [];
         $(".editMemberItem").each(function(){
@@ -585,54 +588,5 @@ $(function(){
 	    });
 	});
 	
-	// 조직 멤버 목록 무한 스크롤
-	let orgMemberPage = 1;
-	let isOrgMemberFetching = false;
-
-	const memberContainer = document.querySelector(".memberListBox");
-	const memberSentinel = document.getElementById("orgMemberScrollSentinel");
-
-	if (memberSentinel && memberContainer) {
-	    const orgMemberObserver = new IntersectionObserver((entries) => {
-	        entries.forEach(entry => {
-	            if (entry.isIntersecting && !isOrgMemberFetching) {
-	                loadMoreOrgMembers();
-	            }
-	        });
-	    }, {
-	        root: memberContainer,
-	        threshold: 0.1
-	    });
-
-	    orgMemberObserver.observe(memberSentinel);
-	}
-
-	function loadMoreOrgMembers() {
-	    isOrgMemberFetching = true;
-	    orgMemberPage++;
-	    const organizationNo = $("#btnDeleteOrganization").data("organizationno");
-	    const searchKey = $.trim($("#detailMemberSearchKey").val());
-
-	    axios.get("/adminUser/member/getOrganizationMemberList", {
-	        params: { 
-	            organizationNo: organizationNo,
-	            page: orgMemberPage,
-	            keyword: searchKey
-	        }
-	    })
-	    .then(function(res){
-	        if (res.data && res.data.length > 0) {
-	            $("#orgMemberScrollSentinel").before(res.data);
-	            isOrgMemberFetching = false;
-	        } else {
-	            orgMemberObserver.disconnect();
-	        }
-	    })
-	    .catch(function(err){
-	        console.error("조직 멤버 추가 로드 실패:", err);
-	        isOrgMemberFetching = false;
-	    });
-	}
- 	
 });
 </script>

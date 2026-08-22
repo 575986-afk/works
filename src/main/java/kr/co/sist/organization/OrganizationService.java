@@ -71,7 +71,7 @@ public class OrganizationService {
     public boolean setOrganizationLeader(String organizationNo, String userNo) {
         int cnt1 = gm.updateOrganizationMemberLeader(organizationNo, userNo);
         int cnt2 = gm.updateOrganizationLeader(organizationNo, userNo);
-        return cnt1 == 1 && cnt2 == 1;
+        return cnt1 > 0 && cnt2 > 0;
     }
 
     // [수정] 그룹 삭제 (다중 삭제)

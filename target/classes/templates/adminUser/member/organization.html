@@ -30,6 +30,7 @@ body { background: #ffffff; font-family: "맑은 고딕", sans-serif; margin: 0;
 .orgWrap { display:flex; min-height:380px; border:1px solid #e5e7eb; }
 
 .organizationList { flex:1; }
+.orgTableScroll { max-height: 440px; overflow-y: auto; }
 .listHeader { height:40px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; padding:0 15px; font-size:13px; }
 .listHeader i { margin-left:12px; color:#666; cursor:pointer; }
 
@@ -130,52 +131,50 @@ $(function(){
         toggleDeleteBtn();
     });
 
- 	// 선택 항목 삭제 버튼 클릭 이벤트 (단일 요청 다중 삭제 방식으로 수정)
-	$("#btnDeleteSelected").click(function(){
-	    const checkedList = $(".org-chk:checked");
-	    if(checkedList.length === 0) return;
-	
-	    if (confirm("선택한 " + checkedList.length + "개의 그룹을 삭제하시겠습니까?")) {
-	        // 하나의 URLSearchParams 객체에 선택된 모든 organizationNo를 추가
-	        const params = new URLSearchParams();
-	        checkedList.each(function(){
-	            params.append("organizationNo", $(this).val());
-	        });
-	
-	        // 서버로 단 1번만 POST 요청
-	        axios.post("/adminUser/member/deleteOrganization", params)
-	        .then(function(response){
-	            if (response.data === "success") {
-	                alert("선택한 그룹이 삭제되었습니다.");
-	                location.reload();
-	            } else {
-	                alert("그룹 삭제에 실패했습니다.");
-	            }
-	        })
-	        .catch(function(error){
-	            console.error("삭제 실패:", error);
-	            alert("그룹 삭제 중 오류가 발생했습니다.");
-	        });
-	    }
-	});
+    // 선택 항목 삭제 버튼 클릭 이벤트 (용어: 조직으로 변경)
+    $("#btnDeleteSelected").click(function(){
+        const checkedList = $(".org-chk:checked");
+        if(checkedList.length === 0) return;
+
+        if (confirm("선택한 " + checkedList.length + "개의 조직을 삭제하시겠습니까?")) {
+            const params = new URLSearchParams();
+            checkedList.each(function(){
+                params.append("organizationNo", $(this).val());
+            });
+
+            axios.post("/adminUser/member/deleteOrganization", params)
+            .then(function(response){
+                if (response.data === "success") {
+                    alert("선택한 조직이 삭제되었습니다.");
+                    location.reload();
+                } else {
+                    alert("조직 삭제에 실패했습니다.");
+                }
+            })
+            .catch(function(error){
+                console.error("삭제 실패:", error);
+                alert("조직 삭제 중 오류가 발생했습니다.");
+            });
+        }
+    });
 
     // 조직 상세 보기
-	$(document).on("click", ".orgRow", function(e){
-	    if($(e.target).is("input[type='checkbox']")){
-	        return;
-	    }
-	    var url = $(this).data("url");
-	    if(url){
-	        axios.get(url)
-	        .then(function(response){
-	            $("#detailModalArea").html(response.data);
-	        })
-	        .catch(function(error){
-	            console.error("조직 상세보기 로드 오류:", error);
-	            alert("상세 정보를 불러오는 데 실패했습니다.");
-	        });
-	    }
-	});
+    $(document).on("click", ".orgRow", function(e){
+        if($(e.target).is("input[type='checkbox']")){
+            return;
+        }
+        var url = $(this).data("url");
+        if(url){
+            axios.get(url)
+            .then(function(response){
+                $("#detailModalArea").html(response.data);
+            })
+            .catch(function(error){
+                console.error("조직 상세보기 로드 오류:", error);
+                alert("상세 정보를 불러오는 데 실패했습니다.");
+            });
+        }
+    });
 
     $(document).on("click", "#detailModalArea .closeBtn, #detailModalArea .closeDetailModalBtn", function(e){
         e.preventDefault();
@@ -204,46 +203,6 @@ $(function(){
     $(document).on("click", "#addOrganizationFormArea .modalClose, #addOrganizationFormArea .cancelBtn, #addOrganizationFormArea .closeBtn", function(){
         $("#addOrganizationFormArea").empty();
     });
-    
- 	// 조직 목록 무한 스크롤
-    let orgPage = 1;
-    let isOrgFetching = false;
-    const orgSentinel = document.getElementById('orgScrollSentinel');
-
-    if (orgSentinel) {
-        const orgObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting && !isOrgFetching) {
-                    loadMoreOrganizations();
-                }
-            });
-        }, {
-            threshold: 0.1
-        });
-        
-        orgObserver.observe(orgSentinel);
-    }
-
-    function loadMoreOrganizations() {
-        isOrgFetching = true;
-        orgPage++;
-
-        axios.get("/adminUser/member/getOrganizationList", {
-            params: { page: orgPage }
-        })
-        .then(function(res){
-            if (res.data && res.data.length > 0) {
-                $("#orgScrollSentinel").before(res.data);
-                isOrgFetching = false;
-            } else {
-                orgObserver.disconnect();
-            }
-        })
-        .catch(function(err){
-            console.error("조직 목록 추가 로드 실패:", err);
-            isOrgFetching = false;
-        });
-    }
     
 });
 </script>
@@ -285,6 +244,7 @@ $(function(){
                                     </div>
                                 </div>
                             </div>
+                            <div class="orgTableScroll">
                             <table>
                                 <thead>
                                     <tr>
@@ -310,11 +270,9 @@ $(function(){
                                         </td>
                                         <td th:text="${org.leaderName}">조직장명</td>
                                     </tr>
-                                    <tr id="orgScrollSentinel">
-								        <td colspan="3" style="height: 1px; padding: 0; border: none;"></td>
-								    </tr>
                                 </tbody>
                             </table>
+                            </div>
                         </div>
                     </div>
                 </div>

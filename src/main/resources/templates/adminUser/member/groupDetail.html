@@ -49,7 +49,7 @@
 .searchBoxWrapper input { width: 100%; height: 38px; border: 1px solid #d1d5db; border-radius: 6px; padding: 0 35px 0 12px; font-size: 13px; }
 .searchBoxWrapper i { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; }
 
-.memberListBox { border: 1px solid #e5e7eb; border-radius: 8px; margin: 0 24px; max-height: 360px; overflow-y: auto; }
+.memberListBox { border: 1px solid #e5e7eb; border-radius: 8px; margin: 0 24px; max-height: 400px; overflow-y: auto; }
 .memberItem { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #f3f4f6; }
 .memberItem:last-child { border-bottom: none; }
 .memberInfo { display: flex; align-items: center; gap: 12px; }
@@ -499,7 +499,10 @@ $(function(){
         updateModalMemberCount();
     });
 
-    $(document).on("click", "#saveMemberEditBtn", function(){
+    $(document).off("click", "#saveMemberEditBtn").on("click", "#saveMemberEditBtn", function(e){
+    	e.preventDefault();
+        e.stopImmediatePropagation();
+        
         const groupNo = $("#btnDeleteGroup").data("groupno");
         const remainingUserNos = [];
         $(".editMemberItem").each(function(){
@@ -585,52 +588,5 @@ $(function(){
 	    });
 	});
 	
-	// 무한 스크롤 구현 영역
-    let currentPage = 1;
-    let isFetching = false;
-    const listContainer = document.querySelector('.memberListBox');
-    const sentinel = document.getElementById('scrollSentinel');
-
-    if (sentinel && listContainer) {
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting && !isFetching) {
-                    loadMoreMembers();
-                }
-            });
-        }, {
-            root: listContainer,
-            threshold: 0.1
-        });
-
-        observer.observe(sentinel);
-    }
-
-    function loadMoreMembers() {
-        isFetching = true;
-        currentPage++;
-        const groupNo = $("#btnDeleteGroup").data("groupno");
-        const searchKey = $.trim($("#detailMemberSearchKey").val());
-
-        axios.get("/adminUser/member/getMemberList", {
-            params: { 
-            	groupNo: groupNo, 
-            	page: currentPage,
-            	keyword: searchKey
-            }
-        })
-        .then(function(res){
-            if (res.data && res.data.length > 0) {
-                $("#scrollSentinel").before(res.data);
-                isFetching = false;
-            } else {
-                observer.disconnect();
-            }
-        })
-        .catch(function(err){
-            console.error("멤버 데이터 추가 로드 실패:", err);
-            isFetching = false;
-        });
-    }
 });
 </script>

@@ -30,6 +30,7 @@ body { background: #ffffff; font-family: "맑은 고딕", sans-serif; margin: 0;
 .groupWrap { display:flex; min-height:380px; border:1px solid #e5e7eb; }
 
 .groupList { flex:1; }
+.groupTableScroll { max-height: 440px; overflow-y: auto; }
 .listHeader { height:40px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; padding:0 15px; font-size:13px; }
 .listHeader i { margin-left:12px; color:#666; cursor:pointer; }
 
@@ -205,46 +206,6 @@ $(function(){
         $("#addGroupFormArea").empty();
     });
     
- 	// 메인 그룹 목록 무한 스크롤
-    let groupPage = 1;
-    let isGroupFetching = false;
-    const sentinel = document.getElementById('scrollSentinel');
-
-    if (sentinel) {
-        const groupObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting && !isGroupFetching) {
-                    loadMoreGroups();
-                }
-            });
-        }, {
-            threshold: 0.1
-        });
-
-        groupObserver.observe(sentinel);
-    }
-
-    function loadMoreGroups() {
-        isGroupFetching = true;
-        groupPage++;
-
-        axios.get("/adminUser/member/getGroupList", {
-            params: { page: groupPage }
-        })
-        .then(function(res){
-            if (res.data && res.data.length > 0) {
-                $("#scrollSentinel").before(res.data);
-                isGroupFetching = false;
-            } else {
-                groupObserver.disconnect();
-            }
-        })
-        .catch(function(err){
-            console.error("그룹 목록 추가 로드 실패:", err);
-            isGroupFetching = false;
-        });
-    }
-    
 });
 </script>
 </head>
@@ -285,6 +246,7 @@ $(function(){
                                     </div>
                                 </div>
                             </div>
+                            <div class="groupTableScroll">
                             <table>
                                 <thead>
                                     <tr>
@@ -312,11 +274,9 @@ $(function(){
                                         <td th:text="${group.leaderName}">그룹 마스터명</td>
                                         <td th:text="${group.inputDate != null ? #dates.format(group.inputDate, 'yyyy.MM.dd') : '-'}">그룹 생성일</td>
                                     </tr>
-                                    <tr id="scrollSentinel">
-								        <td colspan="4" style="height: 1px; padding: 0; border: none;"></td>
-								    </tr>
                                 </tbody>
                             </table>
+                            </div>
                         </div>
                     </div>
                 </div>

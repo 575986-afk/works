@@ -147,6 +147,9 @@ body{
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
     cursor: pointer;
     transition: transform 0.15s, box-shadow 0.15s;
+    
+    text-decoration: none;
+    color: inherit;
 }
 .noticeItem:hover {
     transform: translateY(-2px);
@@ -234,14 +237,14 @@ $(function(){
 
 	                <!-- 공지사항 및 1:1 문의 버튼 -->
 	                <div id="noticeBox">
-					    <div class="noticeItem" th:href="@{/user/notices}">
+					    <a class="noticeItem" th:href="@{/user/notices}">
 					        <span class="noticeTitle">공지사항</span>
 					        <i class="fa-solid fa-chevron-right more"></i>
-					    </div>
-					    <div class="noticeItem" th:href="@{/user/inquiry}">
+					    </a>
+					    <a class="noticeItem" th:href="@{/user/inquiry}">
 					        <span class="noticeTitle">1:1 문의</span>
 					        <i class="fa-solid fa-chevron-right more"></i>
-					    </div>
+					    </a>
 					</div>
 	            </div>
 	        </div>
