@@ -3,10 +3,12 @@ package kr.co.sist.user.address;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,9 +42,10 @@ public class AddressController {
         return as.searchContactsByKeyword(keyword, companyNo); // 서비스로 함께 전달
     }
     
-    @GetMapping("addressDetail")
-    public String showAddressDetail(HttpSession session, String userNo) {
-        return "user/addressBook";
+    @PostMapping("/api/log/addressDetail")
+    @ResponseBody
+    public ResponseEntity<String> logAddressDetailClick(HttpSession session, @RequestParam("userNo") String targetUserNo) {
+        return ResponseEntity.ok("success");
     }
     
     @ResponseBody
@@ -51,7 +54,6 @@ public class AddressController {
                                      
         String userNo = (String)session.getAttribute("userNo");
         
-        // DTO에 본인 사번과 대상 사번 세팅 (DTO 이름은 프로젝트에 맞게 수정하세요)
         UserDTO dto = new UserDTO();
         dto.setUserNo(userNo);
         dto.setTargetNo(targetNo);

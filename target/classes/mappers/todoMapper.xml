@@ -134,16 +134,6 @@
 		select user_name from users where user_no = #{userNo}
 	</select>
 
-	<insert id="insertTodoLog">
-		INSERT INTO todolog (duty, representative_no, input_date, todo_no, user_no)
-		VALUES (
-		#{duty},
-		#{representativeNo, jdbcType=VARCHAR},
-		systimestamp,
-		#{todoNo},
-		#{userNo}
-		)
-	</insert>
 	<select id="selectTodolog" resultType="todoLogDomain">
 	select t.duty duty, t.representative_no representativeNo, t.input_date inputDate, u.user_name userName
 	from todolog t
