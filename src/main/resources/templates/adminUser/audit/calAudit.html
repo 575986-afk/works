@@ -301,6 +301,18 @@ select.input-box {
 .logTable tbody tr:last-child td {
     border-bottom: none;
 }
+/* 로그 테이블 스크롤 영역 */
+.logTableWrapper {
+    max-height: 650px;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+/* 테이블 헤더 고정 */
+.logTable thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
 
 .sub-info {
     display: block;
@@ -413,23 +425,35 @@ $(function(){
         const startDate = $("#basicStartDate").val();
         const endDate = $("#basicEndDate").val();
         const title = $("#title").val();
-        const task = $("#task").val();
+        const duty = $("#duty").val();
         const userName = $("#userName").val();
+        const calenderNo = $("#calenderNo").val();
 
         axios.get('/adminUser/audit/downloadCalLog', {
             params: {
                 startDate: startDate,
                 endDate: endDate,
                 title: title,
-                task: task,
-                userName: userName
+                duty: duty,
+                userName: userName,
+                calenderNo: calenderNo
             }
         })
         .then(function(response) {
-            $("#downloadModalBody").html(response.data);
-            
-            const downloadModal = new bootstrap.Modal(document.getElementById('downloadModal'));
-            downloadModal.show();
+        	$("#downloadModalBody").html(response.data);
+
+	        const $form = $("#downloadModalBody").find("#downloadProcessForm");
+
+	        $form.append($('<input>', {type: 'hidden', name: 'startDate', value: startDate}));
+	        $form.append($('<input>', {type: 'hidden', name: 'endDate', value: endDate}));
+	        $form.append($('<input>', {type: 'hidden', name: 'title', value: title}));
+	        $form.append($('<input>', {type: 'hidden', name: 'duty', value: duty}));
+	        $form.append($('<input>', {type: 'hidden', name: 'userName', value: userName}));
+	        $form.append($('<input>', {type: 'hidden', name: 'calenderNo', value: calenderNo}));
+
+	        const downloadModal = new bootstrap.Modal(document.getElementById('downloadModal'));
+
+	        downloadModal.show();
         })
         .catch(function(error) {
             console.error("다운로드 폼 로드 실패:", error);
@@ -437,15 +461,16 @@ $(function(){
         });
     });
 
-    // CSV 파일 다운로드
+ 	// 모달 내 확인 버튼 클릭
     $(document).on("click", "#btnConfirmDownload", function(){
-        $("#downloadProcessForm").submit();
-        
-        // 모달 닫기
-        const downloadModalEl = document.getElementById('downloadModal');
-        const downloadModal = bootstrap.Modal.getInstance(downloadModalEl);
-        if (downloadModal) {
-            downloadModal.hide();
+        const $modalForm = $("#downloadModalBody").find("form");
+        if ($modalForm.length > 0) {
+            $modalForm.submit();
+        }
+        const modalEl = document.getElementById('downloadModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) {
+            modal.hide();
         }
     });
 });
@@ -516,10 +541,10 @@ $(function(){
                                 </div>
                                 <div class="filter-group">
                                     <label>과업</label>
-                                    <select id="task" name="task" class="input-box">
-                                        <option value="" th:selected="${task == null || task == ''}">전체</option>
-                                        <option value="일정 등록/수정" th:selected="${task == '일정 등록/수정'}">일정 등록/수정</option>
-                                        <option value="일정 삭제" th:selected="${task == '일정 삭제'}">일정 삭제</option>
+                                    <select id="duty" name="duty" class="input-box">
+                                        <option value="" th:selected="${duty == null || duty == ''}">전체</option>
+                                        <option value="일정 등록/수정" th:selected="${duty == '일정 등록/수정'}">일정 등록/수정</option>
+                                        <option value="일정 삭제" th:selected="${duty == '일정 삭제'}">일정 삭제</option>
                                     </select>
                                 </div>
                                 <div class="filter-group">
@@ -535,7 +560,7 @@ $(function(){
                     </div>
 
                 </form>
-
+				<div class="logTableWrapper">
                 <table class="logTable">
                     <thead>
                         <tr>
@@ -554,19 +579,19 @@ $(function(){
                         </tr>
                         <tr class="log-row" th:each="log : ${logList}" th:data-logno="${log.logNo}">
                             <td><b th:text="${log.title}">제목</b></td>
-                            <td th:text="${log.task}">과업</td>
+                            <td th:text="${log.duty}">과업</td>
                             <td>
                                 <span th:text="${log.userName}">사용자명</span>
-                                <span class="sub-info" th:text="${log.userEmail}">이메일</span>
+                                <span class="sub-info" th:text="${log.email}">이메일</span>
                             </td>
                             <td>
-                                <span th:text="${log.date}">2026-07-16</span>
-                                <span class="sub-info" th:text="${log.time}">T16:13:36+09:00</span>
+                                <span th:text="${log.inputDate}">2026-07-16</span>
                             </td>
-                            <td class="calendar-id" th:text="${log.calId}">c_300302240_72a62600...</td>
+                            <td class="calendar-id" th:text="${log.calenderNo}">c_300302240_72a62600...</td>
                         </tr>
                     </tbody>
                 </table>
+                </div>
             </div>
 
         </div>

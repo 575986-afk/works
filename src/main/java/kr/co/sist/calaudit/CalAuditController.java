@@ -1,16 +1,13 @@
 package kr.co.sist.calaudit;
 
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,64 +21,49 @@ import jakarta.servlet.http.HttpSession;
 @RequestMapping("/adminUser/audit")
 public class CalAuditController {
 
+	@Autowired(required = false)
+	private CalLogService cls;
+	
 	// 캘린더 로그 페이지
 	@GetMapping("/calAudit")
     public String showCalLogPage(
             @RequestParam(value = "startDate", required = false) String startDate,
             @RequestParam(value = "endDate", required = false) String endDate,
             @RequestParam(value = "title", required = false) String title,
-            @RequestParam(value = "task", required = false) String task,
+            @RequestParam(value = "duty", required = false) String duty,
             @RequestParam(value = "userName", required = false) String userName,
+            @RequestParam(value = "calenderNo", required = false) String calenderNo,
             HttpSession session, Model model) {
 
-        // 기본 검색 기간 설정
-        if (startDate == null || startDate.isEmpty()) {
-            startDate = "2026. 01. 19";
+		// 기본 조회 기간 : 최근 7일
+        if (startDate == null || startDate.trim().isEmpty()) {
+            startDate = LocalDate.now()
+                    .minusDays(7)
+                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         }
-        if (endDate == null || endDate.isEmpty()) {
-            endDate = "2026. 07. 17";
+
+        if (endDate == null || endDate.trim().isEmpty()) {
+            endDate = LocalDate.now()
+                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         }
 
-        // 임시 데이터
-        List<Map<String, String>> logList = new ArrayList<>();
-
-        Map<String, String> log1 = new HashMap<>();
-        log1.put("logNo", "1");
-        log1.put("title", "1234");
-        log1.put("task", "캘린더 등록/수정");
-        log1.put("userName", "1234");
-        log1.put("userEmail", "test@practice-6.by-works.net");
-        log1.put("date", "2026-07-16");
-        log1.put("time", "T16:13:36+09:00");
-        log1.put("calId", "c_300302240_72a62600-4eb0-4c69-bda6-4107008420b5");
-        logList.add(log1);
-
-        Map<String, String> log2 = new HashMap<>();
-        log2.put("logNo", "2");
-        log2.put("title", "12");
-        log2.put("task", "캘린더 등록/수정");
-        log2.put("userName", "12");
-        log2.put("userEmail", "test1@practice-6.by-works.net");
-        log2.put("date", "2026-07-16");
-        log2.put("time", "T16:07:02+09:00");
-        log2.put("calId", "c_300302240_2edbca6f-e153-4dce-a98e-264a7848530");
-        logList.add(log2);
-
-        Map<String, String> log3 = new HashMap<>();
-        log3.put("logNo", "3");
-        log3.put("title", "연습");
-        log3.put("task", "캘린더 등록/수정");
-        log3.put("userName", "홍길동");
-        log3.put("userEmail", "test22@practice-6.by-works.net");
-        log3.put("date", "2026-07-16");
-        log3.put("time", "T15:47:02+09:00");
-        log3.put("calId", "c_0_d0e3d3ce-be72-47d2-a9e6-d7e5aab44944");
-        logList.add(log3);
-
+        String companyNo = (String) session.getAttribute("companyNo");
+        
+        CalLogSearchDTO search = new CalLogSearchDTO();
+        
+        search.setCompanyNo(companyNo);
+        search.setStartDate(startDate);
+        search.setEndDate(endDate);
+        search.setTitle(title);
+        search.setDuty(duty);
+        search.setUserName(userName);
+        
+        List<CalLogListDomain> logList = cls.getAllCalLogList(search);
+        
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
         model.addAttribute("title", title);
-        model.addAttribute("task", task);
+        model.addAttribute("duty", duty);
         model.addAttribute("userName", userName);
         model.addAttribute("logList", logList);
 
@@ -90,13 +72,16 @@ public class CalAuditController {
     
     //캘린더 로그 상세 조회
 	@GetMapping("/calAudit/calLogDetail")
-    public String findCalLogDetail(@RequestParam("logNo") String logNo, Model model) {
-        Map<String, String> logDetail = new HashMap<>();
-        logDetail.put("logNo", logNo);
-        logDetail.put("title", "1232131");
-        logDetail.put("startDate", "2026-07-21T14:00:00+09:00");
-        logDetail.put("endDate", "2026-07-21T14:30:00+09:00");
+    public String findCalLogDetail(
+    		@RequestParam(name = "logNo", required = false) String logNo, 
+    		Model model) {
+        
+		if (logNo == null || logNo.trim().isEmpty()) {
+            return "redirect:/adminUser/audit/calAudit";
+        }
 
+		CalLogDetailDomain logDetail = cls.getCalLogDetail(logNo);
+		
         model.addAttribute("logDetail", logDetail);
 
         return "adminUser/audit/calLogDetail";
@@ -108,46 +93,165 @@ public class CalAuditController {
     public String downloadCalLog(
             @RequestParam(value = "isProcess", required = false, defaultValue = "false") boolean isProcess,
             @RequestParam(value = "fileName", required = false) String fileName,
-            @RequestParam(value = "startDate", required = false) String startDate,
-            @RequestParam(value = "endDate", required = false) String endDate,
+            @RequestParam(name = "startDate", required = false) String startDate,
+            @RequestParam(name = "endDate", required = false) String endDate,
             @RequestParam(value = "title", required = false) String title,
-            @RequestParam(value = "task", required = false) String task,
+            @RequestParam(value = "duty", required = false) String duty,
             @RequestParam(value = "userName", required = false) String userName,
+            @RequestParam(value = "calenderNo", required = false) String calenderNo,
+            HttpSession session,
             Model model,
-            HttpServletResponse response) throws IOException {
+            HttpServletResponse response) {
 
-        // 확인 버튼 클릭
+        String companyNo = (String) session.getAttribute("companyNo");
+
+        // 실제 Excel 다운로드
         if (isProcess) {
-            if (fileName == null || fileName.trim().isEmpty()) {
-                String nowStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmm"));
-                fileName = "calendar_" + nowStr;
+            CalLogSearchDTO search = new CalLogSearchDTO();
+
+            search.setCompanyNo(companyNo);
+            search.setStartDate(startDate);
+            search.setEndDate(endDate);
+            search.setTitle(title);
+            search.setDuty(duty);
+            search.setUserName(userName);
+
+            List<CalLogListDomain> logList = cls.getAllCalLogList(search);
+
+            try {
+                // 파일명
+                if (fileName == null || fileName.trim().isEmpty()) {
+                    fileName = "캘린더_" +
+                            LocalDateTime.now()
+                                    .format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmm"));
+                }
+                if (!fileName.toLowerCase().endsWith(".xlsx")) {
+                    fileName += ".xlsx";
+                }
+
+                String encodedFileName =
+                        URLEncoder.encode(fileName, StandardCharsets.UTF_8)
+                                .replace("+", "%20");
+
+                // Response 설정
+                response.setContentType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                response.setHeader(
+                        "Content-Disposition",
+                        "attachment; filename*=UTF-8''" + encodedFileName);
+
+                // Excel 생성
+                org.apache.poi.xssf.usermodel.XSSFWorkbook workbook =
+                        new org.apache.poi.xssf.usermodel.XSSFWorkbook();
+                org.apache.poi.ss.usermodel.Sheet sheet =
+                        workbook.createSheet("캘린더 로그");
+
+                // 헤더
+                org.apache.poi.ss.usermodel.Row header =
+                        sheet.createRow(0);
+
+                header.createCell(0).setCellValue("제목");
+                header.createCell(1).setCellValue("과업");
+                header.createCell(2).setCellValue("사용자");
+                header.createCell(3).setCellValue("이메일");
+                header.createCell(4).setCellValue("날짜");
+                header.createCell(5).setCellValue("캘린더ID");
+
+                // 데이터
+                int rowNum = 1;
+                for (CalLogListDomain log : logList) {
+                    org.apache.poi.ss.usermodel.Row row =
+                            sheet.createRow(rowNum++);
+                    row.createCell(0).setCellValue(
+                            log.getTitle() == null
+                                    ? "-"
+                                    : log.getTitle()
+                    );
+                    row.createCell(1).setCellValue(
+                            log.getDuty() == null
+                                    ? "-"
+                                    : log.getDuty()
+                    );
+                    row.createCell(2).setCellValue(
+                            log.getUserName() == null
+                                    ? "-"
+                                    : log.getUserName()
+                    );
+                    row.createCell(3).setCellValue(
+                            log.getEmail() == null
+                                    ? "-"
+                                    : log.getEmail()
+                    );
+                    row.createCell(4).setCellValue(
+                            log.getInputDate() == null
+                                    ? "-"
+                                    : log.getInputDate().toString()
+                    );
+                    row.createCell(5).setCellValue(
+                    		log.getCalenderNo() == null
+                    		? "-"
+                    				: log.getCalenderNo().toString()
+                    		);
+                }
+
+                // 컬럼 너비
+                for (int i = 0; i < 6; i++) {
+                    sheet.autoSizeColumn(i);
+                    sheet.setColumnWidth(
+                            i,
+                            Math.min(sheet.getColumnWidth(i) + 1000, 15000)
+                    );
+                }
+
+                // 응답으로 Excel 전송
+                workbook.write(response.getOutputStream());
+                workbook.close();
+                response.getOutputStream().flush();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            if (!fileName.endsWith(".csv")) fileName += ".csv";
-
-            String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
-            response.setContentType("text/csv; charset=UTF-8");
-            response.setHeader("Content-Disposition", "attachment; filename=\"" + encodedFileName + "\"");
-
-            PrintWriter writer = response.getWriter();
-            writer.write("\uFEFF");
-            writer.write("제목,과업,사용자,날짜,캘린더 ID\n");
-            writer.write("1234,캘린더 등록/수정,1234(test1@practice-6.by-works.net),2026-07-16 T16:13:36+09:00,c_300302240_72a62600-4eb0-4c69-bda6-4107008420b5\n");
-            writer.flush();
-            writer.close();
-
             return null;
         }
 
-        // 다운로드 버튼 클릭
-        String nowStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmm"));
-        
-        model.addAttribute("defaultFileName", "calendar_" + nowStr);
-        model.addAttribute("startDate", startDate);
-        model.addAttribute("endDate", endDate);
-        model.addAttribute("title", title);
-        model.addAttribute("task", task);
-        model.addAttribute("userName", userName);
+        // 다운로드 모달
+        String nowStr =
+                LocalDateTime.now()
+                        .format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmm"));
+        String defaultFileName = "캘린더_" + nowStr;
+
+        // 검색 조건을 다운로드 URL에 포함
+        StringBuilder downloadAction =
+                new StringBuilder("/adminUser/audit/downloadCalLog?");
+        downloadAction.append("startDate=")
+                .append(encode(startDate));
+        downloadAction.append("&endDate=")
+                .append(encode(endDate));
+        downloadAction.append("&title=")
+                .append(encode(title));
+        downloadAction.append("&duty=")
+                .append(encode(duty));
+        downloadAction.append("&userName=")
+                .append(encode(userName));
+        downloadAction.append("&calenderNo=")
+        .append(encode(calenderNo));
+
+        model.addAttribute("defaultFileName", defaultFileName);
+
+        // 공통 downloadForm에서 사용
+        model.addAttribute("downloadAction", downloadAction.toString());
 
         return "adminUser/audit/downloadForm";
+    }
+
+
+    // URL 파라미터 UTF-8 인코딩
+    private String encode(String value) {
+        if (value == null) {
+            return "";
+        }
+        return URLEncoder.encode(
+                value,
+                StandardCharsets.UTF_8
+        );
     }
 }

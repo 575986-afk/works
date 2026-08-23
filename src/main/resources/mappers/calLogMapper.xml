@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.sist.calaudit.CalLogMapper">
+
+	<resultMap id="calLogResultMap" type="kr.co.sist.calaudit.CalLogListDomain">
+	    <result property="userName"
+	            column="userName"
+	            typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+	    <result property="email"
+	            column="email"
+	            typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+	</resultMap>
+	
+	<!-- 할일로그 리스트 조회 -->
+	<select id="selectAllCalLog" parameterType="CalLogSearchDTO" resultMap="calLogResultMap">
+	    SELECT ca.title AS title,
+			 c.duty AS duty,
+			 u.user_name AS userName,
+			 u.email AS email,
+			 c.input_date AS inputDate,
+			 c.calender_no AS calenderNo
+		FROM   CALENDERLOG c
+		LEFT JOIN calender ca
+					 on c.calender_no = ca.calender_no
+		LEFT JOIN CALENDERCONNECTION cn
+					 on ca.calender_no = cn.calender_no
+		LEFT JOIN USERS u
+					 on cn.user_no = u.user_no
+	    <where>
+	        AND u.COMPANY_NO = #{companyNo}
+	        <if test="startDate != null and startDate != ''">
+	            AND l.INPUT_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+	        </if>
+	        <if test="endDate != null and endDate != ''">
+	            AND l.INPUT_DATE &lt; TO_DATE(#{endDate}, 'YYYY-MM-DD') + 1
+	        </if>
+	        <if test="title != null and title != ''">
+	            AND t.TITLE LIKE '%' || #{title} || '%'
+	        </if>
+	        <if test="duty != null and duty != ''">
+	            AND l.DUTY LIKE '%' || #{duty} || '%'
+	        </if>
+	        <if test="userName != null and userName != ''">
+			    AND u.USER_NAME = #{userName, typeHandler=kr.co.sist.login.EncryptTypeHandler}
+			</if>
+	    </where>
+	    ORDER BY l.INPUT_DATE DESC
+	</select>
+	<!-- 할일로그 상세 조회 -->
+	<select id="selectCalLogDetail" parameterType="string" resultType="kr.co.sist.todoaudit.CalLogDetailDomain">
+     SELECT ca.title,
+     		ca.start_date AS startDate,
+			ca.end_date AS endDate
+	 FROM   CALENDERLOG c
+	 LEFT JOIN calender ca
+	 		on c.calender_no = ca.calender_no
+	 WHERE  log_no = #{logNo}
+	</select>
+
+</mapper>
