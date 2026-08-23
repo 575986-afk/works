@@ -14,10 +14,6 @@ public interface TodoMapper {
 	public void insertTodoRepresentative(String todoNo, String representUserNo, String userNo);
 	public int updateTodoStatus(String status, String todoNo);
 	public int deleteTodos(List<String> todoNos);
-	public void insertTodoLog(@Param("duty") String duty, 
-            @Param("representativeNo") String representativeNo, 
-            @Param("todoNo") String todoNo, 
-            @Param("userNo") String userNo);
 	public List<TodoLogDomain> selectTodolog(@Param("todoNo") String todoNo, @Param("userNo") String userNo);
 	
 }

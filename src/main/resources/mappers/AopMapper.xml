@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.sist.aop.AopMapper">
+	<insert id="insertTodoLog">
+		INSERT INTO todolog (duty, representative_no, input_date, todo_no, user_no)
+		VALUES (
+		#{duty},
+		#{representativeNo, jdbcType=VARCHAR},
+		systimestamp,
+		#{todoNo},
+		#{userNo}
+		)
+	</insert>
+	<insert id="insertLoginLog">
+        INSERT INTO loginlog (DESCRIPTION, INPUT_DATE, LOGIN_IP, CONNECTION_STATUS, USER_NO, ATTEMPT_ID) 
+        VALUES (#{description}, systimestamp, #{loginIp}, #{connectionStatus}, #{userNo, jdbcType=VARCHAR}, #{attemptId})
+    </insert>
+</mapper>

@@ -1,4 +1,4 @@
-package kr.co.sist.user.todo;
+package kr.co.sist.aop;
 
 import java.util.List;
 
@@ -12,13 +12,15 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import kr.co.sist.user.todo.TodoDTO;
+import kr.co.sist.user.todo.TodoMapper;
 
 @Aspect
 @Component
 public class TodoAspect {
 
 	@Autowired(required = false)
-	private TodoMapper tm;
+	private AopMapper am;
 
 	@AfterReturning("execution(* kr.co.sist.user.todo.TodoService.createTodo(..))")
 	public void logAfterCreateTodo(JoinPoint joinPoint) {
@@ -36,11 +38,11 @@ public class TodoAspect {
 				String userNo = tdDTO.getUserNo();
 
 				// 4. 로그 DB에 저장 (담당자가 없는 기본 할 일 생성 로그)
-				tm.insertTodoLog("할 일 생성", "", todoNo, userNo);
+				am.insertTodoLog("할 일 생성", "", todoNo, userNo);
 
 				if (tdDTO.getRepresentUserNo() != null) {
 					for (String repNo : tdDTO.getRepresentUserNo()) {
-						tm.insertTodoLog("할 일 담당자 지정", repNo, todoNo, userNo);
+						am.insertTodoLog("할 일 담당자 지정", repNo, todoNo, userNo);
 					}
 				}
 
@@ -59,7 +61,7 @@ public class TodoAspect {
 
 			if (todoNos != null && userNo != null) {
 				for (String todoNo : todoNos) {
-					tm.insertTodoLog("할 일 삭제", "", todoNo, userNo);
+					am.insertTodoLog("할 일 삭제", "", todoNo, userNo);
 				}
 			}
 		}
@@ -76,7 +78,7 @@ public class TodoAspect {
 			if (userNo != null) {
 				// 컨트롤러 로직에 따라 0이면 미완료이므로 duty를 분기 처리[cite: 2]
 				String duty = "0".equals(status) ? "할 일 미완료로 변경" : "할 일 완료로 변경";
-				tm.insertTodoLog(duty, "", todoNo, userNo);
+				am.insertTodoLog(duty, "", todoNo, userNo);
 			}
 		}
 	}// logAfterChangeTodoStatus

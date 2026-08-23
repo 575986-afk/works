@@ -7,8 +7,6 @@ import kr.co.sist.signup.UserDTO;
 
 @Mapper
 public interface LoginMapper {
-
-
 	UserDTO selectLogin(@Param("userId") String userId);
 
 }
