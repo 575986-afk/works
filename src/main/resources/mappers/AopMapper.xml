@@ -17,4 +17,7 @@
         INSERT INTO loginlog (DESCRIPTION, INPUT_DATE, LOGIN_IP, CONNECTION_STATUS, USER_NO, ATTEMPT_ID) 
         VALUES (#{description}, systimestamp, #{loginIp}, #{connectionStatus}, #{userNo, jdbcType=VARCHAR}, #{attemptId})
     </insert>
+    <insert id="insertAddressbookLog">
+    insert into ADDRESSBOOKLOG(duty, target, input_date, user_no) values(#{duty}, #{target}, systimestamp, #{userNo})
+    </insert>
 </mapper>

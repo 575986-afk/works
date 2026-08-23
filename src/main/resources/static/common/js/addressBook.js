@@ -2,16 +2,16 @@
 function toggleStar(element, targetNo) {
     const icon = element.querySelector('i');
     const isCurrentlyStarred = icon.classList.contains('fa-solid'); // 현재 즐겨찾기 상태인지 확인
-    
+
     // fa-solid(채워진 별)가 있으면 삭제(remove) 요청, 없으면 추가(add) 요청
     const action = isCurrentlyStarred ? 'remove' : 'add';
 
     $.ajax({
-        url: '/toggleFavorite', 
+        url: '/toggleFavorite',
         type: 'POST',
-        data: { 
-            targetNo: targetNo, 
-            action: action 
+        data: {
+            targetNo: targetNo,
+            action: action
         },
         success: function(response) {
             if (response === 'success') {
@@ -47,10 +47,10 @@ function selectRow(row, event) {
     const org = row.querySelector('.data-org').value;
     const dept = row.querySelector('.data-dept').value;
     const email = row.querySelector('.data-email').value;
-	
-	const userNo = row.querySelector('.data-userno').value;
-	const isBookmarked = row.querySelector('.data-bookmark').value;
-	
+    var targetUserNo = $(row).find('.data-userno').val();
+    const userNo = row.querySelector('.data-userno').value;
+    const isBookmarked = row.querySelector('.data-bookmark').value;
+
     if (!title || title.trim() === '') title = '직급 없음';
 
     const avatarElem = document.getElementById('panelAvatar');
@@ -61,7 +61,7 @@ function selectRow(row, event) {
     document.getElementById('panelTitle').innerText = title;
     document.getElementById('panelOrg').innerText = org;
     document.getElementById('panelDept').innerText = dept;
-	
+
 
     const deptTitleWrapper = document.getElementById('panelDeptTitle');
     if (dept && dept.trim() !== '') {
@@ -84,9 +84,22 @@ function selectRow(row, event) {
         // 북마크 안 된 상태: 회색 빈 별
         panelStarIcon.className = 'fa-regular fa-star text-gray-300 hover:text-yellow-400';
     }
-	
+
     const panel = document.getElementById('detailPanel');
     panel.classList.remove('translate-x-full');
+
+    $.ajax({
+        url: '/api/log/addressDetail', // 로그를 처리할 백엔드 URL
+        type: 'POST',
+        data: { userNo: targetUserNo },
+        success: function(response) {
+            console.log("상세조회 로그 저장 성공"); // 필요시 콘솔 확인용
+        },
+        error: function(xhr, status, error) {
+            console.error("로그 저장 실패", error);
+        }
+    });
+
 }
 
 // 우측 상세 패널 닫기[cite: 3]
@@ -133,8 +146,8 @@ document.addEventListener('DOMContentLoaded', function() {
     $(document).on('change', '.user-checkbox', function() {
         const total = $('.user-checkbox:not(.hidden)').length;
         const checkedCount = $('.user-checkbox:not(.hidden):checked').length;
-        
-        if(checkAllBtn) {
+
+        if (checkAllBtn) {
             checkAllBtn.checked = (total > 0 && total === checkedCount);
         }
         window.updatePreview();
@@ -155,12 +168,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         $.ajax({
-            url: '/api/users/save', 
+            url: '/api/users/save',
             type: 'POST',
             contentType: 'application/json; charset=utf-8',
             data: JSON.stringify({ userNos: selectedUserNos }),
             success: function(response) {
-                window.close(); 
+                window.close();
             },
             error: function(xhr, status, error) {
                 console.error('저장 실패:', error);
@@ -178,7 +191,7 @@ $(document).ready(function() {
 
     // 검색창 입력 이벤트[cite: 3]
     $('#searchInput').on('input', function() {
-        clearTimeout(searchTimeout); 
+        clearTimeout(searchTimeout);
         const keyword = $(this).val().trim();
         const $results = $('#searchResults');
 
@@ -190,15 +203,15 @@ $(document).ready(function() {
         // 300ms(0.3초) 동안 입력이 없으면 서버로 AJAX 요청[cite: 3]
         searchTimeout = setTimeout(function() {
             $.ajax({
-                url: '/address/search', 
+                url: '/address/search',
                 type: 'GET',
                 data: { keyword: keyword },
                 success: function(response) {
                     $results.empty();
-                    
+
                     if (response && response.length > 0) {
                         let html = '<ul class="py-2">';
-                        
+
                         response.forEach(function(item) {
                             // onclick 부분을 addFromSearch 호출로 수정
                             html += `
@@ -212,7 +225,7 @@ $(document).ready(function() {
                                 </li>
                             `;
                         });
-                        
+
                         html += '</ul>';
                         $results.html(html).removeClass('hidden');
                     } else {
@@ -223,7 +236,7 @@ $(document).ready(function() {
                     $results.html('<div class="p-4 text-sm text-center text-red-500">검색 중 오류가 발생했습니다.</div>').removeClass('hidden');
                 }
             });
-        }, 300); 
+        }, 300);
     });
 
     // 외부 영역 클릭 시 검색 결과창 닫기[cite: 3]

@@ -10,6 +10,17 @@
         <result property="email" column="email" typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
         <result property="tel" column="phoneNumber" typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
     </resultMap>
+    <resultMap id="chatRoomResultMap" type="kr.co.sist.chat.ChatRoomDTO">
+        <result property="chatRoomNo" column="chatRoomNo"/>
+        <result property="chatRoomName" column="chatRoomName"/>
+        <result property="lastMessage" column="lastMessage"/>
+        <result property="lastTime" column="lastTime"/>
+        <result property="chattingNo" column="chattingNo"/>
+        <result property="content" column="content"/>
+        <result property="sendUser" column="sendUser"/>
+        <result property="sendUserName" column="sendUserName" typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+        <result property="sendDate" column="sendDate"/>
+    </resultMap>
     <select id="selectChatRoom" parameterType="String" resultType="kr.co.sist.chat.ChatRoomDTO">
     SELECT 
         cr.chatroom_no AS chatRoomNo,
@@ -34,16 +45,18 @@
     WHERE cp.participant_no = #{userNo, jdbcType=VARCHAR}
 </select>
     
-   <select id="selectMessageList" parameterType="String" resultType="ChatRoomDTO">
+   <select id="selectMessageList" parameterType="String" resultMap="chatRoomResultMap">
     SELECT 
-        chatting_no AS chattingNo, 
-        content, 
-        send_user AS sendUser, 
-        TO_CHAR(send_date, 'HH24:MI') AS sendDate, 
-        chatroom_no AS chatRoomNo 
-    FROM chatting
-    WHERE CHATROOM_NO = #{chatRoomNo, jdbcType=VARCHAR}
-    ORDER BY SEND_DATE ASC
+        c.chatting_no AS chattingNo, 
+        c.content, 
+        c.send_user AS sendUser, 
+        TO_CHAR(c.send_date, 'HH24:MI') AS sendDate, 
+        c.chatroom_no AS chatRoomNo,
+        u.user_name AS sendUserName
+    FROM chatting c
+    LEFT JOIN users u ON c.send_user = u.user_no  
+    WHERE c.CHATROOM_NO = #{chatRoomNo, jdbcType=VARCHAR}
+    ORDER BY c.SEND_DATE ASC
 </select>
 
     <insert id="insertMessage">

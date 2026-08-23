@@ -16,5 +16,6 @@ public class ChatRoomDTO {
     private String chattingNo;
     private String content;
     private String sendUser;
+    private String sendUserName;
     private String sendDate; 
 }
