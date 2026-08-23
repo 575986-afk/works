@@ -61,7 +61,7 @@ public class ChatController {
 	    ChatRoomDTO cDTO = new ChatRoomDTO();
 	    cDTO.setChatRoomNo(chatRoomNo);
 	    cDTO.setContent(content);
-	    cDTO.setSendUser(loginUser.getName()); 
+	    cDTO.setSendUser(loginUser.getUserNo()); 
 	    
 	    int cnt = cs.sendMessage(cDTO); 
 	    

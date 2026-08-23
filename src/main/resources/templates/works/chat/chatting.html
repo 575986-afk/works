@@ -297,13 +297,21 @@
                 }
 
                 data.forEach(msg => {
-                    let sender = String(msg.sendUser ? msg.sendUser : '');
+                    let senderId = String(msg.sendUser ? msg.sendUser : '').trim();
+                    let senderName = String(msg.sendUserName ? msg.sendUserName : '').trim();
                     
-                    // 이름이 일치하거나, 유저 번호(아이디)가 포함/일치하면 내 메시지로 판정
-                    let isMy = (sender === String(myName) || sender === String(myUserNo) || sender.includes(String(myUserNo)));
+                    // 디버깅을 위해 콘솔에 출력 (F12에서 확인)
+                    console.log("senderId:", senderId, " / myUserNo:", String(myUserNo).trim());
+                    console.log("senderName:", senderName, " / myName:", String(myName).trim());
+
+                    let isMy = (senderId === String(myUserNo).trim() || senderName === String(myName).trim());
                     
-                    let senderName = msg.sendUser ? msg.sendUser : '';
+                    if (isMy && !senderName) {
+                        senderName = myName;
+                    }
+                    
                     let avatarChar = senderName ? senderName.charAt(0) : '?';
+                    // ... 이하 동일
 
                     chatBody.append(`
                         <div class="message-row ${isMy ? 'my-message' : ''}">
