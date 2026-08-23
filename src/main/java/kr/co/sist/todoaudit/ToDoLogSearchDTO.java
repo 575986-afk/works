@@ -1,7 +1,5 @@
 package kr.co.sist.todoaudit;
 
-import java.sql.Timestamp;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -9,11 +7,12 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class ToDoLogListDomain {
-    private String logNo;
+public class ToDoLogSearchDTO {
+
+    private String startDate;
+    private String endDate;
     private String title;
-    private String duty;
+    private String task;
     private String userName;
-    private String email;
-    private Timestamp inputDate;
+    private String companyNo;
 }

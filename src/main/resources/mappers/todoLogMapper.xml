@@ -12,15 +12,81 @@
 	            column="email"
 	            typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
 	</resultMap>
+	<resultMap id="todoLogDetailResultMap" type="kr.co.sist.todoaudit.ToDoLogDetailDomain">
+		<result property="logNo" column="logNo"/>
+	    <result property="requesterName"
+	            column="requesterName"
+	            typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+	    <result property="requesterEmail"
+	            column="requesterEmail"
+	            typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+	    <result property="assigneeName"
+	            column="assigneeName"
+	            typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+	    <result property="assigneeEmail"
+	            column="assigneeEmail"
+	            typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+	</resultMap>
+	
 	<!-- 할일로그 리스트 조회 -->
-	<select id="selectAllToDoLog" resultMap="todoLogResultMap">
-	 SELECT t.DUTY AS duty,
-	 		t.INPUT_DATE AS inputDate,
-			u.user_name AS userName,
-			u.email AS email
-	 FROM TODOLOG t
-	 LEFT JOIN users u
-			ON t.user_no = u.user_no
+	<select id="selectAllToDoLog" parameterType="ToDoLogSearchDTO" resultMap="todoLogResultMap">
+	    SELECT
+	        l.LOG_NO AS logNo,
+	        t.TITLE AS title,
+	        l.DUTY AS duty,
+	        u.USER_NAME AS userName,
+	        u.EMAIL AS email,
+	        l.INPUT_DATE AS inputDate
+	    FROM TODOLOG l
+	    LEFT JOIN TODO t
+	           ON l.TODO_NO = t.TODO_NO
+	    LEFT JOIN USERS u
+	           ON t.USER_NO = u.USER_NO
+	    <where>
+	        AND u.COMPANY_NO = #{companyNo}
+	        <if test="startDate != null and startDate != ''">
+	            AND l.INPUT_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+	        </if>
+	        <if test="endDate != null and endDate != ''">
+	            AND l.INPUT_DATE &lt; TO_DATE(#{endDate}, 'YYYY-MM-DD') + 1
+	        </if>
+	        <if test="title != null and title != ''">
+	            AND t.TITLE LIKE '%' || #{title} || '%'
+	        </if>
+	        <if test="task != null and task != ''">
+	            AND l.DUTY LIKE '%' || #{task} || '%'
+	        </if>
+	        <if test="userName != null and userName != ''">
+			    AND u.USER_NAME = #{userName, typeHandler=kr.co.sist.login.EncryptTypeHandler}
+			</if>
+	    </where>
+	    ORDER BY l.INPUT_DATE DESC
+	</select>
+	<!-- 할일로그 상세 조회 -->
+	<select id="selectToDoLogDetail" parameterType="string" resultMap="todoLogDetailResultMap">
+     SELECT
+         l.LOG_NO        AS logNo,
+         t.TITLE         AS title,
+         t.STATUS        AS status,
+         t.START_DATE    AS startDate,
+         t.END_DATE      AS endDate,
+ 
+         req.USER_NAME   AS requesterName,
+         req.EMAIL       AS requesterEmail,
+
+         mgr_u.USER_NAME AS assigneeName,
+         mgr_u.EMAIL     AS assigneeEmail
+     FROM TODOLOG l
+     LEFT JOIN TODO t
+            ON l.TODO_NO = t.TODO_NO
+     LEFT JOIN USERS req
+            ON t.USER_NO = req.USER_NO
+     LEFT JOIN REPRESENTATIVE r
+            ON l.REPRESENTATIVE_NO = r.REPRESENTATIVE_NO
+     LEFT JOIN USERS mgr_u
+            ON r.REPRESENTATIVE_NO = mgr_u.USER_NO
+     WHERE l.LOG_NO = #{logNo}
+     	AND req.COMPANY_NO = #{companyNo}
 	</select>
 
 </mapper>

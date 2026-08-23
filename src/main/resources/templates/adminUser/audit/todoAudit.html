@@ -299,6 +299,18 @@ select.input-box {
 .logTable tbody tr:last-child td {
     border-bottom: none;
 }
+/* 로그 테이블 스크롤 영역 */
+.logTableWrapper {
+    max-height: 650px;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+/* 테이블 헤더 고정 */
+.logTable thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
 
 .sub-info {
     display: block;
@@ -402,32 +414,34 @@ $(function(){
 
     // 다운로드 버튼 클릭
     $("#downloadBtn").click(function(){
-        const startDate = $("#basicStartDate").val();
-        const endDate = $("#basicEndDate").val();
-        const title = $("#title").val();
-        const task = $("#task").val();
-        const userName = $("#userName").val();
-
-        axios.get('/adminUser/audit/downloadTodoLog', {
-            params: {
-                startDate: startDate,
-                endDate: endDate,
-                title: title,
-                task: task,
-                userName: userName
-            }
-        })
-        .then(function(response) {
-            $("#downloadModalBody").html(response.data);
-            
-            const downloadModal = new bootstrap.Modal(document.getElementById('downloadModal'));
-            downloadModal.show();
-        })
-        .catch(function(error) {
-            console.error("다운로드 폼 로드 실패:", error);
-            alert("다운로드 폼을 불러오지 못했습니다.");
-        });
-    });
+	    const startDate = $("#basicStartDate").val();
+	    const endDate = $("#basicEndDate").val();
+	    const title = $("#title").val();
+	    const task = $("#task").val();
+	    const userName = $("#userName").val();
+	
+	    axios.get('/adminUser/audit/downloadTodoLog', {
+	        params: {
+	            startDate: startDate,
+	            endDate: endDate,
+	            title: title,
+	            task: task,
+	            userName: userName
+	        }
+	    })
+	    .then(function(response) {
+	        $("#downloadModalBody").html(response.data);
+	        const downloadModal =
+	            new bootstrap.Modal(
+	                document.getElementById('downloadModal')
+	            );
+	        downloadModal.show();
+	    })
+	    .catch(function(error) {
+	        console.error("다운로드 폼 로드 실패:", error);
+	        alert("다운로드 폼을 불러오지 못했습니다.");
+	    });
+	});
 
     // 모달 내 확인 버튼 클릭
     $(document).on("click", "#btnConfirmDownload", function(){
@@ -437,7 +451,9 @@ $(function(){
         }
         const modalEl = document.getElementById('downloadModal');
         const modal = bootstrap.Modal.getInstance(modalEl);
-        if (modal) modal.hide();
+        if (modal) {
+            modal.hide();
+        }
     });
 });
 </script>
@@ -529,33 +545,36 @@ $(function(){
                     </div>
 
                 </form>
-
+				<div class="logTableWrapper">
                 <table class="logTable">
                     <thead>
                         <tr>
-                            <th style="width: 20%;">과업</th>
+                            <th style="width: 20%;">제목</th>
+                            <th style="width: 25%;">과업</th>
                             <th style="width: 30%;">사용자</th>
                             <th style="width: 25%;">날짜</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:if="${#lists.isEmpty(logList)}">
-                            <td colspan="3" style="text-align: center; color: #8c939d; padding: 24px 0;">
+                            <td colspan="4" style="text-align: center; color: #8c939d; padding: 24px 0;">
                                 조회된 할 일 로그가 없습니다.
                             </td>
                         </tr>
-                        <tr class="log-row" th:each="log : ${logList}">
-                            <td th:text="${log.duty}">과업</td>
+                        <tr class="log-row" th:each="log : ${logList}" th:data-logno="${log.logNo}">
+                            <td th:text="${(log.title ?: '-')}">제목</td>
+                            <td th:text="${(log.duty ?: '-')}">과업</td>
                             <td>
-                                <span th:text="${log.userName}">사용자명</span>
-                                <span class="sub-info" th:text="${log.email}">이메일</span>
+                                <span th:text="${(log.userName ?: '-')}">사용자명</span>
+                                <span class="sub-info" th:text="${(log.email ?: '-')}">이메일</span>
                             </td>
                             <td>
-                                <span th:text="${log.inputDate}">2026-07-16</span>
+                                <span th:text="${(log.inputDate ?: '-')}">2026-07-16</span>
                             </td>
                         </tr>
                     </tbody>
                 </table>
+                </div>
             </div>
 
         </div>

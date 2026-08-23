@@ -1,15 +1,11 @@
 package kr.co.sist.todoaudit;
 
-import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -24,29 +20,46 @@ import jakarta.servlet.http.HttpSession;
 @Controller
 @RequestMapping("/adminUser/audit")
 public class ToDoAuditController {
-	
-	@Autowired(required = false)
-	private ToDoLogService tdls;
 
-	// 할일 로그 페이지
-	@GetMapping("/todoAudit")
+    @Autowired(required = false)
+    private ToDoLogService tdls;
+
+
+    // 할 일 로그 페이지
+    @GetMapping("/todoAudit")
     public String showToDoLogPage(
             @RequestParam(name = "startDate", required = false) String startDate,
             @RequestParam(name = "endDate", required = false) String endDate,
             @RequestParam(name = "title", required = false) String title,
             @RequestParam(name = "task", required = false) String task,
             @RequestParam(name = "userName", required = false) String userName,
-            HttpSession session, 
+            HttpSession session,
             Model model) {
 
+        // 기본 조회 기간 : 최근 7일
         if (startDate == null || startDate.trim().isEmpty()) {
-            startDate = LocalDate.now().minusDays(7).format(DateTimeFormatter.ofPattern("yyyy. MM. dd"));
-        }
-        if (endDate == null || endDate.trim().isEmpty()) {
-            endDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy. MM. dd"));
+            startDate = LocalDate.now()
+                    .minusDays(7)
+                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         }
 
-        List<ToDoLogListDomain> logList = tdls.getAllToDoLogList();
+        if (endDate == null || endDate.trim().isEmpty()) {
+            endDate = LocalDate.now()
+                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        }
+
+        String companyNo = (String) session.getAttribute("companyNo");
+
+        ToDoLogSearchDTO search = new ToDoLogSearchDTO();
+
+        search.setCompanyNo(companyNo);
+        search.setStartDate(startDate);
+        search.setEndDate(endDate);
+        search.setTitle(title);
+        search.setTask(task);
+        search.setUserName(userName);
+
+        List<ToDoLogListDomain> logList = tdls.getAllToDoLogList(search);
 
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
@@ -57,33 +70,30 @@ public class ToDoAuditController {
 
         return "adminUser/audit/todoAudit";
     }
-    
-    //할일 로그 상세 조회
-	@GetMapping("/todoAudit/todoLogDetail")
+
+
+    // 할 일 로그 상세 조회
+    @GetMapping("/todoAudit/todoLogDetail")
     public String findToDoLogDetail(
-            @RequestParam(name = "logNo", required = false) String logNo, 
+            @RequestParam(name = "logNo", required = false) String logNo,
+            HttpSession session,
             Model model) {
 
-        // 임시 상세 데이터
-        Map<String, String> logDetail = new HashMap<>();
-        logDetail.put("logNo", logNo != null ? logNo : "LOG_1001");
-        logDetail.put("time", "2026-07-16 T15:51:44+09:00");
-        logDetail.put("targetList", "프로젝트 A 할일 리스트");
-        logDetail.put("task", "할 일 미완료 변경");
-        logDetail.put("userName", "홍길동");
-        logDetail.put("userEmail", "test1@practice-6.by-works.net");
-        logDetail.put("requester", "김철수");
-        logDetail.put("title", "요청 할 일 테스트");
-        logDetail.put("content", "요청 할 일 상태를 미완료로 변경함");
+        if (logNo == null || logNo.trim().isEmpty()) {
+            return "redirect:/adminUser/audit/todoAudit";
+        }
+
+        String companyNo = (String) session.getAttribute("companyNo");
+        ToDoLogDetailDomain logDetail = tdls.getToDoLogDetail(logNo, companyNo);
 
         model.addAttribute("logDetail", logDetail);
 
         return "adminUser/audit/todoLogDetail";
     }
-    
-    //할일 로그 다운로드 - 파일 이름 할일_날짜로 고정
-    //파라미터 받아서 response로 
-	@GetMapping("/downloadTodoLog")
+
+
+    // 할 일 로그 다운로드
+    @GetMapping("/downloadTodoLog")
     public String downloadTodoLog(
             @RequestParam(value = "isProcess", required = false, defaultValue = "false") boolean isProcess,
             @RequestParam(value = "fileName", required = false) String fileName,
@@ -91,49 +101,152 @@ public class ToDoAuditController {
             @RequestParam(name = "endDate", required = false) String endDate,
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "task", required = false) String task,
-            @RequestParam(name = "userName", required = false) String userName,
+            @RequestParam(value = "userName", required = false) String userName,
+            HttpSession session,
             Model model,
             HttpServletResponse response) {
 
+        String companyNo = (String) session.getAttribute("companyNo");
+
+        // 실제 Excel 다운로드
         if (isProcess) {
+            ToDoLogSearchDTO search = new ToDoLogSearchDTO();
+
+            search.setCompanyNo(companyNo);
+            search.setStartDate(startDate);
+            search.setEndDate(endDate);
+            search.setTitle(title);
+            search.setTask(task);
+            search.setUserName(userName);
+
+            List<ToDoLogListDomain> logList = tdls.getAllToDoLogList(search);
+
             try {
+                // 파일명
                 if (fileName == null || fileName.trim().isEmpty()) {
-                    String nowStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmm"));
-                    fileName = "todo_" + nowStr;
+                    fileName = "할일_" +
+                            LocalDateTime.now()
+                                    .format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmm"));
                 }
-                if (!fileName.endsWith(".csv")) fileName += ".csv";
+                if (!fileName.toLowerCase().endsWith(".xlsx")) {
+                    fileName += ".xlsx";
+                }
 
-                String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString()).replaceAll("\\+", "%20");
+                String encodedFileName =
+                        URLEncoder.encode(fileName, StandardCharsets.UTF_8)
+                                .replace("+", "%20");
 
-                response.setContentType("text/csv; charset=UTF-8");
-                response.setHeader("Content-Disposition", "attachment; filename=\"" + encodedFileName + "\"");
+                // Response 설정
+                response.setContentType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                response.setHeader(
+                        "Content-Disposition",
+                        "attachment; filename*=UTF-8''" + encodedFileName);
 
-                StringBuilder csvContent = new StringBuilder();
-                csvContent.append("\uFEFF");
-                csvContent.append("제목,과업,사용자,날짜\n");
-                csvContent.append("요청 할 일 테스트,할 일 미완료 변경,홍길동(test1@practice-6.by-works.net),2026-07-16 T15:51:44+09:00\n");
-                csvContent.append("요청 할 일 테스트,할 일 완료,홍길동(test1@practice-6.by-works.net),2026-07-16 T15:49:50+09:00\n");
-                csvContent.append("1234,할 일 삭제,홍길동(test1@practice-6.by-works.net),2026-07-16 T15:24:49+09:00\n");
+                // Excel 생성
+                org.apache.poi.xssf.usermodel.XSSFWorkbook workbook =
+                        new org.apache.poi.xssf.usermodel.XSSFWorkbook();
+                org.apache.poi.ss.usermodel.Sheet sheet =
+                        workbook.createSheet("할일 로그");
 
-                OutputStream os = response.getOutputStream();
-                os.write(csvContent.toString().getBytes(StandardCharsets.UTF_8));
-                os.flush();
+                // 헤더
+                org.apache.poi.ss.usermodel.Row header =
+                        sheet.createRow(0);
 
+                header.createCell(0).setCellValue("제목");
+                header.createCell(1).setCellValue("과업");
+                header.createCell(2).setCellValue("사용자");
+                header.createCell(3).setCellValue("이메일");
+                header.createCell(4).setCellValue("날짜");
+
+                // 데이터
+                int rowNum = 1;
+                for (ToDoLogListDomain log : logList) {
+                    org.apache.poi.ss.usermodel.Row row =
+                            sheet.createRow(rowNum++);
+                    row.createCell(0).setCellValue(
+                            log.getTitle() == null
+                                    ? "-"
+                                    : log.getTitle()
+                    );
+                    row.createCell(1).setCellValue(
+                            log.getDuty() == null
+                                    ? "-"
+                                    : log.getDuty()
+                    );
+                    row.createCell(2).setCellValue(
+                            log.getUserName() == null
+                                    ? "-"
+                                    : log.getUserName()
+                    );
+                    row.createCell(3).setCellValue(
+                            log.getEmail() == null
+                                    ? "-"
+                                    : log.getEmail()
+                    );
+                    row.createCell(4).setCellValue(
+                            log.getInputDate() == null
+                                    ? "-"
+                                    : log.getInputDate().toString()
+                    );
+                }
+
+                // 컬럼 너비
+                for (int i = 0; i < 5; i++) {
+                    sheet.autoSizeColumn(i);
+                    sheet.setColumnWidth(
+                            i,
+                            Math.min(sheet.getColumnWidth(i) + 1000, 15000)
+                    );
+                }
+
+                // 응답으로 Excel 전송
+                workbook.write(response.getOutputStream());
+                workbook.close();
+                response.getOutputStream().flush();
             } catch (Exception e) {
                 e.printStackTrace();
             }
             return null;
         }
 
-        String nowStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmm"));
-        
-        model.addAttribute("defaultFileName", "todo_" + nowStr);
-        model.addAttribute("startDate", startDate);
-        model.addAttribute("endDate", endDate);
-        model.addAttribute("title", title);
-        model.addAttribute("task", task);
-        model.addAttribute("userName", userName);
+        // 다운로드 모달
+        String nowStr =
+                LocalDateTime.now()
+                        .format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmm"));
+        String defaultFileName = "할일_" + nowStr;
+
+        // 검색 조건을 다운로드 URL에 포함
+        StringBuilder downloadAction =
+                new StringBuilder("/adminUser/audit/downloadTodoLog?");
+        downloadAction.append("startDate=")
+                .append(encode(startDate));
+        downloadAction.append("&endDate=")
+                .append(encode(endDate));
+        downloadAction.append("&title=")
+                .append(encode(title));
+        downloadAction.append("&task=")
+                .append(encode(task));
+        downloadAction.append("&userName=")
+                .append(encode(userName));
+
+        model.addAttribute("defaultFileName", defaultFileName);
+
+        // 공통 downloadForm에서 사용
+        model.addAttribute("downloadAction", downloadAction.toString());
 
         return "adminUser/audit/downloadForm";
+    }
+
+
+    // URL 파라미터 UTF-8 인코딩
+    private String encode(String value) {
+        if (value == null) {
+            return "";
+        }
+        return URLEncoder.encode(
+                value,
+                StandardCharsets.UTF_8
+        );
     }
 }

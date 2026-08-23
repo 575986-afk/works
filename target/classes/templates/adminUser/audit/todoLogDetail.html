@@ -33,53 +33,41 @@
 <div class="detail-container">
     
     <div class="detail-item">
-        <label>시각</label>
-        <div class="value" th:text="${logDetail.time}">
-            2026-07-16 T15:51:44+09:00
+        <label>제목</label>
+        <div class="value" th:text="${(logDetail.title ?: '-')}">
+            요청 할일 리스트
         </div>
     </div>
-
+    
     <div class="detail-item">
-        <label>요청 할 일 리스트</label>
-        <div class="value" th:text="${logDetail.targetList}">
-            프로젝트 A 할일 리스트
+        <label>상태</label>
+        <div class="value" th:text="${logDetail?.status == '1' ? '완료' : '미완료'}">
+            미완료
         </div>
     </div>
-
+    
     <div class="detail-item">
-        <label>과업</label>
-        <div class="value" th:text="${logDetail.task}">
-            할 일 미완료 변경
-        </div>
-    </div>
-
-    <div class="detail-item">
-        <label>사용자</label>
+        <label>기한</label>
         <div class="value">
-            <span th:text="${logDetail.userName}"></span>
-            <span class="sub-email" th:text="'(' + ${logDetail.userEmail} + ')'">
-            </span>
+            <span th:text="${(logDetail.startDate ?: '')}"></span>
+            ~
+            <span th:text="${(logDetail.endDate ?: '')}"></span>
         </div>
     </div>
-
+    
     <div class="detail-item">
         <label>요청자</label>
-        <div class="value" th:text="${logDetail.requester}">
-            홍길동
+        <div class="value">
+            <span th:text="${(logDetail.requesterName ?: '-')}">홍길동</span>
+            (<span th:text="${(logDetail.requesterEmail ?: '-')}">test@test.com</span>)
         </div>
     </div>
-
+    
     <div class="detail-item">
-        <label>할 일 제목</label>
-        <div class="value" th:text="${logDetail.title}">
-            요청 할 일 테스트
-        </div>
-    </div>
-
-    <div class="detail-item">
-        <label>상세 내용</label>
-        <div class="value" th:text="${logDetail.content}">
-            요청 할 일 상태를 미완료로 변경함
+        <label>담당자</label>
+        <div class="value">
+            <span th:text="${(logDetail.assigneeName ?: '-')}">홍길동</span>
+            (<span th:text="${(logDetail.assigneeEmail ?: '-')}">test@test.com</span>)
         </div>
     </div>
 
