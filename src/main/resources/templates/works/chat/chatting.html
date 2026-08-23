@@ -59,16 +59,19 @@
             </a>
         </div>
         
+        <!-- 상단 검색창 및 네이버형 자동완성 드롭다운 영역 -->
         <div style="flex: 0 1 340px; position: relative; margin: 0 20px;">
-            <form th:action="@{/search}" method="get" style="display: flex; align-items: center; width: 100%;">
-                <div style="background-color: #f1f3f5; border-radius: 4px; padding: 6px 12px 6px 32px; display: flex; align-items: center; width: 100%; position: relative;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%);">
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
-                    <input type="text" name="keyword" placeholder="메시지 검색" style="border: none; background: transparent; outline: none; font-size: 13px; width: 100%; color: #333;">
-                </div>
-            </form>
+            <div style="background-color: #f1f3f5; border-radius: 4px; padding: 6px 12px 6px 32px; display: flex; align-items: center; width: 100%; position: relative;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%);">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="searchKeyword" placeholder="사원 이름 검색" style="border: none; background: transparent; outline: none; font-size: 13px; width: 100%; color: #333;" autocomplete="off">
+            </div>
+            
+            <!-- 네이버 검색창 밑에 뜨는 자동완성 레이어 박스 -->
+            <div id="searchDropdown" style="display: none; position: absolute; top: 100%; left: 0; width: 100%; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 1000; max-height: 300px; overflow-y: auto; margin-top: 5px;">
+            </div>
         </div>
 
         <div class="flex items-center gap-4 text-gray-600 text-lg">
@@ -158,7 +161,10 @@
     <div class="main-container">
         <!-- 사이드바 -->
         <aside class="sidebar">
-            <div class="sidebar-header"><button class="btn-create">새로 만들기</button></div>
+            <div class="sidebar-header">
+                <!-- 팀원 주소록 팝업을 띄우기 전, 채팅방 이름을 먼저 입력받는 프롬프트 연동 -->
+                <button class="btn-create" onclick="openAddressPopupWithRoomName(); return false;">새로 만들기</button>
+            </div>
             <div class="room-list">
                 <div class="room-item" th:each="room : ${chatRoomList}" th:classappend="${room.chatRoomNo == currentRoomId} ? 'active'" th:onclick="|location.href='@{/chatting(chatRoomNo=${room.chatRoomNo})}'|">
                     <div class="room-avatar" th:text="${#strings.substring(room.chatRoomName, 0, 1)}"></div>
@@ -194,8 +200,8 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         const currentRoomNo = '[[${currentRoomId}]]';
-        const myName = '[[${session.user.name}]]';        // 내 이름 (예: 나미리)
-        const myUserNo = '[[${session.user.userNo}]]';    // 내 유저 번호 (예: 50 또는 U000050)
+        const myName = '[[${session.user.name}]]';       
+        const myUserNo = '[[${session.user.userNo}]]';    
         let isSubmitting = false;
 
         $(document).ready(function() {
@@ -257,6 +263,50 @@
                 setInterval(fetchMessages, 2000);
             }
         });
+        
+        $('#searchKeyword').on('input', function() {
+            const keyword = $(this).val().trim();
+            let dropdown = $('#searchDropdown');
+
+            if (keyword === '') {
+                dropdown.hide().empty();
+                return;
+            }
+
+            $.get('/search', { keyword: keyword }, function(data) {
+                dropdown.empty();
+
+                if (!data || data.length === 0) {
+                    dropdown.html('<div style="padding: 12px; text-align: center; color: #888; font-size: 13px;">검색 결과가 없습니다.</div>');
+                    dropdown.show();
+                    return;
+                }
+
+                data.forEach(room => {
+                    let roomName = room.chatRoomName ? room.chatRoomName : '이름 없음';
+                    
+                    dropdown.append(`
+                        <div class="search-result-item" onclick="location.href='/chatting?chatRoomNo=${room.chatRoomNo}'" 
+                             style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f1f3f5; font-size: 13px; color: #333;"
+                             onmouseover="this.style.backgroundColor='#f8f9fa'" 
+                             onmouseout="this.style.backgroundColor='white'">
+                            💬 ${escapeHtml(roomName)}
+                        </div>
+                    `);
+                });
+
+                dropdown.show();
+            }).fail(function() {
+                console.log('검색 요청 실패');
+            });
+        });
+
+        // 검색창 바깥을 클릭하면 드롭다운 닫기
+        $(document).click(function(e) {
+            if (!$(e.target).closest('#searchKeyword, #searchDropdown').length) {
+                $('#searchDropdown').hide();
+            }
+        });
 
         $('.chat-input-area textarea').on('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -300,10 +350,6 @@
                     let senderId = String(msg.sendUser ? msg.sendUser : '').trim();
                     let senderName = String(msg.sendUserName ? msg.sendUserName : '').trim();
                     
-                    // 디버깅을 위해 콘솔에 출력 (F12에서 확인)
-                    console.log("senderId:", senderId, " / myUserNo:", String(myUserNo).trim());
-                    console.log("senderName:", senderName, " / myName:", String(myName).trim());
-
                     let isMy = (senderId === String(myUserNo).trim() || senderName === String(myName).trim());
                     
                     if (isMy && !senderName) {
@@ -311,7 +357,6 @@
                     }
                     
                     let avatarChar = senderName ? senderName.charAt(0) : '?';
-                    // ... 이하 동일
 
                     chatBody.append(`
                         <div class="message-row ${isMy ? 'my-message' : ''}">
@@ -334,6 +379,31 @@
         }
 
         function escapeHtml(text) { return $('<div>').text(text).html(); }
+
+        function openAddressPopupWithRoomName() {
+            const roomName = prompt("생성할 채팅방 이름을 입력하세요:", "새로운 대화방");
+            
+            if (roomName === null) {
+                return; 
+            }
+            
+            const trimmedName = roomName.trim() === "" ? "새로운 대화방" : roomName.trim();
+            
+            $.ajax({
+                url: '/chat/setRoomName',
+                type: 'POST',
+                data: { chatRoomName: trimmedName },
+                success: function() {
+                    const url = "/popupAddr"; 
+                    const title = "addGroupPopup";
+                    const specs = "width=850,height=600,left=200,top=100,scrollbars=yes,resizable=yes";
+                    window.open(url, title, specs);
+                },
+                error: function() {
+                    alert('채팅방 이름 설정 중 오류가 발생했습니다.');
+                }
+            });
+        }
     </script>
 </body>
 </html>

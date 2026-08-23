@@ -1,11 +1,14 @@
 package kr.co.sist.chat;
 
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -68,20 +71,35 @@ public class ChatController {
 	    return cnt > 0 ? "SUCCESS" : "FAIL";
 	}
 	
-	//채팅방 리스트
-	public String chatRoom(String chatRoomNo, Model model) {
-		return "";
+//	@GetMapping("/popup/PopupAddr")
+//	public String addGroupForm() {
+//	    return "popup/PopupAddr"; 
+//	}
+	
+	@PostMapping("/chat/setRoomName")
+	@ResponseBody
+	public String setTempRoomName(@RequestParam("chatRoomName") String chatRoomName, HttpSession session) {
+	    session.setAttribute("tempChatRoomName", chatRoomName);
+	    return "SUCCESS";
 	}
+	
+	
 	
 	//사용자 검색
-	public String searchUser(String userName) {
-		return "";
+	@GetMapping("/search")
+	@ResponseBody
+	public List<ChatRoomDTO> search(@RequestParam("keyword") String keyword, HttpSession session) {
+	    UserDTO loginUser = (UserDTO) session.getAttribute("user");
+	    if (loginUser == null) {
+	        return null;
+	    }
+	    
+	    String companyNo = loginUser.getCompanyNo(); 
+	    String myUserNo = String.valueOf(loginUser.getUserNo());
+	    
+	    return cs.searchUser(companyNo, myUserNo, keyword);
 	}
 	
-	//채팅방 생성
-	public String createChatRoom() {
-		return "";
-	}
 	
 	//채팅방 정렬
 	public String sortChatRoom() {

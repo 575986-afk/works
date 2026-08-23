@@ -62,4 +62,32 @@
     <insert id="insertMessage">
     insert into chatting(content, send_user,send_date,chatroom_no) values (#{content},#{sendUser},sysdate,#{chatRoomNo})
     </insert>
+    
+   <insert id="insertChatRoom" parameterType="kr.co.sist.chat.ChatRoomDTO">
+        <selectKey keyProperty="chatRoomNo" resultType="string" order="BEFORE">
+            SELECT 'ROOM_' || SEQ_CHAT_ROOM.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO CHATROOM (chatroom_no, chatroom_name,input_date,user_no) 
+        VALUES (#{chatRoomNo}, #{chatRoomName},sysdate,#{userNo})
+    </insert>
+
+    <insert id="insertChatParticipant" parameterType="java.util.Map">
+        INSERT INTO CHATPARTICIPANT (chatroom_no, participant_no) 
+        VALUES (#{chatRoomNo}, #{userNo})
+    </insert>
+    
+    <select id="selectSearchUser" parameterType="java.util.Map" resultType="kr.co.sist.chat.ChatRoomDTO">
+        SELECT DISTINCT 
+        r.chatroom_no AS chatRoomNo,
+        r.chatroom_name AS chatRoomName
+    FROM chatroom r
+    JOIN chatparticipant p1 ON r.chatroom_no = p1.chatroom_no
+    JOIN chatparticipant p2 ON r.chatroom_no = p2.chatroom_no
+    JOIN users u ON p2.participant_no = u.user_no
+    WHERE p1.participant_no = #{userNo, jdbcType=VARCHAR}        
+      AND p2.participant_no != #{userNo, jdbcType=VARCHAR}       
+      AND u.company_no = #{companyNo}     
+      AND u.user_name LIKE '%' || #{keyword} || '%' OR r.chatroom_name LIKE '%' || #{keyword} || '%'
+    </select>
+   
 </mapper>

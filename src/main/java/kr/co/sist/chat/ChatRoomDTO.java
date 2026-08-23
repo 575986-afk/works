@@ -18,4 +18,9 @@ public class ChatRoomDTO {
     private String sendUser;
     private String sendUserName;
     private String sendDate; 
+    private String userNo; 
+    
+    private String companyName; 
+    private String companyNo; 
+    
 }

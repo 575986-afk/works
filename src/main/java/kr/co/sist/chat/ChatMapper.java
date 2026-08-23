@@ -1,6 +1,7 @@
 package kr.co.sist.chat;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 
@@ -10,10 +11,10 @@ public interface ChatMapper {
 	List<ChatRoomDTO> selectChatRoom(String userNo);
 	List<ChatRoomDTO> selectMessageList(String chatRoomNo);
 	int insertMessage(ChatRoomDTO cDTO);
-	
-	List<ChatRoomDTO> selectSearchUser(String userName);
-	int selectChatCnt(ChatRoomDTO cDTO);
 	int insertChatRoom(ChatRoomDTO cDTO);
+	int insertChatParticipant(Map<String, Object> map);
+	List<ChatRoomDTO> selectSearchUser(Map<String, Object> map);
+	
 	List<ChatRoomDTO> sortChatRoom(String chatRoomNo);
 	int deleteChatRoom(String userNo, String chatRoomNo);
 	String insertFile(String content);
