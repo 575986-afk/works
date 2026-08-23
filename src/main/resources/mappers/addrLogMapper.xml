@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.sist.addraudit.AddrLogMapper">
+    <resultMap id="addrLogResultMap"
+               type="kr.co.sist.addraudit.AddrLogListDomain">
+        <!-- 사용자 이름 -->
+        <result property="userName"
+                column="userName"
+                typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+        <!-- 사용자 이메일 -->
+        <result property="email"
+                column="email"
+                typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+        <!-- 대상 이름 -->
+        <result property="targetName"
+                column="targetName"
+                typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+        <!-- 대상 이메일 -->
+        <result property="targetEmail"
+                column="targetEmail"
+                typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+    </resultMap>
+
+    <!-- 주소록 로그 리스트 조회 -->
+    <select id="selectAllAddrLog" parameterType="kr.co.sist.addraudit.AddrLogSearchDTO" resultMap="addrLogResultMap">
+        SELECT
+            a.LOG_NO AS logNo,
+            a.DUTY AS duty,
+            <!-- 사용자 -->
+            u.USER_NAME AS userName,
+            u.EMAIL AS email,
+            <!-- 대상 -->
+            CASE
+                WHEN a.TARGET = 'ALL' THEN '전체'
+                ELSE t.USER_NAME
+            END AS targetName,
+            CASE
+                WHEN a.TARGET = 'ALL' THEN '-'
+                ELSE t.EMAIL
+            END AS targetEmail,
+            a.INPUT_DATE AS inputDate
+        FROM ADDRESSBOOKLOG a
+        <!-- 로그를 발생시킨 사용자 -->
+        LEFT JOIN USERS u
+               ON a.USER_NO = u.USER_NO
+        <!-- 로그의 대상 사용자 -->
+        LEFT JOIN USERS t
+               ON a.TARGET = t.USER_NO
+        <where>
+            <!-- 회사 조건 -->
+            AND u.COMPANY_NO = #{companyNo}
+            <if test="startDate != null and startDate != ''">
+                AND a.INPUT_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND a.INPUT_DATE &lt; TO_DATE(#{endDate}, 'YYYY-MM-DD') + 1
+            </if>
+            <if test="duty != null and duty != ''">
+                AND a.DUTY LIKE '%' || #{duty} || '%'
+            </if>
+            <if test="userName != null and userName != ''">
+                AND u.USER_NAME =
+                    #{userName, typeHandler=kr.co.sist.login.EncryptTypeHandler}
+            </if>
+            <if test="targetName != null and targetName != ''">
+			    <choose>
+			        <when test="targetName == '전체'">
+			            AND a.TARGET = 'ALL'
+			        </when>
+			        <otherwise>
+			            AND t.USER_NAME =
+			                #{targetName, typeHandler=kr.co.sist.login.EncryptTypeHandler}
+			        </otherwise>
+			    </choose>
+			</if>
+        </where>
+        ORDER BY a.INPUT_DATE DESC
+    </select>
+
+</mapper>

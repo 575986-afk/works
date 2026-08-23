@@ -300,6 +300,18 @@ body {
 .logTable tbody tr:last-child td {
     border-bottom: none;
 }
+/* 로그 테이블 스크롤 영역 */
+.logTableWrapper {
+    max-height: 650px;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+/* 테이블 헤더 고정 */
+.logTable thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
 
 .sub-info {
     display: block;
@@ -339,7 +351,7 @@ $(function(){
 
     // Datepicker 한글 설정
     $.datepicker.setDefaults({
-        dateFormat: 'yy. mm. dd',
+        dateFormat: 'yy-mm-dd',
         prevText: '이전 달',
         nextText: '다음 달',
         monthNames: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
@@ -386,7 +398,7 @@ $(function(){
     $("#downloadBtn").click(function(){
         const startDate = $("#basicStartDate").val();
         const endDate = $("#basicEndDate").val();
-        const ip = $("#ip").val();
+        const loginIp = $("#loginIp").val();
         const userName = $("#userName").val();
 
         $.ajax({
@@ -395,7 +407,7 @@ $(function(){
             data: {
                 startDate: startDate,
                 endDate: endDate,
-                ip: ip,
+                loginIp: loginIp,
                 userName: userName
             },
             success: function(htmlContent) {
@@ -485,7 +497,7 @@ $(function(){
                                 </div>
                                 <div class="filter-group">
                                     <label>IP 주소</label>
-                                    <input type="text" id="ip" name="ip" class="input-box" th:value="${ip}">
+                                    <input type="text" id="loginIp" name="loginIp" class="input-box" th:value="${loginIp}">
                                 </div>
                                 <div class="filter-group">
                                     <label>사용자</label>
@@ -500,36 +512,38 @@ $(function(){
                     </div>
 
                 </form>
-
+				<div class="logTableWrapper">
                 <table class="logTable">
                     <thead>
                         <tr>
                             <th style="width: 30%;">설명</th>
-                            <th style="width: 30%;">사용자</th>
+                            <th style="width: 20%;">사용자</th>
                             <th style="width: 20%;">날짜</th>
-                            <th style="width: 20%;">IP 주소</th>
+                            <th style="width: 15%;">IP 주소</th>
+                            <th style="width: 15%;">상태</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:if="${#lists.isEmpty(logList)}">
-                            <td colspan="4" style="text-align: center; color: #8c939d; padding: 24px 0;">
+                            <td colspan="5" style="text-align: center; color: #8c939d; padding: 24px 0;">
                                 조회된 로그인 로그가 없습니다.
                             </td>
                         </tr>
                         <tr th:each="log : ${logList}">
-                            <td th:text="${log.description}">설명</td>
+                            <td th:text="${(log.description ?: '-')}">설명</td>
                             <td>
-                                <span th:text="${log.userName}">사용자 이름</span>
-                                <span class="sub-info" th:text="${log.userEmail}">이메일</span>
+                                <span th:text="${(log.userName ?: '-')}">사용자 이름</span>
+                                <span class="sub-info" th:text="${(log.email ?: '-')}">이메일</span>
                             </td>
                             <td>
-                                <span th:text="${log.date}">날짜</span>
-                                <span class="sub-info" th:text="${log.time}">시간</span>
+                                <span th:text="${(log.inputDate ?: '-')}">날짜</span>
                             </td>
-                            <td th:text="${log.ip}">IP 주소</td>
+                            <td th:text="${(log.loginIp ?: '-')}">IP 주소</td>
+                            <td th:text="${(log.status ?: '-')}">접속현황</td>
                         </tr>
                     </tbody>
                 </table>
+                </div>
             </div>
 
         </div>
