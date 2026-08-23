@@ -6,11 +6,12 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,113 +25,215 @@ import jakarta.servlet.http.HttpSession;
 @RequestMapping("/adminUser/audit")
 public class AddrAuditController {
 
-	// 주소록 로그 페이지
-	@GetMapping("/addrAudit")
+    @Autowired(required = false)
+    private AddrLogService als;
+
+
+    // 주소록 로그 페이지
+    @GetMapping("/addrAudit")
     public String showAddrLogPage(
             @RequestParam(name = "startDate", required = false) String startDate,
             @RequestParam(name = "endDate", required = false) String endDate,
-            @RequestParam(name = "target", required = false) String target,
-            @RequestParam(name = "targetEmail", required = false) String targetEmail,
-            @RequestParam(name = "task", required = false) String task,
+            @RequestParam(name = "duty", required = false) String duty,
             @RequestParam(name = "userName", required = false) String userName,
-            HttpSession session, 
+            @RequestParam(name = "targetName", required = false) String targetName,
+            HttpSession session,
             Model model) {
 
         if (startDate == null || startDate.trim().isEmpty()) {
-            startDate = LocalDate.now().minusDays(7).format(DateTimeFormatter.ofPattern("yyyy. MM. dd"));
+            startDate = LocalDate.now()
+                    .minusDays(7)
+                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         }
+
         if (endDate == null || endDate.trim().isEmpty()) {
-            endDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy. MM. dd"));
+            endDate = LocalDate.now()
+                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         }
 
-        List<Map<String, String>> logList = new ArrayList<>();
+        String companyNo = (String) session.getAttribute("companyNo");
 
-        Map<String, String> log1 = new HashMap<>();
-        log1.put("target", "홍길동");
-        log1.put("targetEmail", "hong@example.com");
-        log1.put("task", "주소록 등록/수정");
-        log1.put("userName", "12");
-        log1.put("userEmail", "test1@practice-6.by-works.net");
-        log1.put("date", "2026-07-16");
-        log1.put("time", "T16:13:36+09:00");
-        logList.add(log1);
+        AddrLogSearchDTO search = new AddrLogSearchDTO();
 
-        Map<String, String> log2 = new HashMap<>();
-        log2.put("target", "김철수");
-        log2.put("targetEmail", "chulsoo@example.com");
-        log2.put("task", "주소록 삭제");
-        log2.put("userName", "1234");
-        log2.put("userEmail", "test3@practice-6.by-works.net");
-        log2.put("date", "2026-07-16");
-        log2.put("time", "T16:07:02+09:00");
-        logList.add(log2);
+        search.setCompanyNo(companyNo);
+        search.setStartDate(startDate);
+        search.setEndDate(endDate);
+        search.setDuty(duty);
+        search.setUserName(userName);
+        search.setTargetName(targetName);
+
+        List<AddrLogListDomain> logList = als.getAllAddrLogList(search);
 
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
-        model.addAttribute("target", target);
-        model.addAttribute("targetEmail", targetEmail);
-        model.addAttribute("task", task);
+        model.addAttribute("duty", duty);
         model.addAttribute("userName", userName);
+        model.addAttribute("targetName", targetName);
         model.addAttribute("logList", logList);
 
         return "adminUser/audit/addrAudit";
     }
-    
-    //주소록 로그 다운로드 - 파일 이름 주소록_날짜로 고정
-    //파라미터 받아서 response로 
-	@GetMapping("/downloadAddrLog")
+
+
+    // 주소록 로그 다운로드
+    @GetMapping("/downloadAddrLog")
     public String downloadAddrLog(
             @RequestParam(value = "isProcess", required = false, defaultValue = "false") boolean isProcess,
             @RequestParam(value = "fileName", required = false) String fileName,
             @RequestParam(name = "startDate", required = false) String startDate,
             @RequestParam(name = "endDate", required = false) String endDate,
-            @RequestParam(name = "target", required = false) String target,
-            @RequestParam(name = "targetEmail", required = false) String targetEmail,
-            @RequestParam(name = "task", required = false) String task,
+            @RequestParam(name = "duty", required = false) String duty,
             @RequestParam(name = "userName", required = false) String userName,
+            @RequestParam(name = "targetName", required = false) String targetName,
+            HttpSession session,
             Model model,
             HttpServletResponse response) {
 
-        // CSV 파일 다운로드
+        String companyNo = (String) session.getAttribute("companyNo");
+
+        // 실제 다운로드
         if (isProcess) {
+            AddrLogSearchDTO search = new AddrLogSearchDTO();
+            search.setCompanyNo(companyNo);
+            search.setStartDate(startDate);
+            search.setEndDate(endDate);
+            search.setDuty(duty);
+            search.setUserName(userName);
+            search.setTargetName(targetName);
+
+            List<AddrLogListDomain> logList = als.getAllAddrLogList(search);
+
             try {
+                // 파일명
                 if (fileName == null || fileName.trim().isEmpty()) {
-                    String nowStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmm"));
-                    fileName = "addressbook_" + nowStr;
+                    String nowStr =
+                            LocalDateTime.now()
+                                    .format(
+                                        DateTimeFormatter.ofPattern(
+                                            "yyyyMMdd_HHmm"
+                                        )
+                                    );
+                    fileName = "주소록_" + nowStr;
                 }
-                if (!fileName.endsWith(".csv")) fileName += ".csv";
+                if (!fileName.endsWith(".xlsx")) {
+                    fileName += ".xlsx";
+                }
+                String encodedFileName =
+                        URLEncoder.encode(
+                                fileName,
+                                StandardCharsets.UTF_8
+                        ).replace("+", "%20");
 
-                String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString()).replaceAll("\\+", "%20");
+                // 응답 설정
+                response.setContentType(
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                );
+                response.setHeader(
+                        "Content-Disposition",
+                        "attachment; filename=\"" +
+                        encodedFileName +
+                        "\""
+                );
 
-                response.setContentType("text/csv; charset=UTF-8");
-                response.setHeader("Content-Disposition", "attachment; filename=\"" + encodedFileName + "\"");
+                // Excel 생성
+                XSSFWorkbook workbook = new XSSFWorkbook();
+                Sheet sheet = workbook.createSheet("주소록 로그");
 
-                StringBuilder csvContent = new StringBuilder();
-                csvContent.append("\uFEFF");
-                csvContent.append("대상,대상 이메일,과업,작업자,작업자 이메일,날짜,시간\n");
-                csvContent.append("홍길동,hong@example.com,주소록 등록/수정,12,test1@practice-6.by-works.net,2026-07-16,T16:13:36+09:00\n");
-                csvContent.append("김철수,chulsoo@example.com,주소록 삭제,1234,test3@practice-6.by-works.net,2026-07-16,T16:07:02+09:00\n");
+                // 헤더
+                Row header = sheet.createRow(0);
+                header.createCell(0).setCellValue("대상");
+                header.createCell(1).setCellValue("대상 이메일");
+                header.createCell(2).setCellValue("과업");
+                header.createCell(3).setCellValue("사용자");
+                header.createCell(4).setCellValue("사용자 이메일");
+                header.createCell(5).setCellValue("일시");
 
+                // 데이터
+                int rowNum = 1;
+                for (AddrLogListDomain log : logList) {
+                    Row row = sheet.createRow(rowNum++);
+                    // 대상
+                    row.createCell(0)
+                            .setCellValue(
+                                log.getTargetName() == null
+                                    ? "전체"
+                                    : log.getTargetName()
+                            );
+                    // 대상 이메일
+                    row.createCell(1)
+                            .setCellValue(
+                                log.getTargetEmail() == null
+                                    ? "-"
+                                    : log.getTargetEmail()
+                            );
+                    // 과업
+                    row.createCell(2)
+                            .setCellValue(
+                                log.getDuty() == null
+                                    ? "-"
+                                    : log.getDuty()
+                            );
+                    // 사용자
+                    row.createCell(3)
+                            .setCellValue(
+                                log.getUserName() == null
+                                    ? "-"
+                                    : log.getUserName()
+                            );
+                    // 사용자 이메일
+                    row.createCell(4)
+                            .setCellValue(
+                                log.getEmail() == null
+                                    ? "-"
+                                    : log.getEmail()
+                            );
+                    // 일시
+                    row.createCell(5)
+                            .setCellValue(
+                                log.getInputDate() == null
+                                    ? "-"
+                                    : log.getInputDate().toString()
+                            );
+                }
+
+                // 컬럼 너비
+                for (int i = 0; i < 6; i++) {
+                    sheet.autoSizeColumn(i);
+                }
+
+                // Excel 출력
                 OutputStream os = response.getOutputStream();
-                os.write(csvContent.toString().getBytes(StandardCharsets.UTF_8));
+                workbook.write(os);
+                workbook.close();
                 os.flush();
-
             } catch (Exception e) {
                 e.printStackTrace();
             }
             return null;
         }
 
-        // 다운로드 버튼 클릭
-        String nowStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmm"));
-        
-        model.addAttribute("defaultFileName", "addressbook_" + nowStr);
+        // 다운로드 모달
+        String nowStr =
+                LocalDateTime.now()
+                        .format(
+                            DateTimeFormatter.ofPattern(
+                                "yyyyMMdd_HHmm"
+                            )
+                        );
+        model.addAttribute(
+                "defaultFileName",
+                "주소록_" + nowStr
+        );
+
+        // 다운로드 요청 페이지의 검색 조건
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
-        model.addAttribute("target", target);
-        model.addAttribute("targetEmail", targetEmail);
-        model.addAttribute("task", task);
+        model.addAttribute("duty", duty);
         model.addAttribute("userName", userName);
+        model.addAttribute("targetName", targetName);
+
+        // 실제 다운로드 URL
+        model.addAttribute("downloadAction", "/adminUser/audit/downloadAddrLog");
 
         return "adminUser/audit/downloadForm";
     }

@@ -411,8 +411,17 @@ $(function(){
                 userName: userName
             },
             success: function(htmlContent) {
-                $("#downloadModalBody").html(htmlContent);
+            	$("#downloadModalBody").html(htmlContent);
+            	
+                const $form = $("#downloadModalBody").find("#downloadProcessForm");
+                
+                $form.append($('<input>', {type: 'hidden', name: 'startDate', value: startDate}));
+                $form.append($('<input>', {type: 'hidden', name: 'endDate', value: endDate}));
+                $form.append($('<input>', {type: 'hidden', name: 'loginIp', value: loginIp}));
+                $form.append($('<input>', {type: 'hidden', name: 'userName', value: userName}));
+                
                 const downloadModal = new bootstrap.Modal(document.getElementById('downloadModal'));
+                
                 downloadModal.show();
             },
             error: function() {
@@ -536,7 +545,7 @@ $(function(){
                                 <span class="sub-info" th:text="${(log.email ?: '-')}">이메일</span>
                             </td>
                             <td>
-                                <span th:text="${(log.inputDate ?: '-')}">날짜</span>
+                                <span th:text="${#dates.format(log.inputDate, 'yyyy-MM-dd HH:mm')}">날짜</span>
                             </td>
                             <td th:text="${(log.loginIp ?: '-')}">IP 주소</td>
                             <td th:text="${(log.status ?: '-')}">접속현황</td>

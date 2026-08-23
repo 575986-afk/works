@@ -294,6 +294,18 @@ select.input-box {
 .logTable tbody tr:last-child td {
     border-bottom: none;
 }
+/* 로그 테이블 스크롤 영역 */
+.logTableWrapper {
+    max-height: 650px;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+/* 테이블 헤더 고정 */
+.logTable thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
 
 .sub-info {
     display: block;
@@ -333,7 +345,7 @@ $(function(){
 
     // Datepicker 설정
     $.datepicker.setDefaults({
-        dateFormat: 'yy. mm. dd',
+        dateFormat: 'yy-mm-dd',
         prevText: '이전 달',
         nextText: '다음 달',
         monthNames: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
@@ -380,9 +392,9 @@ $(function(){
     $("#downloadBtn").click(function(){
         const startDate = $("#basicStartDate").val();
         const endDate = $("#basicEndDate").val();
-        const task = $("#task").val();
+        const duty = $("#duty").val();
         const userName = $("#userName").val();
-        const target = $("#target").val();
+        const targetName = $("#targetName").val();
 
         $.ajax({
             url: '/adminUser/audit/downloadAddrLog',
@@ -390,13 +402,23 @@ $(function(){
             data: {
                 startDate: startDate,
                 endDate: endDate,
-                task: task,
+                duty: duty,
                 userName: userName,
-                target: target
+                targetName: targetName
             },
             success: function(htmlContent) {
-                $("#downloadModalBody").html(htmlContent);
+            	$("#downloadModalBody").html(htmlContent);
+            	
+                const $form = $("#downloadModalBody").find("#downloadProcessForm");
+                
+                $form.append($('<input>', {type: 'hidden', name: 'startDate', value: startDate}));
+                $form.append($('<input>', {type: 'hidden', name: 'endDate', value: endDate}));
+                $form.append($('<input>', {type: 'hidden', name: 'duty', value: duty}));
+                $form.append($('<input>', {type: 'hidden', name: 'userName', value: userName}));
+                $form.append($('<input>', {type: 'hidden', name: 'targetName', value: targetName}));
+                
                 const downloadModal = new bootstrap.Modal(document.getElementById('downloadModal'));
+                
                 downloadModal.show();
             },
             error: function() {
@@ -481,27 +503,27 @@ $(function(){
                                     </div>
                                 </div>
                                 <div class="filter-group">
-                                    <label>과업</label>
-                                    <select id="task" name="task" class="input-box">
-                                        <option value="" th:selected="${task == null || task == ''}">전체</option>
-                                        <option value="주소록 등록/수정" th:selected="${task == '주소록 등록/수정'}">주소록 등록/수정</option>
-                                        <option value="주소록 삭제" th:selected="${task == '주소록 삭제'}">주소록 삭제</option>
-                                        <option value="구성원 정보 조회" th:selected="${task == '구성원 정보 조회'}">구성원 정보 조회</option>
-                                        <option value="구성원 정보 수정" th:selected="${task == '구성원 정보 수정'}">구성원 정보 수정</option>
-                                        <option value="조직 수정" th:selected="${task == '조직 수정'}">조직 수정</option>
-                                        <option value="그룹 조회" th:selected="${task == '그룹 조회'}">그룹 조회</option>
-                                        <option value="그룹 등록" th:selected="${task == '그룹 등록'}">그룹 등록</option>
-                                        <option value="그룹 수정" th:selected="${task == '그룹 수정'}">그룹 수정</option>
-                                        <option value="그룹 삭제" th:selected="${task == '그룹 삭제'}">그룹 삭제</option>
-                                    </select>
-                                </div>
+								    <label>과업</label>
+								    <select id="duty" name="duty" class="input-box">
+								        <option value="" th:selected="${duty == null || duty == ''}">전체</option>
+								        <option value="주소록 등록/수정" th:selected="${duty == '주소록 등록/수정'}">주소록 등록/수정</option>
+								        <option value="주소록 삭제" th:selected="${duty == '주소록 삭제'}">주소록 삭제</option>
+								        <option value="구성원 정보 조회" th:selected="${duty == '구성원 정보 조회'}">구성원 정보 조회</option>
+								        <option value="구성원 정보 수정" th:selected="${duty == '구성원 정보 수정'}">구성원 정보 수정</option>
+								        <option value="조직 수정" th:selected="${duty == '조직 수정'}">조직 수정</option>
+								        <option value="그룹 조회" th:selected="${duty == '그룹 조회'}">그룹 조회</option>
+								        <option value="그룹 등록" th:selected="${duty == '그룹 등록'}">그룹 등록</option>
+								        <option value="그룹 수정" th:selected="${duty == '그룹 수정'}">그룹 수정</option>
+								        <option value="그룹 삭제" th:selected="${duty == '그룹 삭제'}">그룹 삭제</option>
+								    </select>
+								</div>
                                 <div class="filter-group">
                                     <label>사용자</label>
                                     <input type="text" id="userName" name="userName" class="input-box" th:value="${userName}">
                                 </div>
                                 <div class="filter-group">
                                     <label>대상</label>
-                                    <input type="text" id="target" name="target" class="input-box" th:value="${target}">
+                                    <input type="text" id="targetName" name="targetName" class="input-box" th:value="${target}">
                                 </div>
                             </div>
                             <div class="detail-actions">
@@ -512,13 +534,13 @@ $(function(){
                     </div>
 
                 </form>
-
+				<div class="logTableWrapper">
                 <table class="logTable">
                     <thead>
                         <tr>
                             <th style="width: 25%;">대상</th>
                             <th style="width: 25%;">과업</th>
-                            <th style="width: 25%;">작업자</th>
+                            <th style="width: 25%;">사용자</th>
                             <th style="width: 25%;">날짜</th>
                         </tr>
                     </thead>
@@ -530,21 +552,21 @@ $(function(){
                         </tr>
                         <tr th:each="log : ${logList}">
                             <td>
-                                <span style="font-weight: 600;" th:text="${log.target}">홍길동</span>
-                                <span class="sub-info" th:text="${log.targetEmail}">hong@example.com</span>
+                                <span style="font-weight: 600;" th:text="${log.targetName != null ? log.targetName : '전체'}">홍길동</span>
+                                <span class="sub-info" th:if="${log.targetEmail != null}" th:text="${log.targetEmail}">hong@example.com</span>
                             </td>
-                            <td th:text="${log.task}">주소록 등록/수정</td>
+                            <td th:text="${(log.duty ?: '-')}">주소록 등록/수정</td>
                             <td>
-                                <span th:text="${log.userName}">윤진영</span>
-                                <span class="sub-info" th:text="${log.userEmail}">yjy3838@practice-6.by-works.net</span>
+                                <span th:text="${(log.userName ?: '-')}">테스트</span>
+                                <span class="sub-info" th:text="${(log.email ?: '-')}">test@practice-6.by-works.net</span>
                             </td>
                             <td>
-                                <span th:text="${log.date}">2026-07-16</span>
-                                <span class="sub-info" th:text="${log.time}">T16:13:36+09:00</span>
+                                <span th:text="${#dates.format(log.inputDate, 'yyyy-MM-dd HH:mm')}">2026-07-16</span>
                             </td>
                         </tr>
                     </tbody>
                 </table>
+                </div>
             </div>
 
         </div>

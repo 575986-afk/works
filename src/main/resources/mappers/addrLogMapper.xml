@@ -28,28 +28,24 @@
     <!-- 주소록 로그 리스트 조회 -->
     <select id="selectAllAddrLog" parameterType="kr.co.sist.addraudit.AddrLogSearchDTO" resultMap="addrLogResultMap">
         SELECT
-            a.LOG_NO AS logNo,
-            a.DUTY AS duty,
-            <!-- 사용자 -->
-            u.USER_NAME AS userName,
-            u.EMAIL AS email,
-            <!-- 대상 -->
-            CASE
-                WHEN a.TARGET = 'ALL' THEN '전체'
-                ELSE t.USER_NAME
-            END AS targetName,
-            CASE
-                WHEN a.TARGET = 'ALL' THEN '-'
-                ELSE t.EMAIL
-            END AS targetEmail,
-            a.INPUT_DATE AS inputDate
-        FROM ADDRESSBOOKLOG a
-        <!-- 로그를 발생시킨 사용자 -->
-        LEFT JOIN USERS u
-               ON a.USER_NO = u.USER_NO
-        <!-- 로그의 대상 사용자 -->
-        LEFT JOIN USERS t
-               ON a.TARGET = t.USER_NO
+		    a.LOG_NO AS logNo,
+		    a.DUTY AS duty,
+		    u.USER_NAME AS userName,
+		    u.EMAIL AS email,
+		    CASE
+		        WHEN a.TARGET = 'ALL' THEN NULL
+		        ELSE t.USER_NAME
+		    END AS targetName,
+		    CASE
+		        WHEN a.TARGET = 'ALL' THEN NULL
+		        ELSE t.EMAIL
+		    END AS targetEmail,
+		    a.INPUT_DATE AS inputDate
+		FROM ADDRESSBOOKLOG a
+		LEFT JOIN USERS u
+		       ON a.USER_NO = u.USER_NO
+		LEFT JOIN USERS t
+		       ON a.TARGET = t.USER_NO
         <where>
             <!-- 회사 조건 -->
             AND u.COMPANY_NO = #{companyNo}

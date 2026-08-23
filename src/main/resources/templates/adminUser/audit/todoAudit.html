@@ -430,11 +430,18 @@ $(function(){
 	        }
 	    })
 	    .then(function(response) {
-	        $("#downloadModalBody").html(response.data);
-	        const downloadModal =
-	            new bootstrap.Modal(
-	                document.getElementById('downloadModal')
-	            );
+	    	$("#downloadModalBody").html(response.data);
+
+	        const $form = $("#downloadModalBody").find("#downloadProcessForm");
+
+	        $form.append($('<input>', {type: 'hidden', name: 'startDate', value: startDate}));
+	        $form.append($('<input>', {type: 'hidden', name: 'endDate', value: endDate}));
+	        $form.append($('<input>', {type: 'hidden', name: 'title', value: title}));
+	        $form.append($('<input>', {type: 'hidden', name: 'task', value: task}));
+	        $form.append($('<input>', {type: 'hidden', name: 'userName', value: userName}));
+
+	        const downloadModal = new bootstrap.Modal(document.getElementById('downloadModal'));
+
 	        downloadModal.show();
 	    })
 	    .catch(function(error) {
@@ -549,8 +556,8 @@ $(function(){
                 <table class="logTable">
                     <thead>
                         <tr>
-                            <th style="width: 20%;">제목</th>
-                            <th style="width: 25%;">과업</th>
+                            <th style="width: 15%;">제목</th>
+                            <th style="width: 30%;">과업</th>
                             <th style="width: 30%;">사용자</th>
                             <th style="width: 25%;">날짜</th>
                         </tr>
@@ -569,7 +576,7 @@ $(function(){
                                 <span class="sub-info" th:text="${(log.email ?: '-')}">이메일</span>
                             </td>
                             <td>
-                                <span th:text="${(log.inputDate ?: '-')}">2026-07-16</span>
+                                <span th:text="${#dates.format(log.inputDate, 'yyyy-MM-dd HH:mm')}">2026-07-16</span>
                             </td>
                         </tr>
                     </tbody>
