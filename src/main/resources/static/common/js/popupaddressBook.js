@@ -100,7 +100,63 @@ document.addEventListener('DOMContentLoaded', function() {
         window.close();
     });
 
-    // 4. 저장 버튼 클릭 시 배열 추출 및 Ajax 전송[cite: 3]
+	// 4. 저장 버튼 클릭 시 배열 추출 및 Ajax 전송
+	    $('#saveUsersBtn').off('click').on('click', function() {
+	        const checkedBoxes = $('.user-checkbox:checked');
+
+	        const selectedUserNos = checkedBoxes.map(function() {
+	            return $(this).val();
+	        }).get();
+
+	        if (selectedUserNos.length === 0) {
+	            alert('선택된 사원이 없습니다.');
+	            return;
+	        }
+
+	        // 부모 창이 존재하고 닫히지 않았는지 확인
+	        if (window.opener && !window.opener.closed) {
+	            
+	            // ★ [추가] 부모 창에 addRepresentative가 없거나, 현재 페이지가 메신저 관련 작업일 때 분기
+	            // 만약 메신저 창에서 팝업을 열었다면 /chat/create를 직접 호출하도록 처리합니다.
+	            if (typeof window.opener.addRepresentative !== 'function' || window.opener.location.pathname.includes('/chatting')) {
+	                
+	                $.ajax({
+	                    url: '/chat/create',
+	                    type: 'POST',
+	                    data: {
+	                        chatRoomName: "새로운 대화방", // 필요시 동적 처리 가능
+	                        userNos: selectedUserNos
+	                    },
+	                    success: function(response) {
+	                        window.opener.location.reload(); // 부모 창(메신저) 새로고침
+	                        window.close(); // 팝업 닫기
+	                    },
+	                    error: function(xhr, status, error) {
+	                        console.error('채팅방 생성 실패:', error);
+	                        alert('채팅방 생성 중 오류가 발생했습니다.');
+	                    }
+	                });
+	                return; // 메신저 로직 수행 후 종료
+	            }
+
+	            // --- 다른 팀원들이 사용하는 기존 로직 (결재선 지정 등) ---
+	            checkedBoxes.each(function() {
+	                const userNo = $(this).val(); 
+	                const userName = $(this).attr('data-name'); 
+	                
+	                if(typeof window.opener.addRepresentative === 'function') {
+	                    window.opener.addRepresentative(userName, userNo);
+	                }
+	            });
+	        } else {
+	            console.warn('부모 창을 찾을 수 없습니다.');
+	        }
+
+	        // 정보 전달 후 팝업 닫기
+	        window.close(); 
+	    });
+	
+    /*// 4. 저장 버튼 클릭 시 배열 추출 및 Ajax 전송[cite: 3]
 	$('#saveUsersBtn').off('click').on('click', function() {
 	        const checkedBoxes = $('.user-checkbox:checked');
 
@@ -127,7 +183,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	        // 정보 전달 후 팝업 닫기
 	        window.close(); 
-	    });
+	    });*/
 });
 
 // ------------------------------------------------------------------

@@ -49,7 +49,53 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     if (appLauncherBtn) appLauncherBtn.addEventListener('click', (e) => { e.stopPropagation(); const isHidden = appLauncherDropdown.classList.contains('hidden'); closeAllDropdowns(); if (isHidden) appLauncherDropdown.classList.remove('hidden'); });
-    if (notiBtn) notiBtn.addEventListener('click', (e) => { e.stopPropagation(); const isHidden = notiDropdown.classList.contains('hidden'); closeAllDropdowns(); if (isHidden) notiDropdown.classList.remove('hidden'); });
+    
+	
+	if(notiBtn) {
+	        notiBtn.addEventListener('click', async function(e) {
+	            e.stopPropagation(); // 1. 이벤트 전파 방지 (바깥 영역 클릭 이벤트와 충돌 방지)
+
+	            // 2. 드롭다운이 현재 닫혀있는지 상태 확인
+	            const isHidden = notiDropdown.classList.contains('hidden');
+	            
+	            // 3. 일단 모든 드롭다운을 닫음 (다른 창이 열려있을 수 있으므로)
+	            closeAllDropdowns();
+	            
+	            // 4. 원래 닫혀있던 상태였다면 알림창을 열고 데이터 조회 시작
+	            if (isHidden) {
+	                notiDropdown.classList.remove('hidden');
+	                notiDropdown.innerHTML = '<div class="text-center text-gray-400 py-4"><i class="fa-solid fa-spinner fa-spin"></i> 알림을 불러오는 중...</div>';
+
+	                try {
+	                    const response = await fetch('/api/noti');
+	                    const notiList = await response.json(); 
+
+	                    if (notiList.length === 0) {
+	                        notiDropdown.innerHTML = '<div class="text-center text-gray-500 text-sm py-4">새로운 알림이 없습니다.</div>';
+	                    } else {
+	                        let html = '<div class="max-h-64 overflow-y-auto">';
+	                        
+	                        notiList.forEach(noti => {
+	                            html += `
+	                                <div class="border-b py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-50 transition">
+	                                    <span>${noti.duty}</span>
+	                                    <span class="text-xs text-gray-400 block mt-1">${noti.inputDate}</span>
+	                                </div>
+	                            `;
+	                        });
+	                        
+	                        html += '</div>';
+	                        notiDropdown.innerHTML = html; 
+	                    }
+	                } catch (error) {
+	                    console.error("알림 조회 실패:", error);
+	                    notiDropdown.innerHTML = '<div class="text-center text-red-500 text-sm py-4">알림을 불러오는데 실패했습니다.</div>';
+	                }
+	            }
+	        });
+	    }
+	
+	
     if (profileBtn) profileBtn.addEventListener('click', (e) => { e.stopPropagation(); const isHidden = profileDropdown.classList.contains('hidden'); closeAllDropdowns(); if (isHidden) profileDropdown.classList.remove('hidden'); });
 
     document.addEventListener('click', closeAllDropdowns);

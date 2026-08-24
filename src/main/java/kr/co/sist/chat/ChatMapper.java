@@ -14,9 +14,9 @@ public interface ChatMapper {
 	int insertChatRoom(ChatRoomDTO cDTO);
 	int insertChatParticipant(Map<String, Object> map);
 	List<ChatRoomDTO> selectSearchUser(Map<String, Object> map);
+	int deleteChatParticipant(Map<String, Object> map);
 	
 	List<ChatRoomDTO> sortChatRoom(String chatRoomNo);
-	int deleteChatRoom(String userNo, String chatRoomNo);
 	String insertFile(String content);
 	
 }

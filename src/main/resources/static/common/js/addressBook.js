@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', function() {
         window.updatePreview();
     });
 
-
+	
     // 4. 저장 버튼 클릭 시 배열 추출 및 Ajax 전송[cite: 3]
     $('#saveUsersBtn').off('click').on('click', function() {
         const checkedBoxes = $('.user-checkbox:checked');

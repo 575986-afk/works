@@ -27,7 +27,7 @@
         .room-preview { font-size: 12px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         .chat-area { flex: 1; display: flex; flex-direction: column; background-color: #ffffff; }
-        .chat-header { height: 52px; border-bottom: 1px solid #dddddd; display: flex; align-items: center; padding: 0 20px; font-size: 15px; font-weight: bold; color: #111; background-color: #ffffff; }
+        .chat-header { height: 52px; border-bottom: 1px solid #dddddd; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; font-size: 15px; font-weight: bold; color: #111; background-color: #ffffff; }
         .chat-body { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; background-color: #f8f9fa; gap: 16px; }
         
         .message-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 4px; }
@@ -47,12 +47,18 @@
         .message-row.my-message .message-bubble { background-color: #fee500; border: none; }
         
         .message-time { font-size: 10px; color: #888; white-space: nowrap; margin-bottom: 2px; }
-        .chat-input-area { border-top: 1px solid #dddddd; padding: 12px 16px; background-color: #ffffff; }
-        .chat-input-area textarea { width: 100%; height: 40px; border: 1px solid #d1d5db; border-radius: 6px; padding: 8px 12px; outline: none; resize: none; font-size: 13px; }
+        
+        .chat-input-area { border-top: 1px solid #dddddd; padding: 10px 16px; background-color: #ffffff; display: flex; flex-direction: column; gap: 6px; }
+        .chat-input-box { display: flex; align-items: center; border: 1px solid #d1d5db; border-radius: 8px; background-color: #ffffff; padding: 4px 8px; gap: 8px; }
+        .chat-input-box:focus-within { border-color: #2E77E0; }
+        
+        .chat-attach-btn { background: none; border: none; color: #555; font-size: 18px; cursor: pointer; padding: 6px; display: flex; align-items: center; justify-content: center; transition: color 0.2s; }
+        .chat-attach-btn:hover { color: #2E77E0; }
+
+        .chat-input-area textarea { flex: 1; height: 36px; border: none; outline: none; resize: none; font-size: 13px; padding-top: 8px; background: transparent; }
     </style>
 </head>
 <body>
-    <!-- 대시보드 헤더 -->
     <header class="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 shrink-0 z-50 relative">
         <div class="flex items-center gap-6">
             <a th:href="@{/userDashboard}" class="flex items-center gap-2 text-teal-500 font-bold text-lg hover:opacity-80">
@@ -61,7 +67,6 @@
             </a>
         </div>
         
-        <!-- 상단 검색창 및 네이버형 자동완성 드롭다운 영역 -->
         <div style="flex: 0 1 340px; position: relative; margin: 0 20px;">
             <div style="background-color: #f1f3f5; border-radius: 4px; padding: 6px 12px 6px 32px; display: flex; align-items: center; width: 100%; position: relative;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%);">
@@ -71,7 +76,6 @@
                 <input type="text" id="searchKeyword" placeholder="사원 이름 검색" style="border: none; background: transparent; outline: none; font-size: 13px; width: 100%; color: #333;" autocomplete="off">
             </div>
             
-            <!-- 네이버 검색창 밑에 뜨는 자동완성 레이어 박스 -->
             <div id="searchDropdown" style="display: none; position: absolute; top: 100%; left: 0; width: 100%; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 1000; max-height: 300px; overflow-y: auto; margin-top: 5px;">
             </div>
         </div>
@@ -103,11 +107,6 @@
                             <i class="fa-solid fa-circle-check text-purple-500 text-2xl mb-2"></i>
                             <span class="text-xs text-gray-700">할 일</span>
                         </a>
-                        <a th:if="${session.user != null and session.user.role_level != null and session.user.role_level ge 50}"
-                        th:href="@{dashboard}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
-                            <i class="fa-solid fa-user-tie text-gray-500 text-2xl mb-2"></i>
-                            <span class="text-xs text-gray-700">Admin</span>
-                        </a>
                     </div>
                 </div>
             </div>
@@ -123,14 +122,6 @@
                 </div>
             </div>
 
-            <a th:href="@{/user/notices}" class="hover:text-gray-800 pt-1">
-                <i class="fa-regular fa-circle-question"></i>
-            </a>
-
-            <a th:href="@{/userInfo}" class="hover:text-gray-800 pt-1">
-                <i class="fa-solid fa-gear"></i>
-            </a>
-
             <div class="relative ml-2">
                 <button id="profileBtn"
                     class="w-8 h-8 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold text-sm focus:outline-none"
@@ -138,17 +129,9 @@
                 </button>
                 <div id="profileDropdown" class="hidden absolute top-full right-0 mt-3 w-64 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden">
                    <div class="p-4 flex items-center gap-3 border-b border-gray-100 bg-gray-50">
-                    <div class="w-11 h-11 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold text-lg"
-                        th:text="${not #strings.isEmpty(session.user?.name) ? #strings.substring(session.user?.name, 0, 1) : 'U'}">U</div>
-                    <div class="font-bold text-gray-800 text-base" th:text="${session.user?.name != null ? session.user?.name : '로그인 필요'}">이름</div>
-                    </div>
-                    <div class="p-2">
-                        <button class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2">
-                            <i class="fa-solid fa-plus border border-gray-400 rounded-full p-0.5 text-[10px]"></i>상태 설정
-                        </button>
-                        <button class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2">
-                            <i class="fa-solid fa-bell-slash text-gray-500"></i>알림 일시 정지
-                        </button>
+                        <div class="w-11 h-11 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold text-lg"
+                            th:text="${not #strings.isEmpty(session.user?.name) ? #strings.substring(session.user?.name, 0, 1) : 'U'}">U</div>
+                        <div class="font-bold text-gray-800 text-base" th:text="${session.user?.name != null ? session.user?.name : '로그인 필요'}">이름</div>
                     </div>
                     <div class="border-t border-gray-100 p-2">
                         <a th:href="@{/logout}" class="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-md flex items-center gap-2 font-medium">
@@ -161,10 +144,8 @@
     </header>
     
     <div class="main-container">
-        <!-- 사이드바 -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <!-- 팀원 주소록 팝업을 띄우기 전, 채팅방 이름을 먼저 입력받는 프롬프트 연동 -->
                 <button class="btn-create" onclick="openAddressPopupWithRoomName(); return false;">새로 만들기</button>
             </div>
             <div class="room-list">
@@ -181,10 +162,15 @@
             </div>
         </aside>
 
-        <!-- 메인 채팅 영역 -->
         <main class="chat-area">
             <div class="chat-header">
                 <span th:text="${currentRoomName != null ? currentRoomName : '메시지'}">메시지</span>
+                <button type="button" id="leaveRoomBtn" 
+                        th:if="${currentRoomId != null}"
+                        th:data-roomno="${currentRoomId}"
+                        class="px-3 py-1 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded hover:bg-red-100">
+                    나가기
+                </button>
             </div>
 
             <div class="chat-body">
@@ -194,7 +180,23 @@
             </div>
 
             <div class="chat-input-area">
-                <textarea placeholder="메시지를 입력하세요..."></textarea>
+                <div id="filePreviewContainer" style="display: none; align-items: center; justify-content: space-between; background-color: #f1f3f5; padding: 6px 10px; border-radius: 4px; font-size: 12px;">
+                    <span id="filePreviewName" style="color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></span>
+                    <button type="button" id="removeFileBtn" style="background: none; border: none; color: #ff4d4f; cursor: pointer; font-weight: bold; margin-left: 8px;">✕</button>
+                </div>
+
+                <!-- 입력창 박스 구조 (첨부 버튼이 젤 왼쪽에 위치) -->
+                <div class="chat-input-box">
+                    <button type="button" class="chat-attach-btn" id="fileAttachBtn" title="파일 첨부">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                    <textarea id="chatInputText" placeholder="메시지를 입력하세요..."></textarea>
+                </div>
+                
+                <div class="flex justify-end items-center px-1">
+                    <div class="text-xs text-gray-400">Shift + Enter 줄바꿈</div>
+                </div>
+                <input type="file" id="hiddenFileInput" style="display: none;">
             </div>
         </main>
     </div>
@@ -203,9 +205,10 @@
     <script>
     const currentRoomNo = '[[${currentRoomId}]]';
     const myName = '[[${session.user.name}]]';       
-    const myUserNo = '[[${session.user.userNo}]]';    
+    const myUserNo = String('[[${session.user.userNo}]]').trim();
     let isSubmitting = false;
-    let stompClient = null; // stompClient 전역 변수 선언
+    let stompClient = null;
+    let attachedFile = null;
 
     $(document).ready(function() {
         const appLauncherBtn = document.getElementById('appLauncherBtn');
@@ -246,88 +249,139 @@
             closeAllDropdowns();
         });
 
-        const dropdowns = [appLauncherDropdown, notiDropdown, profileDropdown];
-        dropdowns.forEach(dropdown => {
-            if(dropdown) {
-                dropdown.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                });
-            }
-        });
-
         function closeAllDropdowns() {
             if(appLauncherDropdown) appLauncherDropdown.classList.add('hidden');
             if(notiDropdown) notiDropdown.classList.add('hidden');
             if(profileDropdown) profileDropdown.classList.add('hidden');
         }
 
-        // 채팅방이 선택되어 있는 경우 메시지 불러오기 및 웹소켓 연결
         if (currentRoomNo) {
             fetchMessages();
             connectWebSocket();
         }
+
+        $('#leaveRoomBtn').on('click', function() {
+            if (!confirm('정말 채팅방에서 나가시겠습니까?')) return;
+            const chatRoomNo = $(this).attr('data-roomno');
+            
+            $.ajax({
+                url: '/chat/leave',
+                type: 'POST',
+                data: { chatRoomNo: chatRoomNo },
+                success: function(response) {
+                    if (response === 'SUCCESS') {
+                        alert('채팅방을 나갔습니다.');
+                        location.href = '/chatting';
+                    } else {
+                        alert('채팅방 나가기에 실패했습니다.');
+                    }
+                }
+            });
+        });
+
+        // 통합된 파일 첨부 버튼 클릭 이벤트
+        $('#fileAttachBtn').on('click', function() {
+            if (!currentRoomNo) { alert('채팅방을 먼저 선택해주세요.'); return; }
+            $('#hiddenFileInput').click();
+        });
+
+        $('#hiddenFileInput').on('change', function() {
+            const file = this.files[0];
+            if (!file) return;
+            attachedFile = file;
+            $('#filePreviewName').text('📎 ' + file.name);
+            $('#filePreviewContainer').css('display', 'flex');
+        });
+
+        $('#removeFileBtn').on('click', function() {
+            attachedFile = null;
+            $('#filePreviewContainer').hide();
+            $('#hiddenFileInput').val('');
+        });
     });
 
-    // 웹소켓 연결 함수
     function connectWebSocket() {
         let socket = new SockJS('/ws-chat');
         stompClient = Stomp.over(socket);
-        
+
         stompClient.connect({}, function(frame) {
-            // 해당 채팅방 구독
             stompClient.subscribe('/sub/chat/room/' + currentRoomNo, function(messageOutput) {
                 let message = JSON.parse(messageOutput.body);
-                appendMessage(message); // 실시간으로 화면에 메시지 추가
+                appendMessage(message);
+                refreshChatRoomList();
             });
         });
     }
 
-    // 엔터키 입력 시 웹소켓을 통한 메시지 전송 (기존 $.post 방식 대체)
     $('.chat-input-area textarea').on('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             if (isSubmitting) return;
             
             const content = $(this).val().trim();
-            if (!content) return;
-            if (!currentRoomNo) {
-                alert('채팅방을 먼저 선택해주세요.');
-                return;
-            }
-
-            if (!stompClient || !stompClient.connected) {
-                alert('웹소켓 연결이 되지 않았습니다.');
-                return;
-            }
+            if (!content && !attachedFile) return;
+            if (!currentRoomNo) { alert('채팅방을 먼저 선택해주세요.'); return; }
 
             isSubmitting = true;
-            
-            let messageData = {
-                chatRoomNo: currentRoomNo,
-                content: content,
-                sendUser: myUserNo,
-                sendUserName: myName
-            };
 
-            // 웹소켓으로 메시지 발행
-            stompClient.send("/pub/chat/message/" + currentRoomNo, {}, JSON.stringify(messageData));
-            
-            $(this).val('');
-            isSubmitting = false;
+            if (attachedFile) {
+                const formData = new FormData();
+                formData.append('file', attachedFile);
+                formData.append('chatRoomNo', currentRoomNo);
+                formData.append('sendUser', myUserNo);
+                formData.append('sendUserName', myName);
+                if (content) {
+                    formData.append('content', content);
+                }
+
+                $.ajax({
+                    url: '/chat/uploadFile',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(res) {
+                        $('#chatInputText').val('');
+                        $('#removeFileBtn').click();
+                        isSubmitting = false;
+                    },
+                    error: function() {
+                        alert('파일 전송에 실패했습니다.');
+                        isSubmitting = false;
+                    }
+                });
+            } else {
+                if (!stompClient || !stompClient.connected) {
+                    alert('웹소켓 연결이 되지 않았습니다.');
+                    isSubmitting = false;
+                    return;
+                }
+
+                let messageData = {
+                    chatRoomNo: currentRoomNo,
+                    content: content,
+                    sendUser: myUserNo,
+                    sendUserName: myName
+                };
+
+                stompClient.send("/pub/chat/message/" + currentRoomNo, {}, JSON.stringify(messageData));
+                $(this).val('');
+                isSubmitting = false;
+            }
         }
     });
 
-    // 실시간 단건 메시지 렌더링 함수
     function appendMessage(msg) {
         let chatBody = $('.chat-body');
         let senderId = String(msg.sendUser ? msg.sendUser : '').trim();
         let senderName = String(msg.sendUserName ? msg.sendUserName : '').trim();
         
-        let isMy = (senderId === String(myUserNo).trim() || senderName === String(myName).trim());
+        let isMy = (senderId === myUserNo || senderName === myName);
         if (isMy && !senderName) { senderName = myName; }
         let avatarChar = senderName ? senderName.charAt(0) : '?';
 
         let timeStr = msg.sendDate ? msg.sendDate : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        let contentHtml = msg.content ? msg.content : '';
 
         chatBody.append(`
             <div class="message-row ${isMy ? 'my-message' : ''}">
@@ -335,7 +389,7 @@
                 <div class="message-wrapper">
                     <div class="message-sender">${escapeHtml(senderName)}</div>
                     <div class="message-content-group">
-                        <div class="message-bubble">${escapeHtml(msg.content)}</div>
+                        <div class="message-bubble">${contentHtml}</div>
                         <div class="message-time">${timeStr}</div>
                     </div>
                 </div>
@@ -349,14 +403,10 @@
         const keyword = $(this).val().trim();
         let dropdown = $('#searchDropdown');
 
-        if (keyword === '') {
-            dropdown.hide().empty();
-            return;
-        }
+        if (keyword === '') { dropdown.hide().empty(); return; }
 
         $.get('/search', { keyword: keyword }, function(data) {
             dropdown.empty();
-
             if (!data || data.length === 0) {
                 dropdown.html('<div style="padding: 12px; text-align: center; color: #888; font-size: 13px;">검색 결과가 없습니다.</div>');
                 dropdown.show();
@@ -365,7 +415,6 @@
 
             data.forEach(room => {
                 let roomName = room.chatRoomName ? room.chatRoomName : '이름 없음';
-                
                 dropdown.append(`
                     <div class="search-result-item" onclick="location.href='/chatting?chatRoomNo=${room.chatRoomNo}'" 
                          style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f1f3f5; font-size: 13px; color: #333;"
@@ -375,21 +424,16 @@
                     </div>
                 `);
             });
-
             dropdown.show();
-        }).fail(function() {
-            console.log('검색 요청 실패');
         });
     });
 
-    // 검색창 바깥을 클릭하면 드롭다운 닫기
     $(document).click(function(e) {
         if (!$(e.target).closest('#searchKeyword, #searchDropdown').length) {
             $('#searchDropdown').hide();
         }
     });
 
-    // 최초 접속 시 기존 대화 목록 불러오기 함수
     function fetchMessages() {
         if (!currentRoomNo) return;
         $.get('/chat/messages', { chatRoomNo: currentRoomNo }, function(data) {
@@ -407,13 +451,11 @@
                 let senderId = String(msg.sendUser ? msg.sendUser : '').trim();
                 let senderName = String(msg.sendUserName ? msg.sendUserName : '').trim();
                 
-                let isMy = (senderId === String(myUserNo).trim() || senderName === String(myName).trim());
-                
-                if (isMy && !senderName) {
-                    senderName = myName;
-                }
+                let isMy = (senderId === myUserNo || senderName === myName);
+                if (isMy && !senderName) { senderName = myName; }
                 
                 let avatarChar = senderName ? senderName.charAt(0) : '?';
+                let contentHtml = msg.content ? msg.content : '';
 
                 chatBody.append(`
                     <div class="message-row ${isMy ? 'my-message' : ''}">
@@ -421,7 +463,7 @@
                         <div class="message-wrapper">
                             <div class="message-sender">${escapeHtml(senderName)}</div>
                             <div class="message-content-group">
-                                <div class="message-bubble">${escapeHtml(msg.content)}</div>
+                                <div class="message-bubble">${contentHtml}</div>
                                 <div class="message-time">${msg.sendDate ? msg.sendDate : ''}</div>
                             </div>
                         </div>
@@ -438,27 +480,87 @@
     function escapeHtml(text) { return $('<div>').text(text).html(); }
 
     function openAddressPopupWithRoomName() {
-        const roomName = prompt("생성할 채팅방 이름을 입력하세요:", "새로운 대화방");
+    	 console.log("★★★ 새로 만들기 함수 실행됨 ★★★");
+
+    	    const roomName = prompt("생성할 채팅방 이름을 입력하세요:", "새로운 대화방");
+
+    	    if (roomName === null) return;
+
+    	    const trimmedName = roomName.trim() === "" ? "새로운 대화방" : roomName.trim();
+
+    	    console.log("입력한 방 이름:", roomName);
+    	    console.log("최종 방 이름:", trimmedName);
+
+        // 1. 팝업 창 열기
+        const popup = window.open("/popupAddr", "addGroupPopup", "width=850,height=600,left=200,top=100,scrollbars=yes,resizable=yes");
         
-        if (roomName === null) {
-            return; 
-        }
-        
-        const trimmedName = roomName.trim() === "" ? "새로운 대화방" : roomName.trim();
-        
+        // 2. 서버 세션에 임시 방 이름 저장
         $.ajax({
             url: '/chat/setRoomName',
             type: 'POST',
-            data: { chatRoomName: trimmedName },
-            success: function() {
-                const url = "/popupAddr"; 
-                const title = "addGroupPopup";
-                const specs = "width=850,height=600,left=200,top=100,scrollbars=yes,resizable=yes";
-                window.open(url, title, specs);
-            },
-            error: function() {
-                alert('채팅방 이름 설정 중 오류가 발생했습니다.');
+            data: { chatRoomName: trimmedName }
+        });
+        
+        // 3. 팝업이 닫힐 때 체크
+        const checkPopupClosed = setInterval(function() {
+            if (popup.closed) {
+                clearInterval(checkPopupClosed);
+                let selectedUserNos = [];
+                
+                try { 
+                    if (popup.selectedUserNos) {
+                        selectedUserNos = popup.selectedUserNos; 
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+                
+                console.log("방 생성할 이름:", trimmedName);
+                console.log("선택된 사용자:", selectedUserNos);
+                $.ajax({
+                    url: '/chat/create',
+                    type: 'POST',
+                    data: { 
+                        chatRoomName: trimmedName, // 사용자가 입력한 이름 강제 고정 전송
+                        userNos: selectedUserNos.length > 0 ? selectedUserNos : [myUserNo] 
+                    },
+                    success: function(response) {
+                        if(response === 'SUCCESS') {
+                            location.reload();
+                        } else {
+                            alert('채팅방 생성에 실패했습니다.');
+                        }
+                    },
+                    error: function() {
+                        alert('통신 오류가 발생했습니다.');
+                    }
+                });
             }
+        }, 500);
+    }
+
+    function refreshChatRoomList() {
+        $.get('/chat/roomList', function(roomList) {
+            const roomListArea = $('.room-list');
+            roomListArea.empty();
+
+            roomList.forEach(function(room) {
+                const activeClass = (room.chatRoomNo == currentRoomNo) ? 'active' : '';
+                const avatar = room.chatRoomName ? room.chatRoomName.charAt(0) : '?';
+
+                roomListArea.append(`
+                    <div class="room-item ${activeClass}" onclick="location.href='/chatting?chatRoomNo=${room.chatRoomNo}'">
+                        <div class="room-avatar">${escapeHtml(avatar)}</div>
+                        <div class="room-info">
+                            <div class="room-info-top">
+                                <span class="room-name">${escapeHtml(room.chatRoomName)}</span>
+                                <span class="room-time">${room.lastTime ? room.lastTime : ''}</span>
+                            </div>
+                            <div class="room-preview">${room.lastMessage ? escapeHtml(room.lastMessage) : ''}</div>
+                        </div>
+                    </div>
+                `);
+            });
         });
     }
     </script>

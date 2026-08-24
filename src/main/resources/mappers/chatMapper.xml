@@ -21,7 +21,7 @@
         <result property="sendUserName" column="sendUserName" typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
         <result property="sendDate" column="sendDate"/>
     </resultMap>
-    <select id="selectChatRoom" parameterType="String" resultType="kr.co.sist.chat.ChatRoomDTO">
+    <!-- <select id="selectChatRoom" parameterType="String" resultMap="chatRoomResultMap">
     SELECT 
         cr.chatroom_no AS chatRoomNo,
         cr.chatroom_name AS chatRoomName,
@@ -43,6 +43,46 @@
     FROM CHATPARTICIPANT cp
     JOIN CHATROOM cr ON cp.chatroom_no = cr.chatroom_no
     WHERE cp.participant_no = #{userNo, jdbcType=VARCHAR}
+</select> -->
+
+<select id="selectChatRoom" parameterType="String" resultMap="chatRoomResultMap">
+
+    SELECT 
+        cr.chatroom_no AS chatRoomNo,
+        cr.chatroom_name AS chatRoomName,
+        (SELECT content
+         FROM (
+             SELECT content
+             FROM chatting c
+             WHERE c.chatroom_no = cr.chatroom_no
+             ORDER BY c.send_date DESC
+         )
+         WHERE ROWNUM = 1
+        ) AS lastMessage,
+        (SELECT 
+            CASE 
+                WHEN TRUNC(send_date) = TRUNC(SYSDATE)
+                    THEN TO_CHAR(send_date, 'AM HH24:MI')
+                ELSE TO_CHAR(send_date, 'MM.DD')
+            END
+         FROM (
+             SELECT send_date
+             FROM chatting c
+             WHERE c.chatroom_no = cr.chatroom_no
+             ORDER BY c.send_date DESC
+         )
+         WHERE ROWNUM = 1
+        ) AS lastTime,
+
+        (SELECT MAX(c.send_date)
+         FROM chatting c
+         WHERE c.chatroom_no = cr.chatroom_no
+        ) AS lastSendDate
+    FROM CHATPARTICIPANT cp
+    JOIN CHATROOM cr
+        ON cp.chatroom_no = cr.chatroom_no
+    WHERE cp.participant_no = #{userNo, jdbcType=VARCHAR}
+    ORDER BY lastSendDate DESC NULLS LAST
 </select>
     
    <select id="selectMessageList" parameterType="String" resultMap="chatRoomResultMap">
@@ -50,7 +90,7 @@
         c.chatting_no AS chattingNo, 
         c.content, 
         c.send_user AS sendUser, 
-        TO_CHAR(c.send_date, 'HH24:MI') AS sendDate, 
+        TO_CHAR(c.send_date, 'AM HH:MI', 'NLS_DATE_LANGUAGE=KOREAN') AS sendDate, 
         c.chatroom_no AS chatRoomNo,
         u.user_name AS sendUserName
     FROM chatting c
@@ -59,17 +99,24 @@
     ORDER BY c.SEND_DATE ASC
 </select>
 
-    <insert id="insertMessage">
+    <insert id="insertMessage" parameterType="kr.co.sist.chat.ChatRoomDTO">
     insert into chatting(content, send_user,send_date,chatroom_no) values (#{content},#{sendUser},sysdate,#{chatRoomNo})
     </insert>
     
-   <insert id="insertChatRoom" parameterType="kr.co.sist.chat.ChatRoomDTO">
+   <!-- <insert id="insertChatRoom" parameterType="kr.co.sist.chat.ChatRoomDTO">
         <selectKey keyProperty="chatRoomNo" resultType="string" order="BEFORE">
             SELECT 'ROOM_' || SEQ_CHAT_ROOM.NEXTVAL FROM DUAL
         </selectKey>
         INSERT INTO CHATROOM (chatroom_no, chatroom_name,input_date,user_no) 
         VALUES (#{chatRoomNo}, #{chatRoomName},sysdate,#{userNo})
-    </insert>
+    </insert> -->
+    <insert id="insertChatRoom" parameterType="kr.co.sist.chat.ChatRoomDTO">
+    <selectKey keyProperty="chatRoomNo" resultType="string" order="BEFORE">
+    SELECT 'CR' || LPAD(SEQ_CHAT_ROOM_NO.NEXTVAL, 6, '0') FROM DUAL
+</selectKey>
+    INSERT INTO CHATROOM (chatroom_no, chatroom_name, input_date, user_no) 
+    VALUES (#{chatRoomNo}, #{chatRoomName}, SYSDATE, #{userNo})
+</insert>
 
     <insert id="insertChatParticipant" parameterType="java.util.Map">
         INSERT INTO CHATPARTICIPANT (chatroom_no, participant_no) 
@@ -89,5 +136,11 @@
       AND u.company_no = #{companyNo}     
       AND u.user_name LIKE '%' || #{keyword} || '%' OR r.chatroom_name LIKE '%' || #{keyword} || '%'
     </select>
+    
+    <delete id="deleteChatParticipant" parameterType="java.util.Map">
+    DELETE FROM CHATPARTICIPANT 
+    WHERE chatroom_no = #{chatRoomNo} 
+      AND participant_no = #{userNo}
+</delete>
    
 </mapper>
