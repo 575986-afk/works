@@ -143,13 +143,20 @@
 	    ORDER BY priority
 	</select>
 	
-	<!-- 구성원 정보 등록 -->
+	<!-- 구성원 정보 등록 users -->
 	<update id="updateUserForMember">
 	    UPDATE USERS
 	    SET
 	        company_no = #{companyNo},
 	        workplace = #{workplace},
 	        jobtask = #{jobtask}
+	    WHERE user_no = #{userNo}
+	</update>
+	<!-- 구성원 정보 등록 role -->
+	<update id="updateUserForMemberatRole">
+	    UPDATE ROLE
+	    SET
+	        company_no = #{companyNo}
 	    WHERE user_no = #{userNo}
 	</update>
 	<!-- 직급/직책 등록 -->

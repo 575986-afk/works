@@ -57,6 +57,7 @@ public class MemberService {
 
         // 1. USERS 정보 수정
         mm.updateUserForMember(memberDTO);
+        mm.updateUserForMemberatRole(memberDTO);
 
         // 2. TITLE에 직급/직책 등록
         mm.insertMemberTitle(memberDTO);

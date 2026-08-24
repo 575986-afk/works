@@ -28,7 +28,7 @@
                 column="email"
                 typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
     </resultMap>
-
+	<!-- 권한 조회 -->
     <select id="selectRole" resultType="roleDomain">
      SELECT roleName, roleNo, roleLevel
      FROM (
@@ -59,7 +59,7 @@
      )
      ORDER BY roleLevel DESC
     </select>
-    
+    <!-- 권한 구성원 조회 -->
     <select id="selectRoleMember" resultMap="userResultMap">
 	 SELECT
 	     r.role_no AS roleNo,
@@ -83,28 +83,42 @@
 	   AND r.role_level = #{roleLevel}
 	   AND r.user_no IS NOT NULL
 	</select>
-	
+	<!-- 권한 추가 -->
 	<insert id="insertRole" parameterType="roleDTO">
 	 INSERT INTO ROLE(role_no, role_name, role_level, company_no, user_no)
 	 VALUES ('R' || LPAD(SEQ_ROLE_NO.NEXTVAL, 6, '0'), #{roleName}, 50, #{companyNo}, NULL)
 	</insert>
-	
+	<!-- 권한명 수정 -->
 	<update id="updateRoleName">
 	 update role
 	 set role_name=#{roleName}
 	 where role_no=#{roleNo} and company_no=#{companyNo}
 	</update>
-	
-	<delete id="deleteRole">
-	 delete from role where role_no=#{roleNo} and company_no=#{companyNo}
-	</delete>
-	
-	<update id="updateDelegation">
+	<!-- 권한 삭제 -->
+	<update id="deleteRole">
      UPDATE ROLE
-        SET user_no = #{receiverUserNo}
-      WHERE role_level = 99
+     SET role_name = '일반사용자',
+         role_level = 1
+     WHERE role_name = #{roleName}
+       AND company_no = #{companyNo}
+	</update>
+	<!-- 권한 위임 받는 사람 -->
+	<update id="updateDelegationReceiver">
+     UPDATE ROLE
+        SET role_name = '최고운영자',
+            role_level = 99,
+            company_no = #{companyNo}
+     WHERE user_no = #{receiverUserNo}
+	</update>
+	<!-- 권한 위임 주는 사람 -->
+	<update id="updateDelegationSender">
+     UPDATE ROLE
+        SET role_name = '일반사용자',
+            role_level = 1,
+            company_no = #{companyNo}
+      WHERE user_no = #{senderUserNo}
         AND company_no = #{companyNo}
-        AND user_no = #{senderUserNo}
+        AND role_level = 99
 	</update>
 	<!-- 현재 권한 가진 관리자 조회 -->
 	<select id="selectCurrentAdmin" resultMap="roleResultMap">
@@ -135,7 +149,7 @@
      WHERE u.user_no = #{userNo}
        AND u.company_no = #{companyNo}
 	</select>
-	
+	<!-- 권한 받을 구성원 검색 -->
 	<select id="searchDelegationMember" resultMap="userResultMap">
      SELECT
         u.user_no AS userNo,
@@ -159,14 +173,23 @@
           )
      ORDER BY u.user_name, u.user_id
 	</select>
-	
-	<insert id="insertUserRole">
-	 INSERT INTO ROLE(role_no, role_name, role_level, company_no, user_no)
-	 VALUES ('R' || LPAD(SEQ_ROLE_NO.NEXTVAL, 6, '0'), #{roleName}, #{roleLevel}, #{companyNo}, #{userNo})
-	</insert>
-	
-	<delete id="deleteUserRole">
-	 delete from role where role_no=#{roleNo} and company_no=#{companyNo} and user_no=#{userNo}
-	</delete>
+	<!-- 권한 구성원 추가 -->
+	<update id="insertUserRole">
+     UPDATE ROLE
+        SET role_name = #{roleName},
+            role_level = #{roleLevel},
+            company_no = #{companyNo}
+     WHERE user_no = #{userNo}
+	    AND company_no = #{companyNo}
+	</update>
+	<!-- 권한 구성원 삭제 -->
+	<update id="deleteUserRole">
+     UPDATE ROLE
+        SET role_name = '일반사용자',
+            role_level = 1,
+            company_no = #{companyNo}
+      WHERE user_no = #{userNo}
+        AND company_no = #{companyNo}
+	</update>
     
 </mapper>

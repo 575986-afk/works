@@ -235,22 +235,19 @@ $(function(){
     );
 
     $("#nextStepBtn").click(function(){
-
         let targetUserNo = $("#selectedUserNo").val();
-
         if(!targetUserNo){
             alert("위임할 구성원을 선택하세요.");
             return;
         }
 
         $.ajax({
-            url: "/adminUser/security/startDelegation",
+            url: "/adminUser/security/changeDelegation",
             type: "POST",
             data: {
                 selectedUserNo: targetUserNo
             },
             success: function(res){
-
                 if(res === "success"){
                     location.reload();
                 } else {
@@ -262,24 +259,43 @@ $(function(){
             }
         });
     });
-
-    $("#cancelDelegationBtn").click(function(){
-        if(!confirm("권한 위임을 취소하시겠습니까?")){
+    
+    $("#confirmDelegationBtn").click(function(){
+        if(!confirm("선택한 구성원에게 최고관리자 권한을 위임하시겠습니까?")){
             return;
         }
+        $.ajax({
+            url: "/adminUser/security/startDelegation",
+            type: "POST",
+            success: function(res){
+                if(res === "success"){
+                    alert("권한 위임이 완료되었습니다.");
+                    location.href = "/adminUser/security/authority";
+                } else if(res === "mailFail") {
+                    alert("권한 위임은 처리되었지만 이메일 발송에 실패했습니다.");
+                } else {
+                    alert("권한 위임에 실패했습니다.");
+                }
+            },
+            error: function(){
+                alert("권한 위임 처리 중 오류가 발생했습니다.");
+            }
+        });
+    });
+
+    $("#cancelDelegationBtn").click(function(){
         $.ajax({
             url: "/adminUser/security/cancelDelegation",
             type: "POST",
             success: function(res){
                 if(res === "success"){
-                    alert("위임 요청이 취소되었습니다.");
                     location.reload();
                 } else {
-                    alert("위임 요청 취소에 실패했습니다.");
+                    alert("이전 단계로 돌아갈 수 없습니다.");
                 }
             },
             error: function(){
-                alert("취소 처리 중 오류가 발생했습니다.");
+                alert("처리 중 오류가 발생했습니다.");
             }
         });
     });
@@ -314,7 +330,7 @@ $(function(){
                 </div>
                 <div id="step1Body" class="stepBody" th:style="${isWaiting} ? 'display:none;' : 'display:block;'">
                     <div class="guideTitle">최고관리자 권한을 위임할 구성원을 선택해 주세요.</div>
-                    <div class="guideSub">선택한 구성원에게 메일이 발송되고, 14일 내에 수락해야 위임이 완료됩니다.</div>
+                    <div class="guideSub">위임할 구성원을 선택한 후 다음 단계에서 권한 위임을 최종 실행합니다.</div>
                     
                     <div class="searchWrap">
 					    <input type="text" id="memberSearchInput" placeholder="이름 또는 ID 검색">
@@ -341,21 +357,19 @@ $(function(){
                 <div class="stepHeader">
                     <div class="titleGroup">
                         <span class="stepNum">2</span>
-                        <span>위임 수락</span>
+                        <span>위임 확인</span>
                     </div>
                     <i class="fa-solid toggleIcon" th:classappend="${isWaiting} ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
                 </div>
                 <div id="step2Body" class="stepBody" th:style="${isWaiting} ? 'display:block;' : 'display:none;'">
-                    
                     <div class="guideTitle">
-                        최고관리자 권한을 위임하기 위해 
-                        <span class="text-primary fw-bold" th:text="${receiverName}">김철수</span>님의 수락을 기다리고 있습니다.
-                    </div>
-                    
-                    <div class="statusDeadline" th:text="${deadlineDate}">
-                        2026년 8월 27일까지 수락 필요
-                    </div>
-
+					    <span class="text-primary fw-bold" th:text="${receiverName}">김철수</span>님에게
+					    최고관리자 권한을 위임합니다.
+					</div>
+					<div class="guideSub">
+					    아래 내용을 확인한 후 위임하기 버튼을 누르면 해당 구성원에게 안내 메일이 발송되고,
+					    최고관리자 권한이 즉시 변경됩니다.
+					</div>
                     <div class="flowWrap">
                         <!-- 보낸 사람 -->
                         <div class="userBadge">
@@ -373,8 +387,13 @@ $(function(){
                     </div>
 
                     <div>
-                        <button type="button" id="cancelDelegationBtn" class="btnCancel">위임 취소</button>
-                    </div>
+					    <button type="button" id="cancelDelegationBtn" class="btnCancel">
+					        이전 단계
+					    </button>
+					    <button type="button" id="confirmDelegationBtn" class="btnNext">
+					        위임하기
+					    </button>
+					</div>
                 </div>
             </div>
 

@@ -36,6 +36,7 @@ public interface MemberMapper {
     // 구성원 등록
     // 구성원 정보 등록
     public int updateUserForMember(MemberDTO memberDTO);
+    public int updateUserForMemberatRole(MemberDTO memberDTO);
     // 직급 / 직책 등록
     public int insertMemberTitle(MemberDTO memberDTO);
     // 조직 등록

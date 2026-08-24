@@ -109,10 +109,10 @@ public class AuthorityController {
 	// 권한 삭제
 	@PostMapping("/removeRole")
 	@ResponseBody
-	public String removeRole(@RequestParam(name="roleNo") String roleNo, HttpSession session) {
+	public String removeRole(@RequestParam(name = "roleName") String roleName, HttpSession session) {
 		String companyNo = (String) session.getAttribute("companyNo");
 
-		boolean result = as.deleteRole(companyNo, roleNo);
+		boolean result = as.deleteRole(companyNo, roleName);
 
 		return result ? "success" : "fail";
 	}
@@ -120,18 +120,21 @@ public class AuthorityController {
 	// 권한 위임
 	@PostMapping("/changeDelegation")
 	@ResponseBody
-	public String changeDelegation(@RequestParam(name="selectedUserNo") String selectedUserNo
-								, HttpSession session) {
-		String companyNo = (String) session.getAttribute("companyNo");
+	public String changeDelegation(
+	        @RequestParam(name = "selectedUserNo") String selectedUserNo,
+	        HttpSession session) {
 
-		boolean result = as.changeDelegation(selectedUserNo, companyNo);
-		
-		if (result) {
-		    session.setAttribute("delegationWaiting", true);
-		    session.setAttribute("delegationReceiverUserNo", selectedUserNo);
-		}
+	    String companyNo = (String) session.getAttribute("companyNo");
 
-		return result ? "success" : "fail";
+	    UserDomain receiver = as.getDelegationReceiver(companyNo, selectedUserNo);
+	    if (receiver == null) {
+	        return "fail";
+	    }
+
+	    session.setAttribute("delegationWaiting", true);
+	    session.setAttribute("delegationReceiverUserNo", selectedUserNo);
+
+	    return "success";
 	}
 	
 	// 권한 위임 시 검색
@@ -193,31 +196,48 @@ public class AuthorityController {
 
         return "adminUser/security/changeDelegation";
     }
-    // 권한 위임 다음으로 눌러서 2단계 열기
+    // 권한 위임 다음으로 눌러서 2단계 열고 이메일 보내고 권한 위임
     @PostMapping("/startDelegation")
     @ResponseBody
-    public String startDelegation(
-            @RequestParam("selectedUserNo") String selectedUserNo,
-            HttpSession session) {
-    	
-    	String companyNo =
-                (String) session.getAttribute("companyNo");
+    public String startDelegation(HttpSession session) {
+        String companyNo = (String) session.getAttribute("companyNo");
 
-        UserDomain receiver =
-                as.getDelegationReceiver(companyNo, selectedUserNo);
-
-        boolean mailResult =
-                ms.sendDelegationMail(
-                        receiver.getEmail(),
-                        receiver.getUserName()
-                );
-
-        if (!mailResult) {
+        String receiverUserNo = (String) session.getAttribute("delegationReceiverUserNo");
+        if (companyNo == null || receiverUserNo == null) {
             return "fail";
         }
 
-        session.setAttribute("delegationWaiting", true);
-        session.setAttribute("delegationReceiverUserNo", selectedUserNo);
+        UserDomain receiver = as.getDelegationReceiver(companyNo, receiverUserNo);
+        if (receiver == null) {
+            return "fail";
+        }
+
+        // 1. 실제 권한 위임
+        boolean delegationResult = as.changeDelegation(receiverUserNo, companyNo);
+        if (!delegationResult) {
+            return "fail";
+        }
+
+        // 2. 권한 위임 성공 후 안내 메일 발송
+        boolean mailResult = ms.sendDelegationMail(receiver.getEmail(),receiver.getUserName());
+
+        // 3. 세션 정리
+        session.removeAttribute("delegationWaiting");
+        session.removeAttribute("delegationReceiverUserNo");
+
+        if (!mailResult) {
+            return "mailFail";
+        }
+
+        return "success";
+    }
+    
+    @PostMapping("/cancelDelegation")
+    @ResponseBody
+    public String cancelDelegation(HttpSession session) {
+
+        session.removeAttribute("delegationWaiting");
+        session.removeAttribute("delegationReceiverUserNo");
 
         return "success";
     }
@@ -236,24 +256,20 @@ public class AuthorityController {
 	                       + ", roleName: " + roleName 
 	                       + ", roleLevel: " + roleLevel 
 	                       + ", userNo: " + userNo);
-	    // DB에 Insert
+	    
 	    boolean result = as.addNewUserRole(companyNo, roleName, roleLevel, userNo);
 	    return result ? "success" : "fail";
 	}
 
 	// 사용자 권한 삭제
-    @PostMapping("/removeUserRole")
+	@PostMapping("/removeUserRole")
 	@ResponseBody
-	public String removeUserRole(@RequestParam(name = "roleNo") String roleNo,
-			@RequestParam(name = "userNo") String userNo, HttpSession session) {
-		String companyNo = (String) session.getAttribute("companyNo");
+	public String removeUserRole(@RequestParam(name = "userNo") String userNo, 
+			HttpSession session) {
+	    String companyNo = (String) session.getAttribute("companyNo");
 
-		boolean result =
-				as.deleteUserRole(
-						companyNo,
-						roleNo,
-						userNo);
+	    boolean result = as.deleteUserRole(companyNo, userNo);
 
-		return result ? "success" : "fail";
+	    return result ? "success" : "fail";
 	}
 }

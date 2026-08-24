@@ -16,12 +16,14 @@ public interface AuthorityMapper {
     
     public int updateRoleName(RoleDTO rDTO);
     
-    public int deleteRole(@Param("companyNo") String companyNo, @Param("roleNo") String roleNo);
+    public int deleteRole(@Param("companyNo") String companyNo, @Param("roleName") String roleName);
     
-    public int updateDelegation(
+    public int updateDelegationReceiver(
             @Param("receiverUserNo") String receiverUserNo,
-            @Param("companyNo") String companyNo,
-            @Param("senderUserNo") String senderUserNo);
+            @Param("companyNo") String companyNo);
+    public int updateDelegationSender(
+    		@Param("senderUserNo") String senderUserNo,
+    		@Param("companyNo") String companyNo);
 
     public RoleDomain selectCurrentAdmin(
             @Param("companyNo") String companyNo);
@@ -36,7 +38,6 @@ public interface AuthorityMapper {
     public int insertUserRole(@Param("companyNo") String companyNo, @Param("roleName") String roleName,
             @Param("roleLevel") int roleLevel, @Param("userNo") String userNo);
     
-    public int deleteUserRole(@Param("companyNo") String companyNo, @Param("roleNo") String roleNo, 
-    		@Param("userNo") String userNo);
+    public int deleteUserRole(@Param("companyNo") String companyNo, @Param("userNo") String userNo);
     
 }
