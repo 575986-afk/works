@@ -22,5 +22,16 @@ public class NoticeController {
 		model.addAttribute("notice", ns.getNoticeDetail(noticeNo));
 		return "notice/notice";
 	}
+	@GetMapping("user/notices2")
+	public String showNotice2(Model model) {
+		model.addAttribute("notices", ns.getNoticeList());
+		return "notice2/notices";
+	}
+	
+	@GetMapping("notice2/notice")
+	public String showNoticeDetail2(Model model, String noticeNo) {
+		model.addAttribute("notice", ns.getNoticeDetail(noticeNo));
+		return "notice2/notice";
+	}
 
 }

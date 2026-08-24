@@ -26,7 +26,6 @@ public class AlarmController {
         String userNo = (String) session.getAttribute("userNo");
 
         List<AlarmDomain> alList = as.getAlarmList(userNo);
-        System.out.println(alList);
         return ResponseEntity.ok(alList);
     }
 
