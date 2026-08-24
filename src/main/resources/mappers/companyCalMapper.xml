@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.sist.service.CompanyCalMapper">
+
+	<!-- 기간별 일정 조회 -->
+	<select id="selectCompanyCal" parameterType="searchCompanyCalDTO" resultType="companyCalDomain">
+     SELECT DISTINCT
+     	C.CALENDER_NO AS calenderNo,
+	    C.TITLE AS title,
+	    TO_CHAR(C.START_DATE, 'YYYY-MM-DD') AS startDate,
+	    TO_CHAR(C.START_DATE, 'HH24:MI') AS startTime,
+	    TO_CHAR(C.END_DATE, 'YYYY-MM-DD') AS endDate,
+	    TO_CHAR(C.END_DATE, 'HH24:MI') AS endTime
+	 FROM CALENDER C
+	 INNER JOIN CALENDERCONNECTION cc
+	    ON C.CALENDER_NO = cc.CALENDER_NO
+	 INNER JOIN USERS U
+	    ON cc.USER_NO = U.USER_NO
+     WHERE U.COMPANY_NO = #{companyNo}
+     <if test="year != null and year != '' and month != null and month != ''">
+        AND C.START_DATE &lt; ADD_MONTHS(
+			TO_DATE(#{year} || LPAD(#{month}, 2, '0'), 'YYYYMM'),1
+        )
+        AND C.END_DATE &gt;= TO_DATE(
+            #{year} || LPAD(#{month}, 2, '0'),'YYYYMM'
+        )
+     </if>
+     ORDER BY startDate
+	</select>
+	
+	<!-- 상세 정보 조회 -->
+	<!--<select id="selectCalDetail">
+	 SELECT c.title AS title,
+	 		c.start_date AS startDate,
+			c.end_date AS endDate,
+			c.content AS content,
+			u.user_name AS userName
+	 FROM   CALENDER c
+	 LEFT JOIN CALENDERCONNECTION cc
+			ON c.CALENDER_NO = cc.CALENDER_NO
+	 LEFT JOIN USERS u
+			ON cc.USER_NO = u.USER_NO
+	</select>-->
+	
+	<!-- 일정 등록 -->
+	
+	<!-- 일정 수정 -->
+	
+	<!-- 일정 삭제 -->
+</mapper>

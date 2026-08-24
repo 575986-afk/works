@@ -1,10 +1,12 @@
 package kr.co.sist.service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,24 +21,31 @@ import jakarta.servlet.http.HttpSession;
 @RequestMapping("/adminUser/service")
 public class CompanyCalendarController {
 	
+	@Autowired(required = false)
+	private CompanyCalService ccs;
+	
 	//캘린더 조회
 	@GetMapping("/calendar")
-	public String findCompanyCal(HttpSession session, Model model) {
-		// List<CalendarDTO> calendarList = calendarService.selectCalendarList();
-		// model.addAttribute("calendarList", calendarList);
+	public String findCompanyCal(
+			@RequestParam(required = false) String year,
+	        @RequestParam(required = false) String month,
+	        HttpSession session, Model model) {
+		String companyNo = (String) session.getAttribute("companyNo");
 		
-		// 임시 데이터 (테스트용)
-		List<Map<String, String>> calendarList = new ArrayList<Map<String,String>>();
-		Map<String, String> c1 = new HashMap<String, String>();
-		c1.put("calendarId", "1");
-		c1.put("scheduleNo", "101");
-		c1.put("title", "주간 팀 회의");
-		c1.put("startDate", "2026-07-16");
-		c1.put("startTime", "16:13");
-		c1.put("endDate", "2026-07-16");
-		c1.put("endTime", "17:00");
-		c1.put("content", "주간 업무 진행 상황 점검");
-		calendarList.add(c1);
+		if (year == null || year.isEmpty()) {
+	        year = String.valueOf(LocalDate.now().getYear());
+	    }
+
+	    if (month == null || month.isEmpty()) {
+	        month = String.format("%02d", LocalDate.now().getMonthValue());
+	    }
+		
+		SearchCompanyCalDTO search = new SearchCompanyCalDTO();
+		search.setCompanyNo(companyNo);
+		search.setMonth(month);
+		search.setYear(year);
+		
+		List<CompanyCalDomain> calendarList = ccs.getCompanyCal(search);
 
 		model.addAttribute("calendarList", calendarList);
 		return "adminUser/service/calendar";

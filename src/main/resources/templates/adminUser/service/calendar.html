@@ -57,9 +57,9 @@ $(function(){
     });
 });
 
-function goDetail(calendarId) {
+function goDetail(calendarNo) {
     axios.get('/adminUser/service/calendar/calDetail', {
-        params: { calendarId: calendarId }
+        params: { calendarNo: calendarNo }
     })
     .then(function (response) {
         $('#modalDetailContainer').html(response.data);
@@ -76,9 +76,9 @@ function goDetail(calendarId) {
     });
 }
 
-function goModifyForm(calendarId) {
+function goModifyForm(calendarNo) {
     axios.get('/adminUser/service/calendar/modifyCalForm', {
-        params: { calendarId: calendarId }
+        params: { calendarNo: calendarNo }
     })
     .then(function (response) {
         $('#modalDetailContainer').html(response.data);
@@ -135,7 +135,7 @@ function goModifyForm(calendarId) {
                         </tr>
                     </thead>
                     <tbody th:if="${calendarList != null and !#lists.isEmpty(calendarList)}">
-                        <tr th:each="item : ${calendarList}" th:onclick="goDetail([[${item.calendarId}]])">
+                        <tr th:each="item : ${calendarList}" th:onclick="goDetail([[${item.calendarNo}]])">
                             <td th:text="${item.startDate}">2026-07-16</td>
                             <td th:text="${item.startTime}">16:13</td>
                             <td th:text="${item.endDate}">2026-07-16</td>
@@ -143,6 +143,13 @@ function goModifyForm(calendarId) {
                             <td th:text="${item.title}">회의 일정</td>
                         </tr>
                     </tbody>
+                    <tbody th:if="${calendarList == null or #lists.isEmpty(calendarList)}">
+					    <tr>
+					        <td colspan="5" style="text-align: center; padding: 40px; color: #999;">
+					            아무 정보가 없습니다.
+					        </td>
+					    </tr>
+					</tbody>
                 </table>
             </div>
         </div>
