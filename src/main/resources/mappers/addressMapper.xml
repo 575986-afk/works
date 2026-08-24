@@ -40,7 +40,7 @@
         <!-- keyword -->
         <if test="keyword != null and keyword != ''">
     	<bind name="keyword" value="'%' + keyword + '%'" />
-            AND ( u.USER_NAME LIKE #{keyword} 
+            AND ( u.USER_NAME LIKE #{keyword, typeHandler=kr.co.sist.login.EncryptTypeHandler} 
        OR u.PHONENUMBER LIKE #{keyword} 
        
       
