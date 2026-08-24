@@ -161,7 +161,7 @@ body { background: #ffffff; font-family: "맑은 고딕", sans-serif; margin: 0;
 <script type="text/javascript">
 $(function(){
 
-	// 사이드바 토글 동작
+    // 사이드바 토글 동작
     $(".sidebarMenu").click(function(){
         $(this).next(".submenu").slideToggle(200);
         $(this).find(".arrow").toggleClass("rotate");
@@ -183,13 +183,10 @@ $(function(){
         let keyword = $("#memberSearchInput").val().trim();
 
         if(!keyword){
-
             alert("이름 또는 ID를 입력하세요.");
-
             $("#memberSearchResult").empty();
             $("#selectedMember").hide();
             $("#selectedMemberName").text("");
-
             return;
         }
         $.ajax({
@@ -273,6 +270,7 @@ $(function(){
                     location.href = "/adminUser/security/authority";
                 } else if(res === "mailFail") {
                     alert("권한 위임은 처리되었지만 이메일 발송에 실패했습니다.");
+                    location.href = "/adminUser/security/authority";
                 } else {
                     alert("권한 위임에 실패했습니다.");
                 }
@@ -333,22 +331,22 @@ $(function(){
                     <div class="guideSub">위임할 구성원을 선택한 후 다음 단계에서 권한 위임을 최종 실행합니다.</div>
                     
                     <div class="searchWrap">
-					    <input type="text" id="memberSearchInput" placeholder="이름 또는 ID 검색">
-					    <button type="button" id="searchMemberBtn" class="btnSearch">검색</button>
-					</div>
+                        <input type="text" id="memberSearchInput" placeholder="이름 또는 ID 검색">
+                        <button type="button" id="searchMemberBtn" class="btnSearch">검색</button>
+                    </div>
 					
-					<!-- 검색 결과 -->
-					<div id="memberSearchResult"></div>
+                    <!-- 검색 결과 -->
+                    <div id="memberSearchResult"></div>
 					
-					<!-- 선택된 구성원 -->
-					<div id="selectedMember" class="selectedMember" style="display:none;">
-					    <span>선택한 구성원 : </span>
-					    <strong id="selectedMemberName"></strong>
-					</div>
-					<!-- 선택된 구성원의 userNo -->
-					<input type="hidden" id="selectedUserNo" name="selectedUserNo">
+                    <!-- 선택된 구성원 -->
+                    <div id="selectedMember" class="selectedMember" style="display:none;">
+                        <span>선택한 구성원 : </span>
+                        <strong id="selectedMemberName"></strong>
+                    </div>
+                    <!-- 선택된 구성원의 userNo -->
+                    <input type="hidden" id="selectedUserNo" name="selectedUserNo">
 					
-					<button type="button" id="nextStepBtn" class="btnNext">다음</button>
+                    <button type="button" id="nextStepBtn" class="btnNext">다음</button>
                 </div>
             </div>
 
@@ -363,18 +361,18 @@ $(function(){
                 </div>
                 <div id="step2Body" class="stepBody" th:style="${isWaiting} ? 'display:block;' : 'display:none;'">
                     <div class="guideTitle">
-					    <span class="text-primary fw-bold" th:text="${receiverName}">김철수</span>님에게
-					    최고관리자 권한을 위임합니다.
-					</div>
-					<div class="guideSub">
-					    아래 내용을 확인한 후 위임하기 버튼을 누르면 해당 구성원에게 안내 메일이 발송되고,
-					    최고관리자 권한이 즉시 변경됩니다.
-					</div>
+                        <span class="text-primary fw-bold" th:text="${receiverName ?: ''}">김철수</span>님에게
+                        최고관리자 권한을 위임합니다.
+                    </div>
+                    <div class="guideSub">
+                        아래 내용을 확인한 후 위임하기 버튼을 누르면 해당 구성원에게 안내 메일이 발송되고,
+                        최고관리자 권한이 즉시 변경됩니다.
+                    </div>
                     <div class="flowWrap">
                         <!-- 보낸 사람 -->
                         <div class="userBadge">
                             <i class="fa-regular fa-user text-secondary"></i>
-                            <span th:text="${senderInfo}">홍길동 testtest@practice-6.by-works.com</span>
+                            <span th:text="${senderInfo ?: ''}">홍길동 testtest@practice-6.by-works.com</span>
                         </div>
                         
                         <i class="fa-solid fa-arrow-right arrowIcon"></i>
@@ -382,18 +380,18 @@ $(function(){
                         <!-- 받은 사람 -->
                         <div class="userBadge">
                             <i class="fa-regular fa-user text-primary"></i>
-                            <span th:text="${receiverInfo}">김철수 test1@practice-6.by-works.net</span>
+                            <span th:text="${receiverInfo ?: ''}">김철수 test1@practice-6.by-works.net</span>
                         </div>
                     </div>
 
                     <div>
-					    <button type="button" id="cancelDelegationBtn" class="btnCancel">
-					        이전 단계
-					    </button>
-					    <button type="button" id="confirmDelegationBtn" class="btnNext">
-					        위임하기
-					    </button>
-					</div>
+                        <button type="button" id="cancelDelegationBtn" class="btnCancel">
+                            이전 단계
+                        </button>
+                        <button type="button" id="confirmDelegationBtn" class="btnNext">
+                            위임하기
+                        </button>
+                    </div>
                 </div>
             </div>
 

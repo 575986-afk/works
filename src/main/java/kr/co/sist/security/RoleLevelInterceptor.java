@@ -63,13 +63,7 @@ public class RoleLevelInterceptor implements HandlerInterceptor {
 
         // 현재 권한이 부족하면 차단
         if (roleLevel < requiredRoleLevel) {
-            System.out.println(">>> 권한 부족");
-            System.out.println(">>> 접근 차단");
-
-            response.sendError(
-                HttpServletResponse.SC_FORBIDDEN
-            );
-
+            response.sendError(HttpServletResponse.SC_FORBIDDEN); // 403 에러 발생
             return false;
         }
 

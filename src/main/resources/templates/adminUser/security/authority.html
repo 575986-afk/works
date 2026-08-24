@@ -78,46 +78,39 @@ function cleanRoleMoreButtons() {
     });
 }
 
-// 주소록 팝업 오픈 함수 (th:onclick에 의해 실행됨)
+// 주소록 팝업 오픈 함수
 function openAddressPopup(url) {
     const title = "AddressBookPopup";
     const specs = "width=850,height=600,left=200,top=100,scrollbars=yes,resizable=yes";
     window.open(url, title, specs);
 }
 
-//팀원의 popupaddressBook.js에서 호출하는 함수
-//※ 파라미터 순서 주의: 1번째 인자가 userName, 2번째 인자가 userNo 입니다.
+// 주소록 팝업 콜백 함수
 window.addRepresentative = function(userName, userNo) {
-	console.log("=== 팝업에서 수신된 사용자 ===");
-	console.log("이름:", userName, " | userNo:", userNo);
-	console.log("현재 권한 그룹:", selectedRoleName, " | Level:", selectedRoleLevel);
-	
-	if (!userNo) {
-	    console.warn("userNo가 전달되지 않았습니다.");
-	    return;
-	}
-	
-	// 서버로 1명씩 권한 추가 요청
-	$.ajax({
-	    url: "/adminUser/security/addNewUserRole",
-	    type: "POST",
-	    data: {
-	        roleName: selectedRoleName,
-	        roleLevel: selectedRoleLevel,
-	        userNo: userNo // 2번째 파라미터인 userNo를 서버로 전송
-	    },
-	    success: function(result) {
-	        if (result === "success") {
-	            // 오른쪽 관리자 구성원 리스트 갱신
-	            loadMember(selectedRoleName);
-	        } else {
-	            console.error(userName + " 님 관리자 추가 실패");
-	        }
-	    },
-	    error: function(xhr) {
-	        console.error("관리자 추가 중 오류 발생:", xhr.responseText);
-	    }
-	});
+    if (!userNo) {
+        console.warn("userNo가 전달되지 않았습니다.");
+        return;
+    }
+    
+    $.ajax({
+        url: "/adminUser/security/addNewUserRole",
+        type: "POST",
+        data: {
+            roleName: selectedRoleName,
+            roleLevel: selectedRoleLevel,
+            userNo: userNo
+        },
+        success: function(result) {
+            if (result === "success") {
+                loadMember(selectedRoleName);
+            } else {
+                alert(userName + " 님 관리자 추가에 실패했습니다.");
+            }
+        },
+        error: function(xhr) {
+            console.error("관리자 추가 중 오류 발생:", xhr.responseText);
+        }
+    });
 };
 
 $(function() {
@@ -178,7 +171,7 @@ $(function() {
         });
     });
 
-    // 권한 추가 모달 저장
+    // 권한 추가 저장
     $(document).on("click", "#saveRoleBtn", function() {
         const roleName = $("#newRoleName").val().trim();
         if (!roleName) {
@@ -190,11 +183,15 @@ $(function() {
             url: "/adminUser/security/addRole",
             type: "POST",
             data: $("#addRoleFrm").serialize(),
-            success: function() {
-                const modalEl = document.getElementById("addRoleModal");
-                const modalInstance = bootstrap.Modal.getInstance(modalEl);
-                if (modalInstance) modalInstance.hide();
-                loadRoleList();
+            success: function(result) {
+                if (result === "success") {
+                    const modalEl = document.getElementById("addRoleModal");
+                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                    if (modalInstance) modalInstance.hide();
+                    loadRoleList();
+                } else {
+                    alert("권한 추가 실패");
+                }
             },
             error: function(xhr) {
                 console.error("권한 저장 실패:", xhr);
@@ -247,24 +244,23 @@ $(function() {
         });
     });
 
-    // 권한 삭제
+    // 권한 삭제 (컨트롤러 @RequestParam roleName 바인딩으로 수정)
     $(document).on("click", ".deleteRoleCmd", function(e) {
         e.stopPropagation();
         $(".roleDropdown").hide();
 	
         let $roleItem = $(this).closest(".roleItem");
-        let roleNo = $roleItem.attr("data-roleno");
         let roleName = $roleItem.attr("data-rolename");
 	
-        if (!roleNo) {
-            alert("삭제할 권한 번호(roleNo)가 존재하지 않습니다.");
+        if (!roleName) {
+            alert("삭제할 권한명이 존재하지 않습니다.");
             return;
         }
         if (confirm(`'${roleName}' 권한을 삭제하시겠습니까?`)) {
             $.ajax({
                 url: "/adminUser/security/removeRole",
                 type: "POST",
-                data: { roleNo: roleNo },
+                data: { roleName: roleName },
                 success: function(result) {
                     if (result === "success") {
                         loadRoleList();

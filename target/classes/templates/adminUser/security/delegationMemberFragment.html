@@ -94,15 +94,12 @@
 <!-- 검색 결과가 없는 경우 -->
 <div class="searchResultWrap"
      th:if="${memberList == null or #lists.isEmpty(memberList)}">
-
     <div class="memberResultList">
         <div class="noResult">
             검색 결과가 없습니다.
         </div>
     </div>
-
 </div>
-
 
 <!-- 검색 결과가 있는 경우 -->
 <div class="searchResultWrap"
@@ -148,48 +145,9 @@
             </div>
         </label>
     </div>
-
     <!-- 선택된 사용자 표시 -->
-    <div id="selectedMemberInfo"
-         class="selectedMemberInfo">
-    </div>
-
+    <div id="selectedMemberInfo" class="selectedMemberInfo"></div>
 </div>
-
-
-<script type="text/javascript">
-/* $(function() {
-    $(document)
-        .off("change.delegationMember", "input[name='delegationMember']")
-        .on("change.delegationMember",
-            "input[name='delegationMember']",
-    function() {
-         // 기존 선택 표시 제거
-         $(".memberResultItem").removeClass("selected");
-
-         // 현재 선택된 행 강조
-         $(this).closest(".memberResultItem")
-                .addClass("selected");
-
-         // 선택한 사용자 정보
-         let userNo = $(this).data("user-no");
-         let userName = $(this).data("user-name");
-         let userId = $(this).data("user-id");
-
-         $("#selectedUserNo").val(userNo);
-         $("#selectedMemberInfo")
-             .text(
-                 "선택된 구성원 : "
-                 + userName
-                 + " ("
-                 + userId
-                 + ")"
-             )
-             .show();
- 	});
-}); */
-
-</script>
 </div>
 
 </html>
