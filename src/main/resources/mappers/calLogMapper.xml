@@ -49,7 +49,7 @@
 	    ORDER BY l.INPUT_DATE DESC
 	</select>
 	<!-- 할일로그 상세 조회 -->
-	<select id="selectCalLogDetail" parameterType="string" resultType="kr.co.sist.todoaudit.CalLogDetailDomain">
+	<select id="selectCalLogDetail" parameterType="string" resultType="kr.co.sist.calaudit.CalLogDetailDomain">
      SELECT ca.title,
      		ca.start_date AS startDate,
 			ca.end_date AS endDate
