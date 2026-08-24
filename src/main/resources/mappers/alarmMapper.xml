@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.sist.user.alarm.AlarmMapper">
+	<select id="selectAlarmList" parameterType="String"
+		resultType="alarmDomain">
+		SELECT duty, input_date inputDate
+		FROM (
+		SELECT duty, input_date
+		FROM addressbooklog
+		WHERE target = #{userNo}
+		UNION
+		SELECT description AS duty, input_date
+		FROM loginlog
+		WHERE INSTR(
+		description,
+		'시도한 ID: ' || (
+		SELECT user_id
+		FROM users
+		WHERE user_no = #{userNo}
+		)
+		) != 0
+		UNION
+		SELECT duty, input_date
+		FROM todolog
+		WHERE representative_no = #{userNo}
+		)
+		ORDER BY input_date DESC
+		FETCH FIRST 5 ROWS ONLY
+	</select>
+</mapper>

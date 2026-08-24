@@ -2,6 +2,7 @@ package kr.co.sist.userDashboard;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -18,6 +19,7 @@ import kr.co.sist.setting.StatusDTO;
 import kr.co.sist.setting.TitleDTO;
 import kr.co.sist.signup.AESUtil;
 import kr.co.sist.signup.UserDTO;
+import kr.co.sist.user.alarm.AlarmService;
 import lombok.RequiredArgsConstructor;
 
 @Controller
