@@ -21,20 +21,22 @@ public class InquiryService {
 	public String createInquiry(MultipartFile mf,InquiryDTO iDTO) {
 		
 		String result = "문의 등록에 실패하였습니다. 잠시 후 다시 시도해 주시기 바랍니다.";
-		String originalFileName = mf.getOriginalFilename();
-		String ext = originalFileName.substring(originalFileName.lastIndexOf('.'));
-		String fileName = UUID.randomUUID().toString().replaceAll("-", "") + ext;
-		File file = new File(uploadDir + fileName);
-		
-		try {
-			mf.transferTo(file);
-		} catch (IllegalStateException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		if(mf != null && !mf.isEmpty()) {
+			String originalFileName = mf.getOriginalFilename();
+			String ext = originalFileName.substring(originalFileName.lastIndexOf('.'));
+			String fileName = UUID.randomUUID().toString().replaceAll("-", "") + ext;
+			File file = new File(uploadDir + fileName);
+			try {
+				mf.transferTo(file);
+			} catch (IllegalStateException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			iDTO.setFiles(fileName);
 		}
-
-		iDTO.setFiles(fileName);
+		
 		
 		if (im.insertInquiry(iDTO) == 1) {
 			result = "문의가 정상적으로 등록되었습니다.";
