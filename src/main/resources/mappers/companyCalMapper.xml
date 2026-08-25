@@ -77,6 +77,7 @@
      LEFT JOIN COMPANY CO 
      		ON U.COMPANY_NO = CO.COMPANY_NO
      WHERE C.CALENDER_NO = #{calenderNo}
+     	AND ROWNUM = 1
     </select>
     
     <!-- 일정 등록 -->
