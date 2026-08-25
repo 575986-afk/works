@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.servlet.http.HttpSession;
+
 @Controller
 public class InquiryController {
 	
@@ -20,8 +22,10 @@ public class InquiryController {
 	}
 	
 	@PostMapping("inquiryProcess")
-	public String addInquiry(@RequestParam(value = "uploadFile", required = false)MultipartFile uploadFile , InquiryDTO iDTO, Model model) {
+	public String addInquiry(@RequestParam(value = "uploadFile", required = false)MultipartFile uploadFile ,HttpSession session, InquiryDTO iDTO, Model model) {
 		
+		iDTO.setUserNo((String)session.getAttribute("userNo"));
+		System.out.println(iDTO);
 		model.addAttribute("msg", is.createInquiry(uploadFile, iDTO));
 		return "inquiry/inquiryResult";
 	}
