@@ -5,6 +5,7 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>캘린더</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style data-purpose="custom-styles">
     body {
@@ -38,7 +39,7 @@
       color: #e53935;
     }
     .sidebar-scroll {
-      height: calc(100vh - 64px);
+      height: calc(100vh - 56px);
       overflow-y: auto;
     }
     .compact-calendar .calendar-grid-cell {
@@ -52,68 +53,114 @@
 </head>
 <body class="bg-white overflow-hidden">
 <!-- BEGIN: MainHeader -->
-<header class="h-16 border-b border-gray-200 flex items-center justify-between px-4 sticky top-0 bg-white z-50">
-<div class="flex items-center space-x-4">
-<div class="flex items-center space-x-2">
-<img alt="Calendar Logo" class="w-8 h-8 rounded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0b_HeXfxB82xUuupH_YKOubmhqzY9uLF9RcdwSj1sNaCjsK6g4-NOYFo1-jMgRvRUWy-EvDSkKPASyzK71EnM2OSJ054kNNW7QhQ6g9qCLOviILUzNxkBhpZ126KibPaiGO2Z18hfZk269ACu5DA6txPl26_vpc-niu8ectEnyGg1SlKow1Ndni5YudeRhPAqGL2A7llWdW7V9PoQKCG6eZBlaWrsa3nk0lxvfto0CEOLqKUlkZ3x">
-<span class="text-xl font-bold text-gray-800">캘린더</span>
-</div>
-<!-- Search Bar -->
-<div class="relative ml-10">
-<span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 cursor-pointer" id="searchIconBtn">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</span>
-<input class="pl-10 pr-10 py-1.5 bg-gray-100 border-none rounded-md w-96 text-sm focus:ring-1 focus:ring-gray-300 hover:bg-gray-200" id="globalSearchInput" placeholder="내 일정 검색" type="text">
-<span class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 cursor-pointer" id="searchFilterBtn">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</span>
-<div class="hidden absolute left-0 top-full mt-1 w-96 bg-white border border-gray-200 rounded-md shadow-lg max-h-80 overflow-y-auto z-50" id="searchResultsDropdown"></div>
-</div>
-</div>
-<!-- Right Side Icons -->
-<div class="flex items-center space-x-4">
-<div class="flex items-center space-x-3 border-r pr-4 border-gray-200">
-<a class="p-1 text-gray-500 hover:bg-gray-100 rounded inline-block" th:href="@{/userDashboard}" title="홈"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg></a>
-<a class="p-1 text-gray-500 hover:bg-gray-100 rounded inline-block" th:href="@{/chatting}" title="메시지"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg></a>
-<button class="p-1 text-gray-500 hover:bg-gray-100 rounded text-blue-500" data-app-name="메일" id="headerMailBtn"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg></button>
-<button class="p-1 text-gray-500 hover:bg-gray-100 rounded" data-app-name="타임" id="headerTimeBtn"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></button>
-</div>
-<div class="flex items-center space-x-3">
-<div class="relative cursor-pointer" id="notificationBtn">
-<svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-<span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">N</span>
-<div class="hidden absolute right-0 top-full mt-2 w-72 bg-white border border-gray-200 rounded-md shadow-lg z-50 text-left cursor-default" id="notificationDropdown">
-<div class="px-4 py-2 border-b border-gray-100 text-xs font-bold text-gray-700">알림</div>
-<ul class="max-h-64 overflow-y-auto text-xs divide-y divide-gray-50" id="notificationList"></ul>
-</div>
-</div>
-<div class="relative">
-<button class="p-1 text-gray-500 hover:bg-gray-100 rounded" id="headerSettingsBtn"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></button>
-<div class="hidden absolute right-0 top-full mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-50 text-xs py-1" id="settingsDropdown">
-<a class="block px-3 py-2 hover:bg-gray-50" data-toast="환경설정 화면은 준비 중입니다." href="#">환경설정</a>
-<a class="block px-3 py-2 hover:bg-gray-50" data-toast="테마 설정은 준비 중입니다." href="#">테마</a>
-<a class="block px-3 py-2 hover:bg-gray-50" data-toast="캘린더 목록 관리는 준비 중입니다." href="#">캘린더 목록 관리</a>
-</div>
-</div>
-<div class="relative">
-<div class="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-white text-xs font-bold cursor-pointer" id="profileAvatarBtn">1</div>
-<div class="hidden absolute right-0 top-full mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg z-50 text-xs py-1" id="profileDropdown">
-<div class="px-3 py-2 border-b border-gray-100 text-gray-500">사용자 1</div>
-<a class="block px-3 py-2 hover:bg-gray-50" data-toast="프로필 보기는 준비 중입니다." href="#">내 프로필</a>
-<a class="block px-3 py-2 hover:bg-gray-50" data-toast="로그아웃 되었습니다." href="#">로그아웃</a>
-</div>
-</div>
-</div>
-</div>
+<header class="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 shrink-0 z-50 relative">
+    <!-- Left: Logo & Title -->
+    <div class="flex items-center gap-6">
+        <a th:href="@{/userDashboard}" class="flex items-center gap-2 text-indigo-500 font-bold text-lg hover:opacity-80">
+            <i class="fa-solid fa-calendar text-2xl"></i>
+            <span class="text-gray-800">캘린더</span>
+        </a>
+
+        <!-- Center: Search Bar -->
+        <div class="relative w-96">
+            <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            <input type="text" id="globalSearchInput" autocomplete="off" placeholder="내 일정 검색" class="w-full bg-gray-100 border-none rounded-full py-1.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-100 text-sm">
+            <div id="searchResultsDropdown" class="hidden absolute top-full left-0 mt-2 w-full bg-white border border-gray-200 rounded-md shadow-lg text-gray-500 text-sm z-50 max-h-80 overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <!-- Right: Icons -->
+    <div class="flex items-center gap-4 text-gray-600 text-lg">
+        <!-- App Launcher -->
+        <div class="relative">
+            <button id="appLauncherBtn" class="hover:text-gray-800 focus:outline-none pt-1">
+                <i class="fa-solid fa-grip"></i>
+            </button>
+            <div id="appLauncherDropdown" class="hidden absolute top-full right-0 mt-3 w-72 bg-white border border-gray-200 rounded-lg shadow-xl p-4 z-50">
+                <div class="grid grid-cols-3 gap-y-4 gap-x-2 text-center">
+                    <a th:href="@{/userDashboard}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
+                        <i class="fa-solid fa-house text-blue-500 text-2xl mb-2"></i>
+                        <span class="text-xs text-gray-700">홈</span>
+                    </a>
+                    <a th:href="@{/chatting}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
+                        <i class="fa-solid fa-comment text-green-500 text-2xl mb-2"></i>
+                        <span class="text-xs text-gray-700">메시지</span>
+                    </a>
+                    <a th:href="@{/calendar}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
+                        <i class="fa-solid fa-calendar text-indigo-500 text-2xl mb-2"></i>
+                        <span class="text-xs text-gray-700">캘린더</span>
+                    </a>
+                    <a th:href="@{/addressBook}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
+                        <i class="fa-solid fa-address-book text-teal-500 text-2xl mb-2"></i>
+                        <span class="text-xs text-gray-700">주소록</span>
+                    </a>
+                    <a th:href="@{/todo}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
+                        <i class="fa-solid fa-circle-check text-purple-500 text-2xl mb-2"></i>
+                        <span class="text-xs text-gray-700">할 일</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-px h-4 bg-gray-300 mx-1"></div>
+
+        <!-- Notification -->
+        <div class="relative">
+            <button id="notificationBtn" class="hover:text-gray-800 focus:outline-none pt-1">
+                <i class="fa-regular fa-bell"></i>
+            </button>
+            <div id="notificationDropdown" class="hidden absolute top-full right-0 mt-3 w-80 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden">
+                <ul id="notificationList" class="text-sm max-h-80 overflow-y-auto divide-y divide-gray-100"></ul>
+            </div>
+        </div>
+
+        <!-- 고객센터 -->
+        <a th:href="@{/user/notices}" class="hover:text-gray-800 pt-1">
+            <i class="fa-regular fa-circle-question"></i>
+        </a>
+
+        <!-- 환경설정 -->
+        <a th:href="@{/userInfo}" class="hover:text-gray-800 pt-1">
+            <i class="fa-solid fa-gear"></i>
+        </a>
+
+        <!-- Profile -->
+        <div class="relative ml-2">
+            <button id="profileAvatarBtn"
+                class="w-8 h-8 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold text-sm focus:outline-none"
+                th:text="${not #strings.isEmpty(session.user?.name) ? #strings.substring(session.user?.name, 0, 1) : 'U'}">
+            </button>
+            <div id="profileDropdown" class="hidden absolute top-full right-0 mt-3 w-64 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden">
+               <div class="p-4 flex items-center gap-3 border-b border-gray-100 bg-gray-50">
+                    <div class="w-11 h-11 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold text-lg"
+                        th:text="${not #strings.isEmpty(session.user?.name) ? #strings.substring(session.user?.name, 0, 1) : 'U'}">U</div>
+                    <div class="font-bold text-gray-800 text-base" th:text="${session.user?.name != null ? session.user?.name : '로그인 필요'}">이름</div>
+                </div>
+                <div class="p-2">
+                    <button class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2">
+                        <i class="fa-solid fa-plus border border-gray-400 rounded-full p-0.5 text-[10px]"></i>상태 설정
+                    </button>
+                    <button class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2">
+                        <i class="fa-solid fa-bell-slash text-gray-500"></i>알림 일시 정지
+                    </button>
+                </div>
+                <div class="border-t border-gray-100 p-2">
+                    <a th:href="@{/logout}" class="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-md flex items-center gap-2 font-medium">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>로그아웃
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </header>
 <!-- END: MainHeader -->
-<div class="flex h-screen overflow-hidden">
+<div class="flex h-[calc(100vh-56px)] overflow-hidden">
 <!-- BEGIN: LeftSidebar -->
 <aside class="w-64 border-r border-gray-200 bg-white sidebar-scroll pb-10">
 <div class="p-4 space-y-4">
 <!-- Main Actions -->
 <div class="flex space-x-1">
-<button class="flex-1 bg-[#8BC34A] text-white py-2 px-3 rounded text-sm font-bold flex items-center justify-center" id="writeScheduleBtn">
+<button class="flex-1 bg-indigo-500 hover:bg-indigo-600 text-white py-2 px-3 rounded text-sm font-bold flex items-center justify-center" id="writeScheduleBtn">
             일정쓰기
           </button>
 <button class="flex-1 bg-white border border-gray-300 text-gray-700 py-2 px-3 rounded text-sm font-medium hover:bg-gray-50" id="reserveBtn">
@@ -1375,6 +1422,51 @@
 
   document.addEventListener('click', () => closeAllDropdowns());
 
+  // ---------- 새로운 헤더 드롭다운 기능 ----------
+  const appLauncherBtn = document.getElementById('appLauncherBtn');
+  const appLauncherDropdown = document.getElementById('appLauncherDropdown');
+  const notificationBtn = document.getElementById('notificationBtn');
+  const notificationDropdown = document.getElementById('notificationDropdown');
+  const profileAvatarBtn = document.getElementById('profileAvatarBtn');
+  const profileDropdown = document.getElementById('profileDropdown');
+
+  // 앱 런처 버튼
+  if (appLauncherBtn && appLauncherDropdown) {
+    appLauncherBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      notificationDropdown.classList.add('hidden');
+      profileDropdown.classList.add('hidden');
+      appLauncherDropdown.classList.toggle('hidden');
+    });
+  }
+
+  // 알림 버튼
+  if (notificationBtn && notificationDropdown) {
+    notificationBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      appLauncherDropdown.classList.add('hidden');
+      profileDropdown.classList.add('hidden');
+      notificationDropdown.classList.toggle('hidden');
+    });
+  }
+
+  // 프로필 버튼
+  if (profileAvatarBtn && profileDropdown) {
+    profileAvatarBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      appLauncherDropdown.classList.add('hidden');
+      notificationDropdown.classList.add('hidden');
+      profileDropdown.classList.toggle('hidden');
+    });
+  }
+
+  // 드롭다운 외부 클릭시 닫기
+  document.addEventListener('click', () => {
+    if (appLauncherDropdown) appLauncherDropdown.classList.add('hidden');
+    if (notificationDropdown) notificationDropdown.classList.add('hidden');
+    if (profileDropdown) profileDropdown.classList.add('hidden');
+  });
+
   // ---------- 알림 드롭다운 내용 채우기 ----------
   function renderNotifications() {
     const list = document.getElementById('notificationList');
@@ -1450,8 +1542,10 @@
 
   searchInput.addEventListener('input', runSearch);
   searchInput.addEventListener('click', (e) => { e.stopPropagation(); if (searchInput.value.trim()) searchDropdown.classList.remove('hidden'); });
-  document.getElementById('searchIconBtn').addEventListener('click', (e) => { e.stopPropagation(); runSearch(); searchInput.focus(); });
-  document.getElementById('searchFilterBtn').addEventListener('click', (e) => {
+  const searchIconBtn = document.getElementById('searchIconBtn');
+  if (searchIconBtn) searchIconBtn.addEventListener('click', (e) => { e.stopPropagation(); runSearch(); searchInput.focus(); });
+  const searchFilterBtn = document.getElementById('searchFilterBtn');
+  if (searchFilterBtn) searchFilterBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     showToast('상세 검색 필터는 준비 중입니다.');
   });
