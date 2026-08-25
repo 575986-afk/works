@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title>공지사항 작성</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<header th:replace="~{fragments/adminLayout :: adminHeader}"></header>
+
+<div class="flex">
+<aside th:replace="~{fragments/adminLayout :: adminSidebar('notice')}"></aside>
+
+<main class="flex-1 p-6 max-w-xl">
+  <a th:href="@{/admin/notice}" class="text-sm text-gray-500">&larr; 목록으로</a>
+
+  <h1 class="text-lg font-bold mt-2 mb-4" th:text="${notice != null ? '공지사항 수정' : '새 공지사항 등록'}"></h1>
+
+  <form th:action="${notice != null} ? @{/admin/notice/modify} : @{/admin/notice/add}" method="post"
+        class="bg-white rounded-lg border p-6 space-y-4">
+    <input type="hidden" name="noticeNo" th:if="${notice != null}" th:value="${notice.noticeNo}">
+
+    <div>
+      <label class="block text-sm font-medium text-gray-600 mb-1">제목</label>
+      <input type="text" name="noticeTitle" required
+             th:value="${notice != null ? notice.noticeTitle : ''}"
+             class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-600 mb-1">내용</label>
+      <textarea name="content" rows="8" required
+                class="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                th:text="${notice != null ? notice.content : ''}"></textarea>
+    </div>
+    <div th:if="${notice != null}">
+      <label class="block text-sm font-medium text-gray-600 mb-1">상태</label>
+      <select name="status" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+        <option value="게시중" th:selected="${notice.status == '게시중'}">게시중</option>
+        <option value="숨김" th:selected="${notice.status == '숨김'}">숨김</option>
+      </select>
+    </div>
+
+    <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 rounded text-sm">
+      저장
+    </button>
+  </form>
+</main>
+</div>
+</body>
+</html>

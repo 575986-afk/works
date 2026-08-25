@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.sist.sysadmin.AdminMemberDAO">
+
+	<resultMap id="adminUserResultMap" type="adminUserDomain">
+		<result property="userName" column="userName" typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+		<result property="email" column="email" typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+		<result property="phone" column="phone" typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+	</resultMap>
+
+	<!-- 이름/이메일/전화번호는 암호화 저장이라 LIKE 검색이 불가능함 -> 아이디로만 검색 -->
+	<select id="selectMemberList" resultMap="adminUserResultMap">
+		SELECT u.USER_NO AS userNo,
+		       u.USER_NAME AS userName,
+		       u.USER_ID AS userId,
+		       u.EMAIL AS email,
+		       u.PHONENUMBER AS phone,
+		       u.COMPANY_NO AS companyNo,
+		       c.COMPANY_NAME AS companyName,
+		       r.ROLE_LEVEL AS roleLevel,
+		       u.ACCOUNT_STATUS AS accountStatus,
+		       u.SIGNUP_DATE AS signupDate
+		FROM USERS u
+		LEFT JOIN COMPANY c ON u.COMPANY_NO = c.COMPANY_NO
+		LEFT JOIN ROLE r ON u.USER_NO = r.USER_NO
+		<if test="keyword != null and keyword != ''">
+			WHERE u.USER_ID LIKE '%' || #{keyword} || '%'
+		</if>
+		ORDER BY u.SIGNUP_DATE DESC
+	</select>
+
+	<select id="selectMemberDetail" resultMap="adminUserResultMap">
+		SELECT u.USER_NO AS userNo,
+		       u.USER_NAME AS userName,
+		       u.USER_ID AS userId,
+		       u.EMAIL AS email,
+		       u.PHONENUMBER AS phone,
+		       u.COMPANY_NO AS companyNo,
+		       c.COMPANY_NAME AS companyName,
+		       r.ROLE_LEVEL AS roleLevel,
+		       u.ACCOUNT_STATUS AS accountStatus,
+		       u.SIGNUP_DATE AS signupDate
+		FROM USERS u
+		LEFT JOIN COMPANY c ON u.COMPANY_NO = c.COMPANY_NO
+		LEFT JOIN ROLE r ON u.USER_NO = r.USER_NO
+		WHERE u.USER_NO = #{userNo}
+	</select>
+
+	<update id="updatePassword">
+		UPDATE USERS
+		SET PASSWORD = #{newPw}
+		WHERE USER_NO = #{userNo}
+	</update>
+
+</mapper>

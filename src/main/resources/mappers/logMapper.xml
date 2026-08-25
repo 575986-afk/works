@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.sist.log.LogDAO">
+
+	<!--
+	  주의: CALENDERLOG에 USER_NO 컬럼이 없다면 아래 insertCalLog/updateCalLog/deleteCalLog는
+	  실패하므로 컬럼 추가가 선행되어야 함.
+	  ALTER TABLE CALENDERLOG ADD USER_NO VARCHAR2(20);
+	-->
+
+	<!-- ===== 캘린더 로그 ===== -->
+	<insert id="insertCalLog" parameterType="calenderLogDTO">
+		INSERT INTO CALENDERLOG (LOG_NO, CALENDER_NO, DUTY, USER_NO, INPUT_DATE)
+		VALUES (SEQ_LOG_NO.NEXTVAL, #{calenderNo}, #{duty}, #{userNo}, SYSDATE)
+	</insert>
+
+	<insert id="updateCalLog" parameterType="calenderLogDTO">
+		INSERT INTO CALENDERLOG (LOG_NO, CALENDER_NO, DUTY, USER_NO, INPUT_DATE)
+		VALUES (SEQ_LOG_NO.NEXTVAL, #{calenderNo}, #{duty}, #{userNo}, SYSDATE)
+	</insert>
+
+	<insert id="deleteCalLog" parameterType="calenderLogDTO">
+		INSERT INTO CALENDERLOG (LOG_NO, CALENDER_NO, DUTY, USER_NO, INPUT_DATE)
+		VALUES (SEQ_LOG_NO.NEXTVAL, #{calenderNo}, #{duty}, #{userNo}, SYSDATE)
+	</insert>
+
+	<!--
+	  캘린더 삭제 직전에 호출. CALENDERLOG.CALENDER_NO가 CALENDER.CALENDER_NO를
+	  참조하는 FK(FK_CALENDER_TO_CALENDERLOG)가 걸려있어서, 로그가 하나라도
+	  남아있으면 CALENDER 삭제 자체가 ORA-02292로 거부된다.
+	  (참고: 이 로그들을 지우고 나면 그 일정의 등록/수정 이력도 같이 사라짐.
+	   등록/수정 이력까지 보존하고 싶다면 CALENDER에 소프트삭제 플래그를 추가해서
+	   실제 DELETE 대신 UPDATE로 처리하는 방식으로 바꿔야 함.)
+	-->
+	<delete id="deleteCalLogsByCalenderNo">
+		DELETE FROM CALENDERLOG
+		WHERE CALENDER_NO = #{calenderNo}
+	</delete>
+
+	<!-- ===== 할 일 로그 (기존 AopMapper#insertTodoLog와 동일 테이블 사용) ===== -->
+	<insert id="insertTodoLog" parameterType="todoLogDTO">
+		INSERT INTO TODOLOG (LOG_NO, TODO_NO, DUTY, REPRESENTATIVE_NO, USER_NO, INPUT_DATE)
+		VALUES (SEQ_LOG_NO.NEXTVAL, #{todoNo}, #{duty}, #{representativeNo}, #{userNo}, SYSDATE)
+	</insert>
+
+	<insert id="updateTodoLog" parameterType="todoLogDTO">
+		INSERT INTO TODOLOG (LOG_NO, TODO_NO, DUTY, REPRESENTATIVE_NO, USER_NO, INPUT_DATE)
+		VALUES (SEQ_LOG_NO.NEXTVAL, #{todoNo}, #{duty}, #{representativeNo}, #{userNo}, SYSDATE)
+	</insert>
+
+	<insert id="deleteTodoLog" parameterType="todoLogDTO">
+		INSERT INTO TODOLOG (LOG_NO, TODO_NO, DUTY, REPRESENTATIVE_NO, USER_NO, INPUT_DATE)
+		VALUES (SEQ_LOG_NO.NEXTVAL, #{todoNo}, #{duty}, #{representativeNo}, #{userNo}, SYSDATE)
+	</insert>
+
+	<!-- ===== 주소록 로그 (기존 AopMapper#insertAddressbookLog와 동일 테이블 사용) ===== -->
+	<insert id="insertAddrLog" parameterType="addrLogDTO">
+		INSERT INTO ADDRESSBOOKLOG (LOG_NO, DUTY, TARGET, USER_NO, INPUT_DATE)
+		VALUES (SEQ_LOG_NO.NEXTVAL, #{duty}, #{target}, #{userNo}, SYSDATE)
+	</insert>
+
+	<insert id="updateAddrLog" parameterType="addrLogDTO">
+		INSERT INTO ADDRESSBOOKLOG (LOG_NO, DUTY, TARGET, USER_NO, INPUT_DATE)
+		VALUES (SEQ_LOG_NO.NEXTVAL, #{duty}, #{target}, #{userNo}, SYSDATE)
+	</insert>
+
+	<insert id="deleteAddrLog" parameterType="addrLogDTO">
+		INSERT INTO ADDRESSBOOKLOG (LOG_NO, DUTY, TARGET, USER_NO, INPUT_DATE)
+		VALUES (SEQ_LOG_NO.NEXTVAL, #{duty}, #{target}, #{userNo}, SYSDATE)
+	</insert>
+
+	<!-- ===== 로그인 로그 (기존 AopMapper#insertLoginLog와 동일 테이블 사용) ===== -->
+	<insert id="insertLoginLog" parameterType="loginLogDTO">
+		INSERT INTO LOGINLOG (LOG_NO, DESCRIPTION, LOGIN_IP, CONNECTION_STATUS, USER_NO, ATTEMPT_ID, INPUT_DATE)
+		VALUES (SEQ_LOG_NO.NEXTVAL, #{description}, #{loginIp}, #{connectionStatus}, #{userNo}, #{attemptId}, SYSDATE)
+	</insert>
+
+</mapper>

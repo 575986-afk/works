@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title>전체 회원관리</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<header th:replace="~{fragments/adminLayout :: adminHeader}"></header>
+
+<div class="flex">
+<aside th:replace="~{fragments/adminLayout :: adminSidebar('member')}"></aside>
+
+<main class="flex-1 p-6 space-y-4">
+  <div class="flex items-center justify-between">
+    <h1 class="text-lg font-bold">전체 회원관리</h1>
+    <form th:action="@{/admin/member}" method="get" class="flex space-x-2">
+      <input type="text" name="keyword" th:value="${keyword}" placeholder="아이디로 검색"
+             class="border border-gray-300 rounded px-3 py-1.5 text-sm w-56">
+      <button type="submit" class="px-3 py-1.5 bg-blue-500 text-white rounded text-sm">검색</button>
+    </form>
+  </div>
+
+  <div class="bg-white rounded-lg border overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 text-gray-500 text-xs">
+        <tr>
+          <th class="px-4 py-2 text-left">아이디</th>
+          <th class="px-4 py-2 text-left">이름</th>
+          <th class="px-4 py-2 text-left">회사</th>
+          <th class="px-4 py-2 text-left">권한레벨</th>
+          <th class="px-4 py-2 text-left">상태</th>
+          <th class="px-4 py-2 text-left">가입일</th>
+          <th class="px-4 py-2"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="m : ${memberList}" class="border-t border-gray-100">
+          <td class="px-4 py-2" th:text="${m.userId}"></td>
+          <td class="px-4 py-2" th:text="${m.userName}"></td>
+          <td class="px-4 py-2" th:text="${m.companyName}"></td>
+          <td class="px-4 py-2" th:text="${m.roleLevel}"></td>
+          <td class="px-4 py-2" th:text="${m.accountStatus}"></td>
+          <td class="px-4 py-2" th:text="${m.signupDate}"></td>
+          <td class="px-4 py-2">
+            <a th:href="@{/admin/member/detail(userNo=${m.userNo})}" class="text-blue-500 text-xs">상세</a>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(memberList)}">
+          <td colspan="7" class="px-4 py-6 text-center text-gray-400 text-sm">조회된 회원이 없습니다.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+</div>
+</body>
+</html>

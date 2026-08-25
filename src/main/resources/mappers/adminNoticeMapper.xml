@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.sist.sysadmin.AdminNoticeDAO">
+
+	<!-- ===== 공지사항 (NOTICE 테이블: NOTICE_NO, NOTICE_TITLE, CONTENT, FILES, CREATED_DATE, STATUS) ===== -->
+
+	<select id="selectNoticeList" resultType="sysNoticeDomain">
+		SELECT NOTICE_NO AS noticeNo,
+		       NOTICE_TITLE AS noticeTitle,
+		       STATUS AS status,
+		       CREATED_DATE AS createdDate
+		FROM NOTICE
+		<if test="keyword != null and keyword != ''">
+			WHERE NOTICE_TITLE LIKE '%' || #{keyword} || '%'
+		</if>
+		ORDER BY CREATED_DATE DESC
+	</select>
+
+	<select id="selectNoticeForEdit" resultType="sysNoticeDomain">
+		SELECT NOTICE_NO AS noticeNo,
+		       NOTICE_TITLE AS noticeTitle,
+		       CONTENT AS content,
+		       FILES AS files,
+		       STATUS AS status,
+		       CREATED_DATE AS createdDate
+		FROM NOTICE
+		WHERE NOTICE_NO = #{noticeNo}
+	</select>
+
+	<insert id="insertNotice" parameterType="sysNoticeDTO">
+		INSERT INTO NOTICE (NOTICE_NO, NOTICE_TITLE, CONTENT, FILES, CREATED_DATE, STATUS)
+		VALUES (SEQ_NOTICE_NO.NEXTVAL, #{noticeTitle, jdbcType=VARCHAR}, #{content, jdbcType=VARCHAR}, #{files, jdbcType=VARCHAR}, SYSDATE, '게시중')
+	</insert>
+
+	<update id="updateNotice" parameterType="sysNoticeDTO">
+		UPDATE NOTICE
+		SET NOTICE_TITLE = #{noticeTitle, jdbcType=VARCHAR},
+		    CONTENT = #{content, jdbcType=VARCHAR},
+		    FILES = #{files, jdbcType=VARCHAR},
+		    STATUS = #{status, jdbcType=VARCHAR}
+		WHERE NOTICE_NO = #{noticeNo}
+	</update>
+
+	<!-- ===== 1:1 문의 (INQUIRY 테이블: inquiry_no, title, content, files, answer, status, user_no, admin_id, inquiry_date, answered_date) ===== -->
+
+	<select id="selectInquiryList" resultType="kr.co.sist.setting.InquiryDomain">
+		SELECT i.inquiry_no,
+		       i.title,
+		       i.content,
+		       i.files,
+		       i.answer,
+		       i.status,
+		       i.user_no,
+		       i.admin_id,
+		       i.inquiry_date,
+		       i.answered_date
+		FROM INQUIRY i
+		<if test="keyword != null and keyword != ''">
+			WHERE i.title LIKE '%' || #{keyword} || '%'
+		</if>
+		ORDER BY i.inquiry_date DESC
+	</select>
+
+	<select id="selectInquiryDetail" resultType="kr.co.sist.setting.InquiryDomain">
+		SELECT inquiry_no, title, content, files, answer, status, user_no, admin_id, inquiry_date, answered_date
+		FROM INQUIRY
+		WHERE inquiry_no = #{inquiryNo}
+	</select>
+
+	<!--
+	  admin_id는 FK_ADMIN_TO_INQUIRY로 ADMIN 테이블(기존 admin01~04 계정)을
+	  참조함. AdminLoginController에서 세션에 담아두는 sysAdminId 값이 바로
+	  이 ADMIN.ADMIN_ID와 동일한 값이라 그대로 넣으면 됨.
+	-->
+	<update id="updateInquiryAnswer">
+		UPDATE INQUIRY
+		SET answer = #{answer, jdbcType=VARCHAR},
+		    admin_id = #{adminId, jdbcType=VARCHAR},
+		    status = '답변완료',
+		    answered_date = SYSDATE
+		WHERE inquiry_no = #{inquiryNo}
+	</update>
+
+</mapper>

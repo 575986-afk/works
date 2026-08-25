@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- 상단 헤더 -->
+<header th:fragment="adminHeader" class="h-16 border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 bg-white z-50">
+  <a th:href="@{/admin/main}" class="flex items-center space-x-2">
+    <div class="w-8 h-8 rounded bg-blue-500 text-white flex items-center justify-center font-bold text-sm">A</div>
+    <span class="text-xl font-bold text-gray-800">전체관리자</span>
+  </a>
+  <div class="flex items-center space-x-4 text-sm">
+    <span class="text-gray-500" th:text="${session.sysAdminName}"></span>
+    <a th:href="@{/admin/logout}" class="text-red-500 hover:text-red-600">로그아웃</a>
+  </div>
+</header>
+
+<!-- 좌측 사이드바. active 파라미터로 현재 메뉴 하이라이트 -->
+<aside th:fragment="adminSidebar(active)" class="w-56 border-r border-gray-200 bg-white shrink-0 min-h-[calc(100vh-64px)]">
+  <nav class="p-4 space-y-1 text-sm">
+    <a th:href="@{/admin/main}"
+       th:class="${active == 'dashboard'} ? 'block px-3 py-2 rounded bg-blue-50 text-blue-600 font-bold' : 'block px-3 py-2 rounded text-gray-600 hover:bg-gray-50'">
+      대시보드
+    </a>
+    <a th:href="@{/admin/member}"
+       th:class="${active == 'member'} ? 'block px-3 py-2 rounded bg-blue-50 text-blue-600 font-bold' : 'block px-3 py-2 rounded text-gray-600 hover:bg-gray-50'">
+      회원관리
+    </a>
+    <a th:href="@{/admin/notice}"
+       th:class="${active == 'notice'} ? 'block px-3 py-2 rounded bg-blue-50 text-blue-600 font-bold' : 'block px-3 py-2 rounded text-gray-600 hover:bg-gray-50'">
+      공지사항 관리
+    </a>
+    <a th:href="@{/admin/inquiry}"
+       th:class="${active == 'inquiry'} ? 'block px-3 py-2 rounded bg-blue-50 text-blue-600 font-bold' : 'block px-3 py-2 rounded text-gray-600 hover:bg-gray-50'">
+      1:1 문의 관리
+    </a>
+  </nav>
+</aside>
+
+</body>
+</html>

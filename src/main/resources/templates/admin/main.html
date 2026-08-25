@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title>전체관리자 대시보드</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<header th:replace="~{fragments/adminLayout :: adminHeader}"></header>
+
+<div class="flex">
+<aside th:replace="~{fragments/adminLayout :: adminSidebar('dashboard')}"></aside>
+
+<main class="flex-1 p-6 space-y-6">
+
+  <!-- 요약 카드 -->
+  <div class="grid grid-cols-4 gap-4">
+    <div class="bg-white rounded-lg border p-4">
+      <div class="text-xs text-gray-400">전체 회사</div>
+      <div class="text-2xl font-bold mt-1" th:text="${totalCompanyCount}">0</div>
+    </div>
+    <div class="bg-white rounded-lg border p-4">
+      <div class="text-xs text-gray-400">전체 사용자</div>
+      <div class="text-2xl font-bold mt-1" th:text="${totalUserCount}">0</div>
+    </div>
+    <div class="bg-white rounded-lg border p-4">
+      <div class="text-xs text-gray-400">활성 사용자</div>
+      <div class="text-2xl font-bold mt-1" th:text="${activeUserCount}">0</div>
+    </div>
+    <div class="bg-white rounded-lg border p-4">
+      <div class="text-xs text-gray-400">오늘 신규가입</div>
+      <div class="text-2xl font-bold mt-1" th:text="${dailyCount}">0</div>
+    </div>
+  </div>
+
+  <!-- 주간/월간 신규가입 -->
+  <div class="grid grid-cols-2 gap-4">
+    <div class="bg-white rounded-lg border p-4">
+      <div class="text-sm font-bold mb-3">최근 7일 신규가입</div>
+      <table class="w-full text-xs">
+        <tr th:each="d : ${weeklyCount}">
+          <td class="py-1 text-gray-500" th:text="${d.label}"></td>
+          <td class="py-1 text-right font-medium" th:text="${d.cnt}"></td>
+        </tr>
+      </table>
+    </div>
+    <div class="bg-white rounded-lg border p-4">
+      <div class="text-sm font-bold mb-3">최근 6개월 신규가입</div>
+      <table class="w-full text-xs">
+        <tr th:each="d : ${monthlyCount}">
+          <td class="py-1 text-gray-500" th:text="${d.label}"></td>
+          <td class="py-1 text-right font-medium" th:text="${d.cnt}"></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 시스템 로그 -->
+  <div class="bg-white rounded-lg border p-4">
+    <div class="text-sm font-bold mb-3">최근 로그인 로그 (전체 회사)</div>
+    <table class="w-full text-xs">
+      <thead>
+        <tr class="text-gray-400 border-b">
+          <th class="py-1 text-left">일시</th>
+          <th class="py-1 text-left">사용자</th>
+          <th class="py-1 text-left">회사</th>
+          <th class="py-1 text-left">IP</th>
+          <th class="py-1 text-left">상태</th>
+          <th class="py-1 text-left">설명</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="log : ${logList}" class="border-b border-gray-50">
+          <td class="py-1" th:text="${log.inputDate}"></td>
+          <td class="py-1" th:text="${log.userName}"></td>
+          <td class="py-1" th:text="${log.companyName}"></td>
+          <td class="py-1" th:text="${log.loginIp}"></td>
+          <td class="py-1" th:text="${log.status}"></td>
+          <td class="py-1" th:text="${log.description}"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</main>
+</div>
+</body>
+</html>

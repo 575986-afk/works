@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.sist.sysadmin.AdminDashBoardDAO">
+
+	<select id="selectTotalCompanyCount" resultType="int">
+		SELECT COUNT(*) FROM COMPANY
+	</select>
+
+	<select id="selectTotalUserCount" resultType="int">
+		SELECT COUNT(*) FROM USERS
+	</select>
+
+	<select id="selectActiveUserCount" resultType="int">
+		SELECT COUNT(*) FROM USERS WHERE ACCOUNT_STATUS = '활성'
+	</select>
+
+	<select id="selectDailyCount" resultType="int">
+		SELECT COUNT(*)
+		FROM USERS
+		WHERE SIGNUP_DATE >= TRUNC(SYSDATE)
+	</select>
+
+	<!-- 최근 7일(오늘 포함) 일별 신규가입 수 -->
+	<select id="selectWeeklyCount" resultType="dailyCountDomain">
+		SELECT TO_CHAR(d.dt, 'MM/DD') AS label,
+		       NVL(c.cnt, 0) AS cnt
+		FROM (
+		    SELECT TRUNC(SYSDATE) - LEVEL + 1 AS dt
+		    FROM DUAL
+		    CONNECT BY LEVEL &lt;= 7
+		) d
+		LEFT JOIN (
+		    SELECT TRUNC(SIGNUP_DATE) AS dt, COUNT(*) AS cnt
+		    FROM USERS
+		    GROUP BY TRUNC(SIGNUP_DATE)
+		) c
+		ON c.dt = d.dt
+		ORDER BY d.dt DESC
+	</select>
+
+	<!-- 최근 6개월(이번 달 포함) 월별 신규가입 수 -->
+	<select id="selectMonthlyCount" resultType="dailyCountDomain">
+		SELECT TO_CHAR(d.mth, 'MM"월"') AS label,
+		       NVL(c.cnt, 0) AS cnt
+		FROM (
+		    SELECT ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -LEVEL + 1) AS mth
+		    FROM DUAL
+		    CONNECT BY LEVEL &lt;= 6
+		) d
+		LEFT JOIN (
+		    SELECT TRUNC(SIGNUP_DATE, 'MM') AS mth, COUNT(*) AS cnt
+		    FROM USERS
+		    GROUP BY TRUNC(SIGNUP_DATE, 'MM')
+		) c
+		ON c.mth = d.mth
+		ORDER BY d.mth DESC
+	</select>
+
+	<!-- 전체 회사 대상 최근 로그인 로그 50건 (companyNo 필터 없음 - 전체관리자용) -->
+	<select id="selectSystemLogList" resultMap="systemLogResultMap">
+		SELECT l.LOG_NO AS logNo,
+		       l.DESCRIPTION AS description,
+		       l.LOGIN_IP AS loginIp,
+		       l.CONNECTION_STATUS AS status,
+		       u.USER_NAME AS userName,
+		       c.COMPANY_NAME AS companyName,
+		       l.INPUT_DATE AS inputDate
+		FROM LOGINLOG l
+		LEFT JOIN USERS u ON l.USER_NO = u.USER_NO
+		LEFT JOIN COMPANY c ON u.COMPANY_NO = c.COMPANY_NO
+		ORDER BY l.INPUT_DATE DESC
+		FETCH FIRST 50 ROWS ONLY
+	</select>
+
+	<resultMap id="systemLogResultMap" type="systemLogDomain">
+		<result property="userName" column="userName" typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+	</resultMap>
+
+</mapper>

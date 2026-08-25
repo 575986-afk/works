@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title>회원 상세</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<header th:replace="~{fragments/adminLayout :: adminHeader}"></header>
+
+<div class="flex">
+<aside th:replace="~{fragments/adminLayout :: adminSidebar('member')}"></aside>
+
+<main class="flex-1 p-6 max-w-xl space-y-6">
+  <a th:href="@{/admin/member}" class="text-sm text-gray-500">&larr; 목록으로</a>
+
+  <div th:if="${message}" class="text-sm text-blue-600 bg-blue-50 border border-blue-100 rounded px-3 py-2" th:text="${message}"></div>
+
+  <div class="bg-white rounded-lg border p-6 space-y-2 text-sm">
+    <div><span class="text-gray-400 w-24 inline-block">아이디</span> <span th:text="${member.userId}"></span></div>
+    <div><span class="text-gray-400 w-24 inline-block">이름</span> <span th:text="${member.userName}"></span></div>
+    <div><span class="text-gray-400 w-24 inline-block">이메일</span> <span th:text="${member.email}"></span></div>
+    <div><span class="text-gray-400 w-24 inline-block">전화번호</span> <span th:text="${member.phone}"></span></div>
+    <div><span class="text-gray-400 w-24 inline-block">회사</span> <span th:text="${member.companyName}"></span></div>
+    <div><span class="text-gray-400 w-24 inline-block">권한레벨</span> <span th:text="${member.roleLevel}"></span></div>
+    <div><span class="text-gray-400 w-24 inline-block">상태</span> <span th:text="${member.accountStatus}"></span></div>
+    <div><span class="text-gray-400 w-24 inline-block">가입일</span> <span th:text="${member.signupDate}"></span></div>
+  </div>
+
+  <div class="bg-white rounded-lg border p-6">
+    <div class="text-sm font-bold mb-3">비밀번호 강제 재설정</div>
+    <form th:action="@{/admin/member/changePassword}" method="post" class="flex space-x-2">
+      <input type="hidden" name="userNo" th:value="${member.userNo}">
+      <input type="text" name="newPassword" placeholder="새 비밀번호" required
+             class="border border-gray-300 rounded px-3 py-2 text-sm flex-1">
+      <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded text-sm">재설정</button>
+    </form>
+    <p class="text-xs text-gray-400 mt-2">재설정 즉시 적용되며, 해당 사용자에게 별도로 알려줘야 합니다.</p>
+  </div>
+</main>
+</div>
+</body>
+</html>

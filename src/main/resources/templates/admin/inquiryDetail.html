@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<title>문의 상세</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+<header th:replace="~{fragments/adminLayout :: adminHeader}"></header>
+
+<div class="flex">
+<aside th:replace="~{fragments/adminLayout :: adminSidebar('inquiry')}"></aside>
+
+<main class="flex-1 p-6 max-w-xl space-y-6">
+  <a th:href="@{/admin/inquiry}" class="text-sm text-gray-500">&larr; 목록으로</a>
+
+  <div th:if="${message}" class="text-sm text-blue-600 bg-blue-50 border border-blue-100 rounded px-3 py-2" th:text="${message}"></div>
+
+  <div class="bg-white rounded-lg border p-6 space-y-2">
+    <div class="text-lg font-bold" th:text="${inquiry.title}"></div>
+    <div class="text-xs text-gray-400" th:text="${inquiry.inquiry_date}"></div>
+    <p class="text-sm text-gray-700 whitespace-pre-line mt-3" th:text="${inquiry.content}"></p>
+    <div th:if="${inquiry.files}" class="text-xs text-blue-500">
+      첨부: <span th:text="${inquiry.files}"></span>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg border p-6">
+    <div class="text-sm font-bold mb-3">
+      답변 <span class="text-xs text-gray-400" th:text="'(현재 상태: ' + ${inquiry.status} + ')'"></span>
+    </div>
+    <p th:if="${inquiry.answer}" class="text-sm text-gray-700 whitespace-pre-line bg-gray-50 rounded p-3 mb-3" th:text="${inquiry.answer}"></p>
+
+    <form th:action="@{/admin/inquiry/answer}" method="post" class="space-y-3">
+      <input type="hidden" name="inquiryNo" th:value="${inquiry.inquiry_no}">
+      <textarea name="answer" rows="5" required
+                class="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                th:text="${inquiry.answer}" placeholder="답변을 입력하세요"></textarea>
+      <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 rounded text-sm">
+        답변 등록
+      </button>
+    </form>
+  </div>
+</main>
+</div>
+</body>
+</html>

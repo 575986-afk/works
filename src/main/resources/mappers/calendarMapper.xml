@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.sist.calendar.CalendarDAO">
+
+	<!--
+	  전제 조건(스키마):
+	  - CALENDER(CALENDER_NO, TITLE, CONTENT, START_DATE, END_DATE, CATEGORY, FAVORITE_YN)
+	    * FAVORITE_YN, CATEGORY 컬럼은 기존 companyCalMapper.xml에는 없던 컬럼으로,
+	      "즐겨찾기(중요)"/"캘린더 구분" 기능을 위해 추가가 필요함.
+	  - CALENDERCONNECTION(CALENDER_NO, USER_NO) : 캘린더-사용자 매핑
+	  - USERS(USER_NO, USER_NAME, COMPANY_NO, ...) : 기존 테이블
+	  - SEQ_CALENDER_NO : CALENDER_NO 채번용 시퀀스 (없으면 생성 필요)
+	-->
+
+	<resultMap id="calendarResultMap" type="calendarDTO">
+		<result property="scheduleNo" column="scheduleNo"/>
+		<result property="calendarId" column="calendarId"/>
+		<result property="title" column="title"/>
+		<result property="content" column="content"/>
+		<result property="startDate" column="startDate"/>
+		<result property="startTime" column="startTime"/>
+		<result property="endDate" column="endDate"/>
+		<result property="endTime" column="endTime"/>
+		<result property="category" column="category"/>
+		<result property="favoriteYn" column="favoriteYn"/>
+		<result property="userNo" column="userNo"/>
+		<result property="userName" column="userName"
+				typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+	</resultMap>
+
+	<!-- 개인 월간 일정 조회 -->
+	<select id="selectPersonalMonth" resultMap="calendarResultMap">
+		SELECT DISTINCT
+			c.CALENDER_NO   AS scheduleNo,
+			TO_CHAR(c.CALENDER_NO) AS calendarId,
+			c.TITLE         AS title,
+			c.CONTENT       AS content,
+			TO_CHAR(c.START_DATE, 'YYYY-MM-DD') AS startDate,
+			TO_CHAR(c.START_DATE, 'HH24:MI')    AS startTime,
+			TO_CHAR(c.END_DATE, 'YYYY-MM-DD')   AS endDate,
+			TO_CHAR(c.END_DATE, 'HH24:MI')      AS endTime,
+			c.CATEGORY      AS category,
+			c.FAVORITE_YN   AS favoriteYn
+		FROM CALENDER c
+		INNER JOIN CALENDERCONNECTION cc
+			ON c.CALENDER_NO = cc.CALENDER_NO
+		WHERE cc.USER_NO = #{userNo}
+			AND c.START_DATE &lt; ADD_MONTHS(TO_DATE(#{yearMonth}, 'YYYYMM'), 1)
+			AND c.END_DATE &gt;= TO_DATE(#{yearMonth}, 'YYYYMM')
+		ORDER BY startDate, startTime
+	</select>
+
+	<!-- 개인 전체 기간 일정 조회 (전체/중요/범주 일정 보기용 - 월 캐시에 의존하지 않음) -->
+	<select id="selectPersonalAll" resultMap="calendarResultMap">
+		SELECT DISTINCT
+			c.CALENDER_NO   AS scheduleNo,
+			TO_CHAR(c.CALENDER_NO) AS calendarId,
+			c.TITLE         AS title,
+			c.CONTENT       AS content,
+			TO_CHAR(c.START_DATE, 'YYYY-MM-DD') AS startDate,
+			TO_CHAR(c.START_DATE, 'HH24:MI')    AS startTime,
+			TO_CHAR(c.END_DATE, 'YYYY-MM-DD')   AS endDate,
+			TO_CHAR(c.END_DATE, 'HH24:MI')      AS endTime,
+			c.CATEGORY      AS category,
+			c.FAVORITE_YN   AS favoriteYn
+		FROM CALENDER c
+		INNER JOIN CALENDERCONNECTION cc
+			ON c.CALENDER_NO = cc.CALENDER_NO
+		WHERE cc.USER_NO = #{userNo}
+		ORDER BY startDate, startTime
+	</select>
+
+	<!-- 그룹(구성원) 일간 일정 조회 -->
+	<select id="selectMemberDaily" resultMap="calendarResultMap">
+		SELECT DISTINCT
+			c.CALENDER_NO   AS scheduleNo,
+			TO_CHAR(c.CALENDER_NO) AS calendarId,
+			c.TITLE         AS title,
+			c.CONTENT       AS content,
+			TO_CHAR(c.START_DATE, 'YYYY-MM-DD') AS startDate,
+			TO_CHAR(c.START_DATE, 'HH24:MI')    AS startTime,
+			TO_CHAR(c.END_DATE, 'YYYY-MM-DD')   AS endDate,
+			TO_CHAR(c.END_DATE, 'HH24:MI')      AS endTime,
+			c.CATEGORY      AS category,
+			c.FAVORITE_YN   AS favoriteYn,
+			u.USER_NO       AS userNo,
+			u.USER_NAME     AS userName
+		FROM CALENDER c
+		INNER JOIN CALENDERCONNECTION cc
+			ON c.CALENDER_NO = cc.CALENDER_NO
+		INNER JOIN USERS u
+			ON cc.USER_NO = u.USER_NO
+		WHERE u.COMPANY_NO = #{companyNo}
+			AND c.START_DATE &lt; TO_DATE(#{date}, 'YYYY-MM-DD') + 1
+			AND c.END_DATE &gt;= TO_DATE(#{date}, 'YYYY-MM-DD')
+		ORDER BY u.USER_NO, startTime
+	</select>
+
+	<!-- 일정 한개 조회 -->
+	<select id="selectOne" resultMap="calendarResultMap">
+		SELECT
+			c.CALENDER_NO   AS scheduleNo,
+			TO_CHAR(c.CALENDER_NO) AS calendarId,
+			c.TITLE         AS title,
+			TO_CHAR(c.START_DATE, 'YYYY-MM-DD') AS startDate,
+			TO_CHAR(c.START_DATE, 'HH24:MI')    AS startTime,
+			TO_CHAR(c.END_DATE, 'YYYY-MM-DD')   AS endDate,
+			TO_CHAR(c.END_DATE, 'HH24:MI')      AS endTime,
+			c.CATEGORY      AS category,
+			c.FAVORITE_YN   AS favoriteYn
+		FROM CALENDER c
+		WHERE c.CALENDER_NO = #{calendarId}
+	</select>
+
+	<!-- 일정 상세 정보 조회(예약/작성자 정보 포함) -->
+	<select id="selectDetail" resultMap="calendarResultMap">
+		SELECT
+			c.CALENDER_NO   AS scheduleNo,
+			TO_CHAR(c.CALENDER_NO) AS calendarId,
+			c.TITLE         AS title,
+			c.CONTENT       AS content,
+			TO_CHAR(c.START_DATE, 'YYYY-MM-DD') AS startDate,
+			TO_CHAR(c.START_DATE, 'HH24:MI')    AS startTime,
+			TO_CHAR(c.END_DATE, 'YYYY-MM-DD')   AS endDate,
+			TO_CHAR(c.END_DATE, 'HH24:MI')      AS endTime,
+			c.CATEGORY      AS category,
+			c.FAVORITE_YN   AS favoriteYn,
+			u.USER_NO       AS userNo,
+			u.USER_NAME     AS userName
+		FROM CALENDER c
+		LEFT JOIN CALENDERCONNECTION cc
+			ON c.CALENDER_NO = cc.CALENDER_NO
+		LEFT JOIN USERS u
+			ON cc.USER_NO = u.USER_NO
+		WHERE c.CALENDER_NO = #{calendarId}
+	</select>
+
+	<!-- 일정 등록 -->
+	<insert id="insert" parameterType="calendarDTO">
+		<selectKey keyProperty="scheduleNo" order="BEFORE" resultType="int">
+			SELECT SEQ_CALENDER_NO.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO CALENDER (
+			CALENDER_NO, TITLE, CONTENT, START_DATE, END_DATE, CATEGORY, FAVORITE_YN
+		) VALUES (
+			#{scheduleNo},
+			#{title, jdbcType=VARCHAR},
+			#{content, jdbcType=VARCHAR},
+			TO_DATE(#{startDate} || ' ' || NVL(#{startTime}, '00:00'), 'YYYY-MM-DD HH24:MI'),
+			TO_DATE(#{endDate} || ' ' || NVL(#{endTime}, '23:59'), 'YYYY-MM-DD HH24:MI'),
+			#{category, jdbcType=VARCHAR},
+			'N'
+		)
+	</insert>
+
+	<!-- 캘린더-작성자 연결 (insert 직후 호출) -->
+	<insert id="insertConnection">
+		INSERT INTO CALENDERCONNECTION (CALENDER_NO, USER_NO)
+		VALUES (#{calendarId}, #{userNo})
+	</insert>
+
+	<!-- 즐겨찾기(중요) 등록 -->
+	<insert id="insertFavorite">
+		UPDATE CALENDER
+		SET FAVORITE_YN = 'Y'
+		WHERE CALENDER_NO = #{calendarId}
+	</insert>
+
+	<!-- 즐겨찾기(중요) 수정 -->
+	<update id="updateFavorite" parameterType="calendarDTO">
+		UPDATE CALENDER
+		SET FAVORITE_YN = #{favoriteYn, jdbcType=VARCHAR}
+		WHERE CALENDER_NO = #{scheduleNo}
+	</update>
+
+	<!-- 일정 수정 -->
+	<update id="update" parameterType="calendarDTO">
+		UPDATE CALENDER
+		SET TITLE      = #{title, jdbcType=VARCHAR},
+			CONTENT    = #{content, jdbcType=VARCHAR},
+			START_DATE = TO_DATE(#{startDate} || ' ' || NVL(#{startTime}, '00:00'), 'YYYY-MM-DD HH24:MI'),
+			END_DATE   = TO_DATE(#{endDate} || ' ' || NVL(#{endTime}, '23:59'), 'YYYY-MM-DD HH24:MI'),
+			CATEGORY   = #{category, jdbcType=VARCHAR}
+		WHERE CALENDER_NO = #{scheduleNo}
+	</update>
+
+	<!-- 캘린더-작성자 연결 해제 (delete 이전 호출, FK CASCADE 없을 경우 대비) -->
+	<delete id="deleteConnection">
+		DELETE FROM CALENDERCONNECTION
+		WHERE CALENDER_NO = #{scheduleNo}
+	</delete>
+
+	<!-- 일정 삭제 -->
+	<delete id="delete">
+		DELETE FROM CALENDER
+		WHERE CALENDER_NO = #{scheduleNo}
+	</delete>
+
+</mapper>
