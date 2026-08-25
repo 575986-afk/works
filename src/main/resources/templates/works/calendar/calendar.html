@@ -98,6 +98,10 @@
                         <i class="fa-solid fa-circle-check text-purple-500 text-2xl mb-2"></i>
                         <span class="text-xs text-gray-700">할 일</span>
                     </a>
+                    <a th:if="${session.user != null and session.user.role_level != null and session.user.role_level ge 50}" th:href="@{/dashboard}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
+                        <i class="fa-solid fa-user-tie text-gray-500 text-2xl mb-2"></i>
+                        <span class="text-xs text-gray-700">Admin</span>
+                    </a>
                 </div>
             </div>
         </div>
@@ -271,13 +275,13 @@
 <div class="flex items-center space-x-6">
 <div class="flex items-center space-x-2">
 <span class="text-xs text-gray-500 font-bold">개인</span>
-<div class="flex border border-gray-300 rounded overflow-hidden">
-<button class="px-3 py-1 text-xs border-r border-gray-300 hover:bg-gray-50 view-btn" data-view="일간">일간</button>
+<div class="flex border border-gray-300 rounded">
+<button class="px-3 py-1 text-xs border-r border-gray-300 hover:bg-gray-50 view-btn rounded-l" data-view="일간">일간</button>
 <button class="px-3 py-1 text-xs border-r border-gray-300 hover:bg-gray-50 view-btn" data-view="주간">주간</button>
 <button class="px-3 py-1 text-xs border-r border-gray-300 active-view view-btn" data-view="월간">월간</button>
 <button class="px-3 py-1 text-xs border-r border-gray-300 hover:bg-gray-50 view-btn" data-view="목록">목록</button>
 <div class="relative">
-<button class="px-3 py-1 text-xs hover:bg-gray-50 flex items-center" id="dayCountDropdownBtn">
+<button class="px-3 py-1 text-xs hover:bg-gray-50 flex items-center rounded-r" id="dayCountDropdownBtn">
                 <span id="dayCountLabel">2 일</span> <svg class="w-2.5 h-2.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>
 </button>
 <div class="hidden absolute right-0 top-full mt-1 w-20 bg-white border border-gray-200 rounded-md shadow-lg z-50 text-xs py-1" id="dayCountDropdown">
@@ -1392,6 +1396,7 @@
 
   // ---------- 드롭다운 공통 ----------
   const dropdownPairs = [
+    { trigger: 'appLauncherBtn', panel: 'appLauncherDropdown' },
     { trigger: 'notificationBtn', panel: 'notificationDropdown' },
     { trigger: 'headerSettingsBtn', panel: 'settingsDropdown' },
     { trigger: 'profileAvatarBtn', panel: 'profileDropdown' },
@@ -1422,50 +1427,11 @@
 
   document.addEventListener('click', () => closeAllDropdowns());
 
-  // ---------- 새로운 헤더 드롭다운 기능 ----------
-  const appLauncherBtn = document.getElementById('appLauncherBtn');
-  const appLauncherDropdown = document.getElementById('appLauncherDropdown');
+  // 알림 드롭다운 열릴 때 내용 채우기
   const notificationBtn = document.getElementById('notificationBtn');
-  const notificationDropdown = document.getElementById('notificationDropdown');
-  const profileAvatarBtn = document.getElementById('profileAvatarBtn');
-  const profileDropdown = document.getElementById('profileDropdown');
-
-  // 앱 런처 버튼
-  if (appLauncherBtn && appLauncherDropdown) {
-    appLauncherBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      notificationDropdown.classList.add('hidden');
-      profileDropdown.classList.add('hidden');
-      appLauncherDropdown.classList.toggle('hidden');
-    });
+  if (notificationBtn) {
+    notificationBtn.addEventListener('click', () => renderNotifications());
   }
-
-  // 알림 버튼
-  if (notificationBtn && notificationDropdown) {
-    notificationBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      appLauncherDropdown.classList.add('hidden');
-      profileDropdown.classList.add('hidden');
-      notificationDropdown.classList.toggle('hidden');
-    });
-  }
-
-  // 프로필 버튼
-  if (profileAvatarBtn && profileDropdown) {
-    profileAvatarBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      appLauncherDropdown.classList.add('hidden');
-      notificationDropdown.classList.add('hidden');
-      profileDropdown.classList.toggle('hidden');
-    });
-  }
-
-  // 드롭다운 외부 클릭시 닫기
-  document.addEventListener('click', () => {
-    if (appLauncherDropdown) appLauncherDropdown.classList.add('hidden');
-    if (notificationDropdown) notificationDropdown.classList.add('hidden');
-    if (profileDropdown) profileDropdown.classList.add('hidden');
-  });
 
   // ---------- 알림 드롭다운 내용 채우기 ----------
   function renderNotifications() {
