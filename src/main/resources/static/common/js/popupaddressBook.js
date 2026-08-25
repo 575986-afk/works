@@ -101,20 +101,55 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 	// 4. 저장 버튼 클릭 시 배열 추출 및 Ajax 전송
-	    $('#saveUsersBtn').off('click').on('click', function() {
-	        const checkedBoxes = $('.user-checkbox:checked');
+	// 저장 버튼
+	$('#saveUsersBtn').off('click').on('click', function() {
 
-	        const selectedUserNos = checkedBoxes.map(function() {
-	            return $(this).val();
-	        }).get();
+	    const checkedBoxes = $('.user-checkbox:checked');
 
-	        if (selectedUserNos.length === 0) {
-	            alert('선택된 사원이 없습니다.');
-	            return;
-	        }
+	    if (checkedBoxes.length === 0) {
+	        alert('선택된 사원이 없습니다.');
+	        return;
+	    }
 
-	        // 부모 창이 존재하고 닫히지 않았는지 확인
-	        if (window.opener && !window.opener.closed) {
+	    const selectedUserNos = checkedBoxes.map(function() {
+	        return $(this).val();
+	    }).get();
+
+	    console.log("선택된 사원번호:", selectedUserNos);
+
+	    // 부모창이 존재하는 경우
+	    if (window.opener && !window.opener.closed) {
+
+	        // 부모창에 선택된 사원번호 전달
+	        window.opener.selectedUserNos = selectedUserNos;
+
+	        console.log("부모창으로 전달:", window.opener.selectedUserNos);
+
+	        // 팝업 닫기
+	        window.close();
+
+	    } else {
+	        console.warn('부모 창을 찾을 수 없습니다.');
+	    }
+	});
+	
+	/*$('#saveUsersBtn').off('click').on('click', function() {
+
+	    const checkedBoxes = $('.user-checkbox:checked');
+
+	    if (checkedBoxes.length === 0) {
+	        alert('선택된 사원이 없습니다.');
+	        return;
+	    }
+
+	    const selectedUserNos = checkedBoxes.map(function() {
+	        return $(this).val();
+	    }).get();
+
+	    console.log("선택된 사원번호:", selectedUserNos);
+
+	    // 부모창이 존재하는 경우
+	    if (window.opener && !window.opener.closed) {
 	            
 	            // ★ [추가] 부모 창에 addRepresentative가 없거나, 현재 페이지가 메신저 관련 작업일 때 분기
 	            // 만약 메신저 창에서 팝업을 열었다면 /chat/create를 직접 호출하도록 처리합니다.
@@ -140,6 +175,35 @@ document.addEventListener('DOMContentLoaded', function() {
 	            }
 
 	            // --- 다른 팀원들이 사용하는 기존 로직 (결재선 지정 등) ---
+				// 채팅 페이지에서 열었을 경우
+				if (window.opener && !window.opener.closed) {
+
+				    if (typeof window.opener.addChatParticipants === 'function') {
+
+				        window.opener.addChatParticipants(selectedUserNos);
+
+				    } else if (typeof window.opener.addRepresentative === 'function') {
+
+				        // 기존 팀원 기능은 그대로 유지
+				        checkedBoxes.each(function() {
+
+				            const userNo = $(this).val();
+				            const userName = $(this).attr('data-name');
+
+				            window.opener.addRepresentative(userName, userNo);
+
+				        });
+
+				    } else {
+
+				        console.warn('부모 창에 전달할 함수를 찾을 수 없습니다.');
+
+				    }
+
+				}
+
+				window.close();
+				
 	            checkedBoxes.each(function() {
 	                const userNo = $(this).val(); 
 	                const userName = $(this).attr('data-name'); 
@@ -154,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	        // 정보 전달 후 팝업 닫기
 	        window.close(); 
-	    });
+	    });*/
 	
     /*// 4. 저장 버튼 클릭 시 배열 추출 및 Ajax 전송[cite: 3]
 	$('#saveUsersBtn').off('click').on('click', function() {

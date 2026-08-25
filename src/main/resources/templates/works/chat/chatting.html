@@ -373,6 +373,7 @@
 
     function appendMessage(msg) {
         let chatBody = $('.chat-body');
+        chatBody.find('.system-message').remove();
         let senderId = String(msg.sendUser ? msg.sendUser : '').trim();
         let senderName = String(msg.sendUserName ? msg.sendUserName : '').trim();
         
@@ -494,12 +495,12 @@
         // 1. 팝업 창 열기
         const popup = window.open("/popupAddr", "addGroupPopup", "width=850,height=600,left=200,top=100,scrollbars=yes,resizable=yes");
         
-        // 2. 서버 세션에 임시 방 이름 저장
+        /* // 2. 서버 세션에 임시 방 이름 저장
         $.ajax({
             url: '/chat/setRoomName',
             type: 'POST',
             data: { chatRoomName: trimmedName }
-        });
+        }); */
         
         // 3. 팝업이 닫힐 때 체크
         const checkPopupClosed = setInterval(function() {

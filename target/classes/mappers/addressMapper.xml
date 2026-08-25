@@ -39,7 +39,7 @@
         
         <!-- keyword -->
         <if test="keyword != null and keyword != ''">
-    	<bind name="keyword" value="'%' + keyword + '%'" />
+    	<bind name="newkeyword" value="'%' + keyword + '%'" />
             AND ( u.USER_NAME LIKE #{keyword, typeHandler=kr.co.sist.login.EncryptTypeHandler} 
        OR u.PHONENUMBER LIKE #{keyword} 
        
@@ -48,7 +48,7 @@
            SELECT om.ORGMEMBER_NO 
            FROM ORGANIZATIONMEMBER om
            JOIN ORGANIZATION org ON om.ORGANIZATION_NO = org.ORGANIZATION_NO
-           WHERE org.ORGANIZATION_NAME LIKE #{keyword}
+           WHERE org.ORGANIZATION_NAME LIKE #{newkeyword}
        )
        
       
@@ -56,7 +56,7 @@
            SELECT gm.GRP_MEMBER_NO 
            FROM GROUPSMEMBER gm
            JOIN GROUPS grp ON gm.GROUPS_NO = grp.GROUPS_NO
-           WHERE grp.GROUPS_NAME LIKE #{keyword}
+           WHERE grp.GROUPS_NAME LIKE #{newkeyword}
        )
        )
         </if>
@@ -125,14 +125,16 @@
     
     <!-- 5. 사원 검색 기능 (팝업 로직 이식) -->
     <select id="getContactsByKeyword" parameterType="String" resultType="addressUserDomain">
-    SELECT u.USER_NO userNo, 
-           u.USER_NAME userName, 
-           u.PHONENUMBER phoneNumber, 
-           g.GROUPS_NAME groupsName, 
+   SELECT u.USER_NO userNo,
+           u.USER_NAME userName,
+           u.PHONENUMBER phoneNumber,
+           g.GROUPS_NAME groupsName,
            o.ORGANIZATION_NAME organizaionName
     FROM users u
-    LEFT JOIN ORGANIZATION o ON u.user_no = o.user_no
-    LEFT JOIN GROUPS g ON u.user_no = g.user_no
+    LEFT JOIN ORGANIZATIONMEMBER om ON u.USER_NO = om.ORGMEMBER_NO
+    LEFT JOIN ORGANIZATION o ON om.ORGANIZATION_NO = o.ORGANIZATION_NO
+    LEFT JOIN GROUPSMEMBER gm ON u.USER_NO = gm.GRP_MEMBER_NO
+    LEFT JOIN GROUPS g ON gm.GROUPS_NO = g.GROUPS_NO
     WHERE u.COMPANY_NO = #{ companyNo }
     <!-- WHERE 조건 없이 전체 또는 특정 소속 회사 기준 조회 -->
 </select>

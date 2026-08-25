@@ -2,15 +2,12 @@ package kr.co.sist.chat;
 
 import java.io.File;
 import java.util.List;
-import java.util.Map;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
@@ -49,6 +46,8 @@ public class ChatController {
 	    
 	    return "works/chat/chatting";
 	}
+	
+	
 	
 	@GetMapping("/chat/roomList")
 	@ResponseBody
@@ -90,20 +89,18 @@ public class ChatController {
 	public String createChatRoom(@RequestParam("chatRoomName") String chatRoomName,
 	                             @RequestParam("userNos") List<String> userNos,
 	                             HttpSession session) {
-	    UserDTO loginUser = (UserDTO) session.getAttribute("user");
+		UserDTO loginUser = (UserDTO) session.getAttribute("user");
+
 	    if (loginUser == null) {
 	        return "FAIL";
 	    }
-	    
-	    if (chatRoomName == null || chatRoomName.trim().isEmpty()) {
-	        chatRoomName = (String) session.getAttribute("tempChatRoomName");
-	        if (chatRoomName == null || chatRoomName.trim().isEmpty()) {
-	            chatRoomName = "새로운 대화방";
-	        }
-	    }
-	    
-	    // 서비스의 createChat 호출 (로그인한 유저 번호 포함)
-	    int result = cs.createChat(chatRoomName, userNos, loginUser.getUserNo());
+
+	    int result = cs.createChat(
+	            chatRoomName,
+	            userNos,
+	            loginUser.getUserNo()
+	    );
+
 	    
 	    return result > 0 ? "SUCCESS" : "FAIL";
 	}
@@ -113,12 +110,12 @@ public class ChatController {
 //	    return "popup/PopupAddr"; 
 //	}
 	
-	@PostMapping("/chat/setRoomName")
-	@ResponseBody
-	public String setTempRoomName(@RequestParam("chatRoomName") String chatRoomName, HttpSession session) {
-	    session.setAttribute("tempChatRoomName", chatRoomName);
-	    return "SUCCESS";
-	}
+//	@PostMapping("/chat/setRoomName")
+//	@ResponseBody
+//	public String setTempRoomName(@RequestParam("chatRoomName") String chatRoomName, HttpSession session) {
+//	    session.setAttribute("tempChatRoomName", chatRoomName);
+//	    return "SUCCESS";
+//	}
 	
 	
 	
@@ -138,10 +135,6 @@ public class ChatController {
 	}
 	
 	
-	//채팅방 정렬
-	public String sortChatRoom() {
-		return "";
-	}
 	
 	//채팅 나기기
 	@PostMapping("/chat/leave")

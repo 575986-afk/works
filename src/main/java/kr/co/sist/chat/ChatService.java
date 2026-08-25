@@ -43,6 +43,7 @@ public class ChatService {
 	
 	@Transactional
 	public int createChat(String chatRoomName, List<String> userNos, String loginUserNo) {
+		
 	    ChatRoomDTO crDTO = new ChatRoomDTO();
 	    crDTO.setChatRoomName(chatRoomName != null && !chatRoomName.isEmpty() ? chatRoomName : "새로운 채팅방");
 	    crDTO.setUserNo(loginUserNo); 
@@ -80,10 +81,6 @@ public class ChatService {
 		return cm.deleteChatParticipant(map);
 	}
 	
-	public List<ChatRoomDTO> sortChatRoom(String chatRoomNo){
-		List<ChatRoomDTO> list=null;
-		return list;
-	}
 	
 	
 	@Transactional
