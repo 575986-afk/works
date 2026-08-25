@@ -8,11 +8,12 @@
 .btn-outline-custom { background-color: #fff; border: 1px solid #d9d9d9; color: #333; padding: 6px 14px; font-size: 13px; border-radius: 6px; cursor: pointer; transition: all 0.2s; text-decoration: none; }
 .btn-outline-custom:hover { background-color: #f5f5f5; }
 .detail-title { font-size: 20px; font-weight: 700; color: #111; margin-bottom: 20px; word-break: break-all; }
-.info-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; font-size: 14px; color: #333; }
-.info-icon { width: 20px; text-align: center; color: #666; font-size: 15px; }
+.info-row { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; font-size: 14px; color: #333; }
+.info-icon { width: 20px; text-align: center; color: #666; font-size: 15px; padding-top: 2px; }
 .green-dot { display: inline-block; width: 10px; height: 10px; background-color: #28a745; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
 .divider { border: 0; height: 1px; background: #f0f0f0; margin: 20px 0; }
 .meta-info { font-size: 12px; color: #8c8c8c; line-height: 1.8; margin-bottom: 20px; }
+.content-area { white-space: pre-line; line-height: 1.5; color: #444; }
 </style>
 
 <script type="text/javascript">
@@ -26,43 +27,60 @@ function deleteCalendar() {
 <body>
 
 <div class="cal-detail-card">
+    <!-- 상단 버튼 (수정 모달 이동 & 삭제) -->
     <div class="top-btn-group">
-        <button type="button" class="btn-outline-custom" th:onclick="goModifyForm([[${calendar.calendarId}]])">일정 수정</button>
+        <!-- calendarId -> calenderNo 수정 -->
+        <button type="button" class="btn-outline-custom" th:onclick="goModifyForm([[${calendar.calenderNo}]])">일정 수정</button>
         <button type="button" class="btn-outline-custom" onclick="deleteCalendar()">일정 삭제</button>
     </div>
 
+    <!-- 제목 -->
     <div class="detail-title" th:text="${calendar.title}">주간 팀 회의</div>
 
+    <!-- 일시 -->
     <div class="info-row">
         <div class="info-icon"><i class="fa-regular fa-clock"></i></div>
         <div>
-            <span th:text="${calendar.startDate}">2026-07-16</span> 
-            <span th:text="${calendar.startTime}">16:13</span> - 
+            <span th:text="${calendar.startDate}">2026-08-06</span> 
+            <span th:text="${calendar.startTime}">16:13</span> ~ 
+            <span th:text="${calendar.endDate}">2026-08-06</span> 
             <span th:text="${calendar.endTime}">17:00</span>
         </div>
     </div>
 
+    <!-- 회사 구분 -->
     <div class="info-row">
-        <div class="info-icon"><i class="fa-regular fa-calendar-check"></i></div>
+        <div class="info-icon"><i class="fa-regular fa-calendar"></i></div>
         <div>
             <span class="green-dot"></span>
-            <span th:text="${calendar.content}">주간 업무 진행 상황 점검</span>
+            <span class="type-badge" th:text="'[' + ${calendar.companyName} + ']' ">[회사명]</span>
         </div>
     </div>
 
-    <hr class="divider" />
+    <hr class="divider"/>
+    
+    <!-- 메모 내용 (줄바꿈 스타일 적용) -->
+    <div class="info-row">
+        <div class="info-icon"><i class="fa-regular fa-file-lines"></i></div>
+        <div style="flex: 1;">
+            <div class="content-area" th:text="${#strings.isEmpty(calendar.content) ? '등록된 메모가 없습니다.' : calendar.content}">주간 업무 진행 상황 점검</div>             
+        </div>
+    </div>
+    
+    <hr class="divider"/>
 
+    <!-- 생성자 정보 -->
     <div class="meta-info">
-        <div>최근 수정 : 이다영 (2026. 8. 6. (목) 오후 05:32)</div>
-        <div>생성자 : 이다영 (2026. 8. 6. (목) 오후 05:32)</div>
+        <div>생성자 : <span th:text="${calendar.creatorName}">홍길동</span></div>
     </div>
 
-    <div>
+    <div style="text-align: right;">
         <button type="button" class="btn-outline-custom" data-bs-dismiss="modal">닫기</button>
     </div>
 
+    <!-- 삭제 요청 hidden form (scheduleNo -> calenderNo 수정) -->
     <form id="deleteForm" th:action="@{/adminUser/service/calendar/deleteCal}" method="post" style="display: none;">
-        <input type="hidden" name="scheduleNo" th:value="${calendar.scheduleNo}" />
+        <input type="hidden" name="calenderNo" th:value="${calendar.calenderNo}" />
     </form>
 </div>
 

@@ -6,17 +6,19 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@Alias("companyCalDomain")
+@Alias("companyCalDTO")
 @Getter
 @Setter
 @ToString
-public class CompanyCalDomain {
+public class CompanyCalDTO {
 
 	private String calenderNo;
 	private String title;
+	private String content;
 	private String startDate;
 	private String startTime;
 	private String endDate;
 	private String endTime;
 
+	private String companyNo, userNo, organizationNo;
 }

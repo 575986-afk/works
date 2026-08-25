@@ -3,8 +3,14 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.sist.inquiry.InquiryMapper">
+	<!--
+	  기존에는 USER_NO/STATUS/INQUIRY_DATE를 넣지 않아서:
+	  - USER_NO가 NULL로 저장 -> "내 문의 목록"(설정 화면)에서 본인이 쓴 문의가 안 보임
+	  - STATUS가 NULL -> 전체관리자 문의 관리 화면에서 상태 컬럼이 빈 값으로 보임
+	  - INQUIRY_DATE가 NULL -> 목록 정렬(ORDER BY inquiry_date DESC)에서 항상 뒤로 밀림
+	-->
 	<insert id="insertInquiry" parameterType="InquiryDTO">
-	INSERT INTO INQUIRY (TITLE, CONTENT, FILES, USER_NO)
-    VALUES (#{title}, #{content}, #{files, jdbcType=VARCHAR}, #{userNo})
+	INSERT INTO INQUIRY (TITLE, CONTENT, FILES, USER_NO, STATUS, INQUIRY_DATE)
+    VALUES (#{title}, #{content}, #{files, jdbcType=VARCHAR}, #{userNo}, '답변대기', SYSDATE)
 	</insert>
 </mapper>

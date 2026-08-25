@@ -1,19 +1,16 @@
 package kr.co.sist.service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -24,21 +21,22 @@ public class CompanyCalendarController {
 	@Autowired(required = false)
 	private CompanyCalService ccs;
 	
-	//캘린더 조회
+	// 캘린더 목록 조회
 	@GetMapping("/calendar")
 	public String findCompanyCal(
 			@RequestParam(required = false) String year,
-	        @RequestParam(required = false) String month,
-	        HttpSession session, Model model) {
+			@RequestParam(required = false) String month,
+			HttpSession session, Model model) {
+		
 		String companyNo = (String) session.getAttribute("companyNo");
 		
 		if (year == null || year.isEmpty()) {
-	        year = String.valueOf(LocalDate.now().getYear());
-	    }
+			year = String.valueOf(LocalDate.now().getYear());
+		}
 
-	    if (month == null || month.isEmpty()) {
-	        month = String.format("%02d", LocalDate.now().getMonthValue());
-	    }
+		if (month == null || month.isEmpty()) {
+			month = String.format("%02d", LocalDate.now().getMonthValue());
+		}
 		
 		SearchCompanyCalDTO search = new SearchCompanyCalDTO();
 		search.setCompanyNo(companyNo);
@@ -51,76 +49,60 @@ public class CompanyCalendarController {
 		return "adminUser/service/calendar";
 	}
 	
-	// 한개 일정 상제 정보 조회(예약 정보)
+	// 일정 상세 정보 조회
 	@GetMapping("/calendar/calDetail")
-	public String findCalDetail(@RequestParam(value = "calendarId", required = false, defaultValue = "1") String calendarId, Model model) {
-		// CalendarDTO dto = calendarService.selectOneCalendar(calendarId);
-		// model.addAttribute("calendar", dto);
-
-		// 임시 데이터
-		Map<String, String> calendar = new HashMap<>();
-		calendar.put("calendarId", calendarId);
-		calendar.put("scheduleNo", "101");
-		calendar.put("title", "주간 팀 회의");
-		calendar.put("startDate", "2026-07-16");
-		calendar.put("startTime", "16:13");
-		calendar.put("endDate", "2026-07-16");
-		calendar.put("endTime", "17:00");
-		calendar.put("content", "주간 업무 진행 상황 점검");
-
+	public String findCalDetail(
+			@RequestParam(value = "calenderNo") String calenderNo,
+			Model model) {
+		
+		CompanyCalDetailDomain calendar = ccs.getCompanyCalDetail(calenderNo);
 		model.addAttribute("calendar", calendar);
+
 		return "adminUser/service/calDetail";
 	}
 
-	// 일정 등록
-	@PostMapping("/calendar/addNewCal")
-	public String addNewCal(/* CalendarDTO cDTO */) {
-		// calendarService.insertCalendar(cDTO);
-		System.out.println("일정 등록 실행");
-		
-		// 등록 완료 후 캘린더 목록 페이지로 리다이렉트
-		return "redirect:/adminUser/service/calendar";
-	}
-	
-	// 캘린더 등록 폼
+	// 캘린더 등록 폼 이동
 	@GetMapping("/calendar/addNewCalForm")
 	public String addNewCalForm() {
-		// "adminUser/service/addNewCalForm :: addNewCalForm"
 		return "adminUser/service/addNewCalForm";
 	}
 
-	// 일정 수정
+	// 일정 등록 처리
+	@PostMapping("/calendar/addNewCal")
+	public String addNewCal(@ModelAttribute CompanyCalDTO companyCalDTO, HttpSession session) {
+	    String companyNo = (String) session.getAttribute("companyNo");
+	    String userNo = (String) session.getAttribute("userNo");
+
+	    companyCalDTO.setCompanyNo(companyNo);
+	    companyCalDTO.setUserNo(userNo);
+
+	    ccs.addCompanyCal(companyCalDTO);
+	    
+	    return "redirect:/adminUser/service/calendar";
+	}
+
+	// 일정 수정 폼 이동
+	@GetMapping("/calendar/modifyCalForm")
+	public String modifyCalForm(@RequestParam("calenderNo") String calenderNo, Model model) {
+		// DB에서 실제 일정 상세 데이터 조회
+		CompanyCalDetailDomain calendar = ccs.getCompanyCalDetail(calenderNo);
+		
+		model.addAttribute("calendar", calendar);
+		return "adminUser/service/modifyCalForm";
+	}
+
+	// 일정 수정 처리
 	@PostMapping("/calendar/modifyCal")
-	public String modifyCal(/* CalendarDTO cDTO, */@RequestParam("calendarId") String calendarId) {
-		// calendarService.updateCalendar(cDTO);
-		System.out.println("일정 수정 실행: " + calendarId);
+	public String modifyCal(@ModelAttribute CompanyCalDTO companyCalDTO) {
+		ccs.modifyCompanyCal(companyCalDTO);
 		
 		return "redirect:/adminUser/service/calendar";
 	}
-	
-	// 일정 수정 폼
-	@GetMapping("/calendar/modifyCalForm")
-	public String modifyCalForm(@RequestParam("calendarId") String calendarId, Model model) {
-	    // DB에서 해당 일정 데이터 조회 (테스트 데이터)
-	    Map<String, String> calendar = new HashMap<>();
-	    calendar.put("calendarId", calendarId);
-	    calendar.put("scheduleNo", "101");
-	    calendar.put("title", "123");
-	    calendar.put("startDate", "2026. 8. 6. (목)");
-	    calendar.put("startTime", "오후 06:00");
-	    calendar.put("endDate", "2026. 8. 6. (목)");
-	    calendar.put("endTime", "오후 07:00");
-	    calendar.put("content", "메모를 작성하세요.");
 
-	    model.addAttribute("calendar", calendar);
-	    return "adminUser/service/modifyCalForm";
-	}
-
-	// 일정 삭제
+	// 일정 삭제 처리
 	@PostMapping("/calendar/deleteCal")
-	public String deleteCal(@RequestParam("scheduleNo") int scheduleNo) {
-		// calendarService.deleteCalendar(scheduleNo);
-		System.out.println("삭제 번호 : " + scheduleNo);
+	public String deleteCal(@RequestParam("calenderNo") String calenderNo) {
+		ccs.removeCompanyCal(calenderNo);
 		
 		return "redirect:/adminUser/service/calendar";
 	}

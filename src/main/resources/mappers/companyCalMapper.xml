@@ -4,49 +4,144 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.sist.service.CompanyCalMapper">
 
-	<!-- 기간별 일정 조회 -->
-	<select id="selectCompanyCal" parameterType="searchCompanyCalDTO" resultType="companyCalDomain">
-     SELECT DISTINCT
-     	C.CALENDER_NO AS calenderNo,
-	    C.TITLE AS title,
-	    TO_CHAR(C.START_DATE, 'YYYY-MM-DD') AS startDate,
-	    TO_CHAR(C.START_DATE, 'HH24:MI') AS startTime,
-	    TO_CHAR(C.END_DATE, 'YYYY-MM-DD') AS endDate,
-	    TO_CHAR(C.END_DATE, 'HH24:MI') AS endTime
-	 FROM CALENDER C
-	 INNER JOIN CALENDERCONNECTION cc
-	    ON C.CALENDER_NO = cc.CALENDER_NO
-	 INNER JOIN USERS U
-	    ON cc.USER_NO = U.USER_NO
+	<resultMap id="comCalDetailResultMap" type="kr.co.sist.service.CompanyCalDetailDomain">
+        <result property="calenderNo" column="calenderNo"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="startDate" column="startDate"/>
+        <result property="startTime" column="startTime"/>
+        <result property="endDate" column="endDate"/>
+        <result property="endTime" column="endTime"/>
+        <result property="companyName" column="companyName"/>
+        <result property="creatorName"
+                column="creatorName"
+                typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
+    </resultMap>
+	
+    <!-- 기간별 일정 목록 조회 -->
+    <select id="selectCompanyCal" parameterType="searchCompanyCalDTO" resultType="companyCalDomain">
+     SELECT 
+        C.CALENDER_NO AS calenderNo,
+        C.TITLE AS title,
+        TO_CHAR(C.START_DATE, 'YYYY-MM-DD') AS startDate,
+        TO_CHAR(C.START_DATE, 'HH24:MI') AS startTime,
+        TO_CHAR(C.END_DATE, 'YYYY-MM-DD') AS endDate,
+        TO_CHAR(C.END_DATE, 'HH24:MI') AS endTime
+     FROM CALENDER C
+     INNER JOIN CALENDERMEMBER CM 
+     		 ON C.CALENDER_NO = CM.CALENDER_NO
+     INNER JOIN USERS U 
+     		 ON CM.USER_NO = U.USER_NO
      WHERE U.COMPANY_NO = #{companyNo}
+       AND U.ACCOUNT_STATUS = '활성'
+       AND C.DISCLOSURE_STATUS = '1'
      <if test="year != null and year != '' and month != null and month != ''">
         AND C.START_DATE &lt; ADD_MONTHS(
-			TO_DATE(#{year} || LPAD(#{month}, 2, '0'), 'YYYYMM'),1
+            TO_DATE(#{year} || LPAD(#{month}, 2, '0'), 'YYYYMM'), 1
         )
         AND C.END_DATE &gt;= TO_DATE(
-            #{year} || LPAD(#{month}, 2, '0'),'YYYYMM'
+            #{year} || LPAD(#{month}, 2, '0'), 'YYYYMM'
         )
      </if>
-     ORDER BY startDate
-	</select>
-	
-	<!-- 상세 정보 조회 -->
-	<!--<select id="selectCalDetail">
-	 SELECT c.title AS title,
-	 		c.start_date AS startDate,
-			c.end_date AS endDate,
-			c.content AS content,
-			u.user_name AS userName
-	 FROM   CALENDER c
-	 LEFT JOIN CALENDERCONNECTION cc
-			ON c.CALENDER_NO = cc.CALENDER_NO
-	 LEFT JOIN USERS u
-			ON cc.USER_NO = u.USER_NO
-	</select>-->
-	
-	<!-- 일정 등록 -->
-	
-	<!-- 일정 수정 -->
-	
-	<!-- 일정 삭제 -->
+     GROUP BY 
+        C.CALENDER_NO,
+        C.TITLE,
+        C.START_DATE,
+        C.END_DATE
+     HAVING COUNT(DISTINCT CM.USER_NO) = (
+        SELECT COUNT(*)
+        FROM USERS
+        WHERE COMPANY_NO = #{companyNo}
+          AND ACCOUNT_STATUS = '활성'
+     )
+     ORDER BY C.START_DATE
+    </select>
+    
+    <!-- 일정 상세 정보 조회 -->
+    <select id="selectCalDetail" parameterType="String" resultMap="comCalDetailResultMap">
+     SELECT 
+        C.CALENDER_NO AS calenderNo,
+        C.TITLE AS title,
+        C.CONTENT AS content,
+        TO_CHAR(C.START_DATE, 'YYYY-MM-DD') AS startDate,
+        TO_CHAR(C.START_DATE, 'HH24:MI') AS startTime,
+        TO_CHAR(C.END_DATE, 'YYYY-MM-DD') AS endDate,
+        TO_CHAR(C.END_DATE, 'HH24:MI') AS endTime,
+        U.USER_NAME AS creatorName,
+        CO.COMPANY_NAME AS companyName
+     FROM CALENDER C
+     LEFT JOIN CALENDERCONNECTION CC 
+     		ON C.CALENDER_NO = CC.CALENDER_NO
+     LEFT JOIN USERS U 
+     		ON CC.USER_NO = U.USER_NO
+     LEFT JOIN COMPANY CO 
+     		ON U.COMPANY_NO = CO.COMPANY_NO
+     WHERE C.CALENDER_NO = #{calenderNo}
+    </select>
+    
+    <!-- 일정 등록 -->
+    <!-- 캘린더 테이블 등록 -->
+    <insert id="insertCompanyCal" parameterType="companyCalDTO">
+     <selectKey keyProperty="calenderNo" resultType="String" order="BEFORE">
+        SELECT 'CAL_' || LPAD(SEQ_CALENDER_NO.NEXTVAL, 6, '0') FROM DUAL
+     </selectKey>
+     INSERT INTO CALENDER (
+        CALENDER_NO, TITLE, CONTENT, START_DATE, END_DATE, DISCLOSURE_STATUS
+     ) VALUES (
+        #{calenderNo},
+        #{title},
+        #{content},
+        TO_DATE(#{startDate} || ' ' || #{startTime}, 'YYYY-MM-DD HH24:MI'),
+        TO_DATE(#{endDate} || ' ' || #{endTime}, 'YYYY-MM-DD HH24:MI'),
+        '1'
+     )
+	</insert>
+	<!-- 캘린더연결 테이블 등록 -->
+	<insert id="insertCompanyCalConnection" parameterType="companyCalDTO">
+      INSERT INTO CALENDERCONNECTION (
+         CALENDER_NO, USER_NO, ORGANIZATION_NO
+      ) VALUES (
+         #{calenderNo},
+         #{userNo},
+         #{organizationNo, jdbcType=VARCHAR}
+      )
+	</insert>
+	<!-- 캘린더공유자 테이블 등록 -->
+	<insert id="insertCompanyCalMembers" parameterType="companyCalDTO">
+     INSERT INTO CALENDERMEMBER (
+        USER_NO, CALENDER_NO
+     )
+     SELECT USER_NO, #{calenderNo}
+     FROM USERS
+     WHERE COMPANY_NO = #{companyNo}
+       AND ACCOUNT_STATUS = '활성'
+    </insert>
+    
+    <!-- 일정 수정 -->
+    <update id="updateCal" parameterType="companyCalDTO">
+     UPDATE CALENDER
+     SET TITLE = #{title},
+        CONTENT = #{content},
+        START_DATE = TO_DATE(#{startDate} || ' ' || #{startTime}, 'YYYY-MM-DD HH24:MI'),
+        END_DATE = TO_DATE(#{endDate} || ' ' || #{endTime}, 'YYYY-MM-DD HH24:MI')
+     WHERE CALENDER_NO = #{calenderNo}
+	</update>
+    
+    <!-- 일정 삭제 -->
+    <!-- 공유 대상자 삭제 -->
+	<delete id="deleteCompanyCalMember" parameterType="String">
+	    DELETE FROM CALENDERMEMBER 
+	    WHERE CALENDER_NO = #{calenderNo}
+	</delete>
+	<!-- 캘린더연결 삭제 -->
+	<delete id="deleteCompanyCalConnection" parameterType="String">
+	    DELETE FROM CALENDERCONNECTION 
+	    WHERE CALENDER_NO = #{calenderNo}
+	</delete>
+	<!-- 메인 일정 삭제 -->
+	<delete id="deleteCompanyCal" parameterType="String">
+	    DELETE FROM CALENDER 
+	    WHERE CALENDER_NO = #{calenderNo}
+	</delete>
+
 </mapper>

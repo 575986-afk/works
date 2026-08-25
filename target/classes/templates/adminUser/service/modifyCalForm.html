@@ -44,17 +44,7 @@
 .title-input { width: 100%; font-size: 14px; }
 
 .datetime-group { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 13px; }
-.select-custom {
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    padding: 7px 8px;
-    font-size: 13px;
-    background-color: #fff;
-    outline: none;
-}
-.tz-text { font-size: 12px; color: #555; margin-left: 6px; cursor: pointer; }
 
-/* 고정 텍스트용 스타일 */
 .green-dot {
     display: inline-block;
     width: 10px;
@@ -100,54 +90,46 @@ function deleteCalendar() {
 
 <div class="cal-edit-card">
     <form th:action="@{/adminUser/service/calendar/modifyCal}" method="post" id="modifyForm">
-        <input type="hidden" name="calendarId" th:value="${calendar['calendarId']}" />
-        <input type="hidden" name="scheduleNo" th:value="${calendar['scheduleNo']}" />
+        <!-- 백엔드 DTO 매핑을 위해 calenderNo로 통일 -->
+        <input type="hidden" name="calenderNo" th:value="${calendar.calenderNo}" />
 
         <div class="top-btn-group">
             <button type="submit" class="btn-save-custom">저장</button>
             
             <button type="button" 
                     class="btn-outline-custom" 
-                    th:data-id="${calendar['calendarId']}" 
-                    onclick="goDetail(this.getAttribute('data-id'))">취소</button>
+                    th:onclick="goDetail([[${calendar.calenderNo}]])">취소</button>
                     
             <button type="button" class="btn-outline-custom" onclick="deleteCalendar()" style="margin-left: 6px;">일정 삭제</button>
         </div>
 
+        <!-- 제목 -->
         <div class="form-row">
             <div class="form-icon"><i class="fa-regular fa-star"></i></div>
             <div style="flex: 1;">
-                <input type="text" name="title" class="input-custom title-input" th:value="${calendar['title']}" />
+                <input type="text" name="title" class="input-custom title-input" th:value="${calendar.title}" required />
             </div>
         </div>
 
+        <!-- 시작/종료 날짜 및 시간 (standard HTML5 type 사용) -->
         <div class="form-row">
             <div class="form-icon"><i class="fa-regular fa-clock"></i></div>
             <div class="datetime-group">
-                <input type="text" name="startDate" class="input-custom" style="width: 125px;" th:value="${calendar['startDate']}" />
-                <select name="startTime" class="select-custom">
-                    <option selected th:text="${calendar['startTime']}">오후 06:00</option>
-                    <option>16:13</option>
-                    <option>17:00</option>
-                </select>
+                <input type="date" name="startDate" class="input-custom" th:value="${calendar.startDate}" required />
+                <input type="time" name="startTime" class="input-custom" th:value="${calendar.startTime}" required />
                 <span>-</span>
-                <input type="text" name="endDate" class="input-custom" style="width: 125px;" th:value="${calendar['endDate']}" />
-                <select name="endTime" class="select-custom">
-                    <option selected th:text="${calendar['endTime']}">오후 07:00</option>
-                    <option>17:00</option>
-                    <option>18:00</option>
-                </select>
-                <span class="tz-text">시간대 변경</span>
+                <input type="date" name="endDate" class="input-custom" th:value="${calendar.endDate}" required />
+                <input type="time" name="endTime" class="input-custom" th:value="${calendar.endTime}" required />
             </div>
         </div>
 
+        <!-- 회사 정보 -->
         <div class="form-row">
             <div class="form-icon"><i class="fa-regular fa-calendar"></i></div>
             <div style="width: 100%;">
                 <div class="fixed-company-text">
                     <span class="green-dot"></span>
-                    <!-- 대괄호 문제 해결: 안전하게 키값 표시 -->
-                    <span th:text="${calendar['companyName'] != null ? calendar['companyName'] : '회사 2조'}">회사 2조</span>
+                    <span th:text="${calendar.companyName != null ? calendar.companyName : '회사 캘린더'}">회사명</span>
                 </div>
                 <div class="sub-caption">회사 캘린더 일정입니다. 사내 전체 구성원에게 공개됩니다.</div>
             </div>
@@ -155,23 +137,25 @@ function deleteCalendar() {
 
         <hr class="edit-divider" />
 
+        <!-- 메모 내용 -->
         <div class="form-row">
             <div class="form-icon"><i class="fa-regular fa-file-lines"></i></div>
             <div style="flex: 1;">
-                <textarea name="content" class="textarea-custom" th:text="${calendar['content']}" placeholder="메모를 작성하세요."></textarea>
+                <textarea name="content" class="textarea-custom" th:text="${calendar.content}" placeholder="메모를 작성하세요."></textarea>
             </div>
         </div>
 
         <hr class="edit-divider" />
 
+        <!-- 작성자 정보 -->
         <div class="meta-info">
-            <div>최근 업데이트 : 이다영 (2026. 8. 6. (목) 오후 05:32)</div>
-            <div>생성자 : 이다영</div>
+            <div>생성자 : <span th:text="${calendar.creatorName}">작성자</span></div>
         </div>
     </form>
 
+    <!-- 삭제 요청 전송용 Hidden Form -->
     <form id="deleteFormInEdit" th:action="@{/adminUser/service/calendar/deleteCal}" method="post" style="display: none;">
-        <input type="hidden" name="scheduleNo" th:value="${calendar['scheduleNo']}" />
+        <input type="hidden" name="calenderNo" th:value="${calendar.calenderNo}" />
     </form>
 </div>
 

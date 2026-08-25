@@ -11,7 +11,7 @@
 <!-- FontAwesome 아이콘 CDN -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<!-- Axios CDN -->
+<!-- Axios & jQuery CDN -->
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
@@ -45,21 +45,69 @@ body { background: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Seg
 .logTable tbody tr { cursor: pointer; }
 .logTable tbody tr:hover { background-color: #f5f8ff; }
 
-/* 팝업 모달 커스텀 모달 크기 */
+/* 팝업 모달 커스텀 */
 .modal-content { border-radius: 12px; border: none; overflow: hidden; }
+
+/* 모달 내 폼 커스텀 스타일 (등록/수정 공통) */
+.cal-edit-card { padding: 24px; background: #fff; border-radius: 12px; }
+.form-row { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.form-icon { width: 20px; text-align: center; color: #666; font-size: 15px; padding-top: 8px; }
+.input-custom { border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; font-size: 13px; color: #333; outline: none; }
+.input-custom:focus { border-color: #186ade; }
+.title-input { width: 100%; font-size: 14px; }
+.datetime-group { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 13px; }
+.green-dot { display: inline-block; width: 10px; height: 10px; background-color: #28a745; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.fixed-company-text { font-size: 14px; color: #333; padding-top: 6px; display: flex; align-items: center; }
+.sub-caption { font-size: 12px; color: #8c8c8c; margin-top: 6px; }
+.edit-divider { border: 0; height: 1px; background: #f0f0f0; margin: 18px 0; }
+.textarea-custom { width: 100%; height: 85px; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; font-size: 13px; resize: none; outline: none; }
+.btn-save-custom { background-color: #186ade; border: none; color: #fff; padding: 6px 18px; font-size: 13px; font-weight: 600; border-radius: 6px; cursor: pointer; }
+.btn-save-custom:hover { background-color: #1153b3; }
+.btn-outline-custom { background-color: #fff; border: 1px solid #d9d9d9; color: #333; padding: 6px 14px; font-size: 13px; border-radius: 6px; cursor: pointer; }
+.btn-outline-custom:hover { background-color: #f5f5f5; }
 </style>
 
 <script type="text/javascript">
 $(function(){
+    // 사이드바 토글
     $(".sidebarMenu").click(function(){
         $(this).next(".submenu").slideToggle(200);
         $(this).find(".arrow").toggleClass("rotate");
     });
+
+    // 년도 및 월 검색 필터 자동 생성
+    initDateFilters();
 });
 
-function goDetail(calendarNo) {
+// 년도/월 필터 동적 생성 함수
+function initDateFilters() {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+
+    const $yearSelect = $('#filterYear');
+    const $monthSelect = $('#filterMonth');
+
+    $yearSelect.empty();
+    $monthSelect.empty();
+
+    // 년도: 현재년도 기준 앞뒤 5년
+    for (let y = currentYear - 5; y <= currentYear + 5; y++) {
+        const isSelected = (y === currentYear) ? 'selected' : '';
+        $yearSelect.append(`<option value="${y}" ${isSelected}>${y}년</option>`);
+    }
+
+    // 월
+    for (let m = 1; m <= 12; m++) {
+        const isSelected = (m === currentMonth) ? 'selected' : '';
+        $monthSelect.append(`<option value="${m}" ${isSelected}>${m}월</option>`);
+    }
+}
+
+// 상세 조회
+function goDetail(calenderNo) {
     axios.get('/adminUser/service/calendar/calDetail', {
-        params: { calendarNo: calendarNo }
+        params: { calenderNo: calenderNo }
     })
     .then(function (response) {
         $('#modalDetailContainer').html(response.data);
@@ -76,9 +124,10 @@ function goDetail(calendarNo) {
     });
 }
 
-function goModifyForm(calendarNo) {
+// 수정 폼 조회
+function goModifyForm(calenderNo) {
     axios.get('/adminUser/service/calendar/modifyCalForm', {
-        params: { calendarNo: calendarNo }
+        params: { calenderNo: calenderNo }
     })
     .then(function (response) {
         $('#modalDetailContainer').html(response.data);
@@ -86,6 +135,22 @@ function goModifyForm(calendarNo) {
     .catch(function (error) {
         console.error("수정 폼 로드 실패:", error);
     });
+}
+
+// 일정 쓰기 모달 열기
+function openAddModal() {
+    const modalEl = document.getElementById('eventModal');
+    const addModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    addModal.show();
+}
+
+// 일정 쓰기 모달 닫기
+function closeAddModal() {
+    const modalEl = document.getElementById('eventModal');
+    const addModal = bootstrap.Modal.getInstance(modalEl);
+    if (addModal) {
+        addModal.hide();
+    }
 }
 </script>
 </head>
@@ -103,7 +168,7 @@ function goModifyForm(calendarNo) {
             <div class="pageHeader">
                 <div><h2 class="pageTitle">캘린더</h2></div>
                 <div>
-                    <a th:href="@{/adminUser/service/calendar/addNewCalForm}" class="btn-create">일정 쓰기</a>
+                    <button type="button" class="btn-create" onclick="openAddModal()">일정 쓰기</button>
                 </div>
             </div>
 
@@ -114,13 +179,8 @@ function goModifyForm(calendarNo) {
             <div class="tableContainer">
                 <div class="filterBar">
                     <div class="filterLeft">
-                        <select class="date-input">
-                            <option>2025년</option>
-                            <option selected="selected">2026년</option>
-                        </select>
-                        <select class="date-input">
-                            <option selected="selected">7월</option>
-                        </select>
+                        <select class="date-input" id="filterYear" name="year"></select>
+                        <select class="date-input" id="filterMonth" name="month"></select>
                     </div>
                 </div>
 
@@ -135,29 +195,102 @@ function goModifyForm(calendarNo) {
                         </tr>
                     </thead>
                     <tbody th:if="${calendarList != null and !#lists.isEmpty(calendarList)}">
-                        <tr th:each="item : ${calendarList}" th:onclick="goDetail([[${item.calendarNo}]])">
-                            <td th:text="${item.startDate}">2026-07-16</td>
+                        <tr th:each="item : ${calendarList}" th:onclick="goDetail([[${item.calenderNo}]])">
+                            <td th:text="${item.startDate}">2026-08-06</td>
                             <td th:text="${item.startTime}">16:13</td>
-                            <td th:text="${item.endDate}">2026-07-16</td>
+                            <td th:text="${item.endDate}">2026-08-06</td>
                             <td th:text="${item.endTime}">17:00</td>
                             <td th:text="${item.title}">회의 일정</td>
                         </tr>
                     </tbody>
                     <tbody th:if="${calendarList == null or #lists.isEmpty(calendarList)}">
-					    <tr>
-					        <td colspan="5" style="text-align: center; padding: 40px; color: #999;">
-					            아무 정보가 없습니다.
-					        </td>
-					    </tr>
-					</tbody>
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 40px; color: #999;">
+                                아무 정보가 없습니다.
+                            </td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
         </div>
     </div>
 </div>
+
+<!-- 상세/수정용 모달 -->
 <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg" style="max-width: 520px;">
     <div class="modal-content" id="modalDetailContainer"></div>
+  </div>
+</div>
+
+<!-- 일정 쓰기 등록 모달 -->
+<div class="modal fade" id="eventModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 520px;">
+    <div class="modal-content">
+      
+      <div class="cal-edit-card">
+        <form th:action="@{/adminUser/service/calendar/addNewCal}" method="post" id="addCalForm">
+            
+            <!-- 모달 헤더 -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-size: 18px; font-weight: 700; color: #111; margin: 0;">회사 일정 등록</h3>
+                <button type="button" class="btn-outline-custom" onclick="closeAddModal()" style="padding: 2px 10px; border: none; font-size: 16px;">✕</button>
+            </div>
+
+            <!-- 제목 -->
+            <div class="form-row">
+                <div class="form-icon"><i class="fa-regular fa-star"></i></div>
+                <div style="flex: 1;">
+                    <input type="text" name="title" class="input-custom title-input" placeholder="일정 제목을 입력하세요" required />
+                </div>
+            </div>
+
+            <!-- 시작/종료 일시 -->
+            <div class="form-row">
+                <div class="form-icon"><i class="fa-regular fa-clock"></i></div>
+                <div class="datetime-group">
+                    <input type="date" name="startDate" class="input-custom" required />
+                    <input type="time" name="startTime" class="input-custom" required />
+                    <span>-</span>
+                    <input type="date" name="endDate" class="input-custom" required />
+                    <input type="time" name="endTime" class="input-custom" required />
+                </div>
+            </div>
+
+            <!-- 회사 캘린더 구분 -->
+            <div class="form-row">
+                <div class="form-icon"><i class="fa-regular fa-calendar"></i></div>
+                <div style="width: 100%;">
+                    <div class="fixed-company-text">
+                        <span class="green-dot"></span>
+                        <span>회사 캘린더</span>
+                    </div>
+                    <div class="sub-caption">회사 캘린더 일정입니다. 사내 전체 구성원에게 공개됩니다.</div>
+                </div>
+            </div>
+
+            <hr class="edit-divider" />
+
+            <!-- 메모(내용) -->
+            <div class="form-row">
+                <div class="form-icon"><i class="fa-regular fa-file-lines"></i></div>
+                <div style="flex: 1;">
+                    <textarea name="content" class="textarea-custom" placeholder="일정 메모를 작성하세요."></textarea>
+                </div>
+            </div>
+
+            <hr class="edit-divider" />
+
+            <!-- 하단 버튼 영역 -->
+            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button type="button" class="btn-outline-custom" onclick="closeAddModal()">취소</button>
+                <button type="submit" class="btn-save-custom">저장</button>
+            </div>
+
+        </form>
+      </div>
+
+    </div>
   </div>
 </div>
 
