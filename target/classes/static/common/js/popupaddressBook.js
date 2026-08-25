@@ -101,7 +101,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 	// 4. 저장 버튼 클릭 시 배열 추출 및 Ajax 전송
-	// 저장 버튼
 	$('#saveUsersBtn').off('click').on('click', function() {
 
 	    const checkedBoxes = $('.user-checkbox:checked');
@@ -117,20 +116,42 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	    console.log("선택된 사원번호:", selectedUserNos);
 
-	    // 부모창이 존재하는 경우
+	    // 부모창이 존재하는지 확인
 	    if (window.opener && !window.opener.closed) {
 
-	        // 부모창에 선택된 사원번호 전달
-	        window.opener.selectedUserNos = selectedUserNos;
+	        // ★ 채팅 페이지에서 주소록을 연 경우
+	        if (window.opener.location.pathname.includes('/chatting')) {
 
-	        console.log("부모창으로 전달:", window.opener.selectedUserNos);
+	            window.opener.postMessage({
+	                type: 'CHAT_ROOM_CREATE',
+	                selectedUserNos: selectedUserNos
+	            }, window.location.origin);
 
-	        // 팝업 닫기
+	        }
+
+	        // ★ 다른 페이지에서 주소록을 사용한 경우
+	        else if (typeof window.opener.addRepresentative === 'function') {
+
+	            checkedBoxes.each(function() {
+
+	                const userNo = $(this).val();
+	                const userName = $(this).attr('data-name');
+
+	                window.opener.addRepresentative(userName, userNo);
+
+	            });
+
+	        }
+
+	        // 저장 완료 후 팝업 닫기
 	        window.close();
 
 	    } else {
+
 	        console.warn('부모 창을 찾을 수 없습니다.');
+
 	    }
+
 	});
 	
 	/*$('#saveUsersBtn').off('click').on('click', function() {

@@ -1,8 +1,16 @@
 package kr.co.sist.chat;
 
 import java.io.File;
+import java.net.URLEncoder;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -150,51 +158,75 @@ public class ChatController {
 	}
 	
 	// 파일첨부
-		@PostMapping("/chat/uploadFile")
-		@ResponseBody
-		public String uploadFile(@RequestParam("file") MultipartFile file,
-		                         @RequestParam("chatRoomNo") String chatRoomNo,
-		                         @RequestParam("sendUser") String sendUser,
-		                         @RequestParam("sendUserName") String sendUserName,
-		                         HttpServletRequest request) {
-		    if (file.isEmpty()) {
-		        return "FAIL";
-		    }
+	@PostMapping("/chat/uploadFile")
+	@ResponseBody
+	public String uploadFile(@RequestParam("file") MultipartFile file,
+	                         @RequestParam("chatRoomNo") String chatRoomNo,
+	                         @RequestParam("sendUser") String sendUser,
+	                         @RequestParam("sendUserName") String sendUserName,
+	                         HttpServletRequest request) {
+	    if (file.isEmpty()) {
+	        return "FAIL";
+	    }
+	    try {
+	        String uploadDir = request.getSession().getServletContext().getRealPath("/resources/upload/");
+	        File dir = new File(uploadDir);
+	        if (!dir.exists()) {
+	            dir.mkdirs();
+	        }
+	        String originalFilename = file.getOriginalFilename();
+	        String savedFileName = System.currentTimeMillis() + "_" + originalFilename;
+	        File target = new File(uploadDir + savedFileName);
 
-		    try {
-		        String uploadDir = request.getSession().getServletContext().getRealPath("/resources/upload/");
-		        File dir = new File(uploadDir);
-		        if (!dir.exists()) {
-		            dir.mkdirs();
-		        }
+	        // 1. 서버에 파일 저장
+	        file.transferTo(target);
 
-		        String originalFilename = file.getOriginalFilename();
-		        String savedFileName = System.currentTimeMillis() + "_" + originalFilename;
-		        File target = new File(uploadDir + savedFileName);
-		        
-		        // 1. 서버에 파일 저장
-		        file.transferTo(target);
+	        // 2. DB에 저장할 content 규격 설정 ([파일] 원본파일명|서버저장파일명)
+	        String fileContent = "[파일] " + originalFilename + "|" + savedFileName;
 
-		        // 2. DB의 chatting 테이블(content)에 파일 전송 내역 저장
-		        int result = cs.sendFileMessage(chatRoomNo, sendUser, originalFilename);
+	        int result = cs.sendFileMessage(chatRoomNo, sendUser, fileContent);
 
-		        if (result > 0) {
-		            // ★ 핵심: 파일 전송 성공 시 웹소켓 구독자들에게 실시간 브로드캐스트 전송
-		            ChatRoomDTO broadcastDto = new ChatRoomDTO();
-		            broadcastDto.setChatRoomNo(chatRoomNo);
-		            broadcastDto.setSendUser(sendUser);
-		            broadcastDto.setSendUserName(sendUserName);
-		            broadcastDto.setContent("[파일] " + originalFilename);
-		            
-		            messagingTemplate.convertAndSend("/sub/chat/room/" + chatRoomNo, broadcastDto);
-		            
-		            return "SUCCESS";
-		        } else {
-		            return "FAIL";
-		        }
-		    } catch (Exception e) {
-		        e.printStackTrace();
-		        return "FAIL";
-		    }
-		}
+	        if (result > 0) {
+	            ChatRoomDTO broadcastDto = new ChatRoomDTO();
+	            broadcastDto.setChatRoomNo(chatRoomNo);
+	            broadcastDto.setSendUser(sendUser);
+	            broadcastDto.setSendUserName(sendUserName);
+	            broadcastDto.setContent(fileContent); // 규격화된 문자열 전송
+	            
+	            messagingTemplate.convertAndSend("/sub/chat/room/" + chatRoomNo, broadcastDto);
+	            
+	            return "SUCCESS";
+	        } else {
+	            return "FAIL";
+	        }
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return "FAIL";
+	    }
+	}
+	
+	// 파일 다운로드 메소드 추가
+	@GetMapping("/chat/downloadFile")
+	public ResponseEntity<Resource> downloadFile(@RequestParam("fileName") String fileName, HttpServletRequest request) {
+	    try {
+	        String uploadDir = request.getSession().getServletContext().getRealPath("/resources/upload/");
+	        Path filePath = Paths.get(uploadDir).resolve(fileName).normalize();
+	        Resource resource = new UrlResource(filePath.toUri());
+
+	        if (!resource.exists()) {
+	            return ResponseEntity.notFound().build();
+	        }
+
+	        // 원본 파일명 추출 (시스템 타임스탬프 제거)
+	        String originalFileName = fileName.substring(fileName.indexOf("_") + 1);
+	        String encodedFileName = URLEncoder.encode(originalFileName, "UTF-8").replaceAll("\\+", "%20");
+
+	        return ResponseEntity.ok()
+	                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+	                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + encodedFileName + "\"")
+	                .body(resource);
+	    } catch (Exception e) {
+	        return ResponseEntity.internalServerError().build();
+	    }
+	}
 }

@@ -73,7 +73,7 @@
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-                <input type="text" id="searchKeyword" placeholder="사원 이름 검색" style="border: none; background: transparent; outline: none; font-size: 13px; width: 100%; color: #333;" autocomplete="off">
+                <input type="text" id="searchKeyword" placeholder="채팅방 이름 검색" style="border: none; background: transparent; outline: none; font-size: 13px; width: 100%; color: #333;" autocomplete="off">
             </div>
             
             <div id="searchDropdown" style="display: none; position: absolute; top: 100%; left: 0; width: 100%; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 1000; max-height: 300px; overflow-y: auto; margin-top: 5px;">
@@ -310,6 +310,10 @@
                 appendMessage(message);
                 refreshChatRoomList();
             });
+            
+            stompClient.subscribe('/sub/chat/user/' + myUserNo, function(messageOutput) {
+                refreshChatRoomList();
+            });
         });
     }
 
@@ -334,6 +338,7 @@
                     formData.append('content', content);
                 }
 
+             // 파일 업로드 AJAX 성공 부분 수정
                 $.ajax({
                     url: '/chat/uploadFile',
                     type: 'POST',
@@ -341,12 +346,18 @@
                     processData: false,
                     contentType: false,
                     success: function(res) {
-                        $('#chatInputText').val('');
-                        $('#removeFileBtn').click();
+                        if (res === 'SUCCESS') {
+                            $('#chatInputText').val('');
+                            attachedFile = null;
+                            $('#filePreviewContainer').hide();
+                            $('#hiddenFileInput').val('');
+                        } else {
+                            alert('파일 전송에 실패했습니다.');
+                        }
                         isSubmitting = false;
                     },
                     error: function() {
-                        alert('파일 전송에 실패했습니다.');
+                        alert('파일 전송 중 오류가 발생했습니다.');
                         isSubmitting = false;
                     }
                 });
@@ -382,7 +393,24 @@
         let avatarChar = senderName ? senderName.charAt(0) : '?';
 
         let timeStr = msg.sendDate ? msg.sendDate : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        let contentHtml = msg.content ? msg.content : '';
+        
+        let rawContent = msg.content ? msg.content : '';
+        let contentHtml = '';
+
+        if (rawContent.startsWith('[파일] ')) {
+            let fileData = rawContent.substring(5);
+            let parts = fileData.split('|');
+            let originalName = parts[0];
+            let savedName = parts[1];
+
+            if (savedName) {
+                contentHtml = `<a href="/chat/downloadFile?fileName=${encodeURIComponent(savedName)}" class="text-blue-600 underline hover:text-blue-800" download>📎 [파일] ${escapeHtml(originalName)}</a>`;
+            } else {
+                contentHtml = escapeHtml(rawContent);
+            }
+        } else {
+            contentHtml = escapeHtml(rawContent);
+        }
 
         chatBody.append(`
             <div class="message-row ${isMy ? 'my-message' : ''}">
@@ -456,7 +484,25 @@
                 if (isMy && !senderName) { senderName = myName; }
                 
                 let avatarChar = senderName ? senderName.charAt(0) : '?';
-                let contentHtml = msg.content ? msg.content : '';
+                
+                // ★ [추가] 파일 형식 파싱 및 다운로드 링크 변환 로직
+                let rawContent = msg.content ? msg.content : '';
+                let contentHtml = '';
+
+                if (rawContent.startsWith('[파일] ')) {
+                    let fileData = rawContent.substring(5); // '[파일] ' 제거
+                    let parts = fileData.split('|');
+                    let originalName = parts[0];
+                    let savedName = parts[1];
+
+                    if (savedName) {
+                    	contentHtml = `<a href="/chat/downloadFile?fileName=${encodeURIComponent(savedName)}" class="text-blue-600 underline hover:text-blue-800" download>${escapeHtml(originalName)}</a>`;
+                    } else {
+                        contentHtml = escapeHtml(rawContent);
+                    }
+                } else {
+                    contentHtml = escapeHtml(rawContent);
+                }
 
                 chatBody.append(`
                     <div class="message-row ${isMy ? 'my-message' : ''}">
@@ -481,64 +527,94 @@
     function escapeHtml(text) { return $('<div>').text(text).html(); }
 
     function openAddressPopupWithRoomName() {
-    	 console.log("★★★ 새로 만들기 함수 실행됨 ★★★");
 
-    	    const roomName = prompt("생성할 채팅방 이름을 입력하세요:", "새로운 대화방");
+        console.log("★★★ 새로 만들기 함수 실행됨 ★★★");
 
-    	    if (roomName === null) return;
+        const roomName = prompt(
+            "생성할 채팅방 이름을 입력하세요:",
+            "새로운 대화방"
+        );
 
-    	    const trimmedName = roomName.trim() === "" ? "새로운 대화방" : roomName.trim();
+        if (roomName === null) {
+            return;
+        }
 
-    	    console.log("입력한 방 이름:", roomName);
-    	    console.log("최종 방 이름:", trimmedName);
+        const trimmedName =
+            roomName.trim() === ""
+                ? "새로운 대화방"
+                : roomName.trim();
 
-        // 1. 팝업 창 열기
-        const popup = window.open("/popupAddr", "addGroupPopup", "width=850,height=600,left=200,top=100,scrollbars=yes,resizable=yes");
-        
-        /* // 2. 서버 세션에 임시 방 이름 저장
-        $.ajax({
-            url: '/chat/setRoomName',
-            type: 'POST',
-            data: { chatRoomName: trimmedName }
-        }); */
-        
-        // 3. 팝업이 닫힐 때 체크
-        const checkPopupClosed = setInterval(function() {
-            if (popup.closed) {
-                clearInterval(checkPopupClosed);
-                let selectedUserNos = [];
-                
-                try { 
-                    if (popup.selectedUserNos) {
-                        selectedUserNos = popup.selectedUserNos; 
-                    }
-                } catch (e) {
-                    console.error(e);
-                }
-                
-                console.log("방 생성할 이름:", trimmedName);
-                console.log("선택된 사용자:", selectedUserNos);
-                $.ajax({
-                    url: '/chat/create',
-                    type: 'POST',
-                    data: { 
-                        chatRoomName: trimmedName, // 사용자가 입력한 이름 강제 고정 전송
-                        userNos: selectedUserNos.length > 0 ? selectedUserNos : [myUserNo] 
-                    },
-                    success: function(response) {
-                        if(response === 'SUCCESS') {
-                            location.reload();
-                        } else {
-                            alert('채팅방 생성에 실패했습니다.');
-                        }
-                    },
-                    error: function() {
-                        alert('통신 오류가 발생했습니다.');
-                    }
-                });
-            }
-        }, 500);
+        console.log("입력한 방 이름:", trimmedName);
+
+        // 주소록 팝업에서 저장할 때 사용할 채팅방 이름
+        window.pendingChatRoomName = trimmedName;
+
+        // 주소록 팝업 열기
+        window.open(
+            "/popupAddr",
+            "addGroupPopup",
+            "width=850,height=600,left=200,top=100,scrollbars=yes,resizable=yes"
+        );
     }
+
+
+    // ======================================================
+    // 주소록 팝업에서 "저장"을 눌렀을 때만 실행
+    // ======================================================
+
+    window.addEventListener('message', function(event) {
+
+        // 같은 사이트에서 온 메시지만 허용
+        if (event.origin !== window.location.origin) {
+            return;
+        }
+
+        // 채팅방 생성 메시지가 아니면 무시
+        if (!event.data || event.data.type !== 'CHAT_ROOM_CREATE') {
+            return;
+        }
+
+        const selectedUserNos = event.data.selectedUserNos || [];
+
+        console.log("★★★ 주소록 저장 완료 ★★★");
+        console.log("채팅방 이름:", window.pendingChatRoomName);
+        console.log("선택된 사용자:", selectedUserNos);
+
+
+        // 채팅방 생성
+        $.ajax({
+
+            url: '/chat/create',
+
+            type: 'POST',
+
+            data: {
+                chatRoomName: window.pendingChatRoomName,
+                userNos: selectedUserNos
+            },
+
+            success: function(response) {
+
+                if (response === 'SUCCESS') {
+
+                    location.reload();
+
+                } else {
+
+                    alert('채팅방 생성에 실패했습니다.');
+
+                }
+            },
+
+            error: function() {
+
+                alert('채팅방 생성 중 오류가 발생했습니다.');
+
+            }
+
+        });
+
+    });
 
     function refreshChatRoomList() {
         $.get('/chat/roomList', function(roomList) {
@@ -564,6 +640,7 @@
             });
         });
     }
+    
     </script>
 </body>
 </html>
