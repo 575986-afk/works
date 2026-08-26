@@ -81,10 +81,8 @@
             ON l.TODO_NO = t.TODO_NO
      LEFT JOIN USERS req
             ON t.USER_NO = req.USER_NO
-     LEFT JOIN REPRESENTATIVE r
-            ON l.REPRESENTATIVE_NO = r.REPRESENTATIVE_NO
      LEFT JOIN USERS mgr_u
-            ON r.REPRESENTATIVE_NO = mgr_u.USER_NO
+            ON l.REPRESENTATIVE_NO = mgr_u.USER_NO
      WHERE l.LOG_NO = #{logNo}
      	AND req.COMPANY_NO = #{companyNo}
 	</select>

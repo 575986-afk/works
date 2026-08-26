@@ -205,9 +205,8 @@ public class AuthorityController {
         // 2. 권한 위임 성공 후 안내 메일 발송
         boolean mailResult = ms.sendDelegationMail(receiver.getEmail(),receiver.getUserName());
 
-        // 3. 세션 정리
-        session.removeAttribute("delegationWaiting");
-        session.removeAttribute("delegationReceiverUserNo");
+        // 3. 세션 완전 파기 (권한이 박탈되었으므로 즉시 로그아웃 처리)
+        session.invalidate();
 
         if (!mailResult) {
             return "mailFail";

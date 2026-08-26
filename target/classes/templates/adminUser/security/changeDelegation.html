@@ -266,8 +266,8 @@ $(function(){
             type: "POST",
             success: function(res){
                 if(res === "success"){
-                    alert("권한 위임이 완료되었습니다.");
-                    location.href = "/adminUser/security/authority";
+                	alert('권한 위임이 완료되었습니다. 권한 변경으로 인해 다시 로그인해 주세요.');
+                    window.location.href = '/login';
                 } else if(res === "mailFail") {
                     alert("권한 위임은 처리되었지만 이메일 발송에 실패했습니다.");
                     location.href = "/adminUser/security/authority";
