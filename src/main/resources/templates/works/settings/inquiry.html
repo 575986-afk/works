@@ -162,11 +162,17 @@
             <!-- 질문 내용 -->
             <div class="question-text" th:text="${inquiry.content}">질문 내용</div>
 
-			<div class="file-section" th:if="${inquiry.files != null and inquiry.files != ''}" style="margin-bottom: 20px; padding: 10px; background-color: #f8f9fa; border-radius: 4px; font-size: 13px;">
+			<div class="file-section" th:if="${inquiry.files != null and inquiry.files != ''}" style="margin-bottom: 20px; padding: 12px; background-color: #f8f9fa; border-radius: 4px; font-size: 13px;">
 		    <span class="file-label" style="display: block; font-weight: bold; color: #555; margin-bottom: 8px;">첨부파일:</span>
 		    
-		    <img th:src="@{/upload/inquiry/{fileName}(fileName=${inquiry.files})}" alt="첨부이미지" style="max-width: 100%; height: auto; border-radius: 4px; border: 1px solid #ddd;" />
-			</div>
+		    <div style="margin-bottom: 8px;">
+		        <img th:src="@{/inquiry/image(inquiryNo=${inquiry.inquiry_no})}" alt="첨부이미지" style="max-width: 250px; height: auto; border-radius: 4px; border: 1px solid #ddd;" />
+		    </div>
+		
+		    <div>
+        <a th:href="@{/inquiry/download(inquiryNo=${inquiry.inquiry_no})}" th:text="${inquiry.files}" style="color: #0066cc; text-decoration: underline;">파일이름.jpg</a>
+    </div>
+</div>
           <!-- <div class="file-section" th:if="${inquiry.files != null and inquiry.files != ''}" style="margin-bottom: 20px; padding: 10px; background-color: #f8f9fa; border-radius: 4px; font-size: 13px;">
 		    <span class="file-label" style="font-weight: bold; color: #555; margin-right: 10px;">첨부파일:</span>
 		    <span th:text="${inquiry.files}" style="color: #333;">파일이름.jpg</span>

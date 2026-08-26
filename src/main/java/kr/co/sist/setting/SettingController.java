@@ -1,8 +1,17 @@
 package kr.co.sist.setting;
 
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -172,12 +181,6 @@ public class SettingController {
         return ss.updateUserStatus(loginUser.getUserNo(), statusNo);
     }
     
-    
-    
-    
-    
-    
-    
     //-------------------------------------------------------------------------------------
     //알람 설정 
     @GetMapping("/alarmSetting")
@@ -213,12 +216,6 @@ public class SettingController {
         return ss.setAlarmSetting(alarmDTO);
     }
     
-    
-    
-    
-    
-    
-    
     //-------------------------------------------------------------------------------------
     //문의 리스트 화면 
     @GetMapping("/inquiry")
@@ -234,5 +231,69 @@ public class SettingController {
     	model.addAttribute("currentMenu", "inquiry"); 
     	return "works/settings/inquiry";
     }
+    
+    
+ // 파일 다운로드
+    @GetMapping("/inquiry/image")
+    @ResponseBody
+    public ResponseEntity<Resource> getInquiryImage(@RequestParam("inquiryNo") String inquiryNo, HttpSession session) {
+        UserDTO loginUser = (UserDTO) session.getAttribute("user");
+
+        try {
+            String fileName = ss.getInquiryFilePath(inquiryNo); 
+            if (fileName == null || fileName.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            String uploadDir = "C:/upload/inquiry/"; 
+            Path path = Paths.get(uploadDir + fileName);
+            Resource resource = new UrlResource(path.toUri());
+
+            if (!resource.exists() || !resource.isReadable()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_JPEG) 
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    // 2. 파일 다운로드
+    @GetMapping("/inquiry/download")
+    public ResponseEntity<Resource> downloadInquiryFile(@RequestParam("inquiryNo") String inquiryNo, HttpSession session) {
+        UserDTO loginUser = (UserDTO) session.getAttribute("user");
+        if (loginUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            String fileName = ss.getInquiryFilePath(inquiryNo);
+            if (fileName == null || fileName.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            String uploadDir = "C:/upload/inquiry/"; 
+            Path path = Paths.get(uploadDir + fileName);
+            Resource resource = new UrlResource(path.toUri());
+
+            if (!resource.exists() || !resource.isReadable()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8)
+                    .replaceAll("\\+", "%20");
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + encodedFileName + "\"")
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
     
 }

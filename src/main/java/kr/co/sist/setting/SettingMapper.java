@@ -24,4 +24,5 @@ public interface SettingMapper {
 	int updateAlarmSetting(AlarmSettingDTO asDTO);
 //	문의 =======================================================
 	List<InquiryDomain> selectInquiry(String inquiryNo);
+	String selectInquiryFilePath(String inquiryNo);
 }

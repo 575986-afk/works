@@ -82,5 +82,8 @@ public class SettingService {
 		return settingMapper.selectInquiry(inquiryNo);
 	}
 	
+	public String getInquiryFilePath(String inquiryNo) {
+	    return settingMapper.selectInquiryFilePath(inquiryNo);
+	}
 	
 }

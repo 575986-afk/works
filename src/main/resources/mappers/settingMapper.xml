@@ -65,9 +65,6 @@
         WHERE user_no = #{userNo, jdbcType=VARCHAR}
     </update>
     
-    
-    
-    
   <select id="selectStatusList" resultType="kr.co.sist.setting.StatusDTO">
       SELECT status_no AS statusNo,
              status_name AS statusName,
@@ -86,8 +83,6 @@
       SET status_no = #{statusNo, jdbcType=VARCHAR}
       WHERE user_no = #{userNo}
   </update>
-    
-    
     
     <!-- 알람 설정  -->
     <select id="selectAlarmSetting" parameterType="String" resultType="kr.co.sist.setting.AlarmSettingDTO">
@@ -111,14 +106,14 @@
         WHERE user_no = #{userNo}
     </update>
 
-
-
-
-
-
-
 	<!-- 문의 설정  -->
     <select id="selectInquiry" parameterType="String" resultType="kr.co.sist.setting.InquiryDomain">
         SELECT * FROM inquiry WHERE user_no = #{userNo, jdbcType=VARCHAR}
     </select>
+    
+	<select id="selectInquiryFilePath" parameterType="string" resultType="string">
+    SELECT files 
+    FROM inquiry 
+    WHERE inquiry_no = #{inquiryNo}
+	</select>
 </mapper>
