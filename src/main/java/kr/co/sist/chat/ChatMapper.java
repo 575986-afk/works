@@ -9,13 +9,19 @@ import org.apache.ibatis.annotations.Mapper;
 public interface ChatMapper {
 
 	List<ChatRoomDTO> selectChatRoom(String userNo);
+
 	List<ChatRoomDTO> selectMessageList(String chatRoomNo);
+
 	int insertMessage(ChatRoomDTO cDTO);
+
 	int insertChatRoom(ChatRoomDTO cDTO);
+
 	int insertChatParticipant(Map<String, Object> map);
+
 	List<ChatRoomDTO> selectSearchUser(Map<String, Object> map);
+
 	int deleteChatParticipant(Map<String, Object> map);
-	
+
 	String insertFile(String content);
-	
+
 }

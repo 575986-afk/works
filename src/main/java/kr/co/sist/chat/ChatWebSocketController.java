@@ -14,26 +14,20 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ChatWebSocketController {
 
-    private final ChatService cs;
-    private final SimpMessagingTemplate messagingTemplate;
+	private final ChatService cs;
+	private final SimpMessagingTemplate messagingTemplate;
 
-    @MessageMapping("/chat/message/{chatRoomNo}")
-    public void send(
-            @DestinationVariable("chatRoomNo") String chatRoomNo,
-            ChatRoomDTO message) {
+	@MessageMapping("/chat/message/{chatRoomNo}")
+	public void send(@DestinationVariable("chatRoomNo") String chatRoomNo, ChatRoomDTO message) {
 
-        message.setChatRoomNo(chatRoomNo);
-        
-        // ★★★ 전송 시간 세팅 (클라이언트가 화면에 표시할 수 있도록) ★★★
-        message.setSendDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
+		message.setChatRoomNo(chatRoomNo);
 
-        int result = cs.sendMessage(message);
+		message.setSendDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
 
-        if (result > 0) {
-            messagingTemplate.convertAndSend(
-                    "/sub/chat/room/" + chatRoomNo,
-                    message
-            );
-        }
-    }
+		int result = cs.sendMessage(message);
+
+		if (result > 0) {
+			messagingTemplate.convertAndSend("/sub/chat/room/" + chatRoomNo, message);
+		}
+	}
 }

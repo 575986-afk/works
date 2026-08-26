@@ -8,15 +8,15 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class FindIdService {
-	
+
 	private final FindIdMapper fDAO;
-	
-	 public String selectFindId(String name, String email) {
 
-	        String userName = name;
-	        String userEmail = email;
+	public String selectFindId(String name, String email) {
 
-	        return fDAO.selectFindId(userName, userEmail);
-	    }
+		String userName = name;
+		String userEmail = email;
+
+		return fDAO.selectFindId(userName, userEmail);
+	}
 
 }

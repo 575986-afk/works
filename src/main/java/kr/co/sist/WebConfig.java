@@ -37,18 +37,18 @@ public class WebConfig implements WebMvcConfigurer{
    @Override
    public void addInterceptors(InterceptorRegistry registry) {
 
-//       // 로그인 인터셉터
-//       registry.addInterceptor(loginInterceptor)
-//               .addPathPatterns("/**")
-//               .excludePathPatterns(
-//                   "/",
-//                   "/login",
-//                   "/works/login/**",
-//                   "/loginProcess",
-//                   "/css/**",
-//                   "/js/**",
-//                   "/images/**"
-//               );
+       // 로그인 인터셉터
+       registry.addInterceptor(loginInterceptor)
+               .addPathPatterns("/**")
+               .excludePathPatterns(
+                   "/",
+                   "/login",
+                   "/works/login/**",
+                   "/loginProcess",
+                   "/css/**",
+                   "/js/**",
+                   "/images/**"
+               );
 
 	// 권한 레벨 인터셉터
 	    registry.addInterceptor(roleLevelInterceptor)

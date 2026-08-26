@@ -9,7 +9,6 @@ import org.apache.ibatis.annotations.Param;
 public interface FindIdMapper {
 	
 
-	String selectFindId(@Param("name") String name, @Param("email")String email) ;
-		
-	
+	String selectFindId(@Param("name") String name, @Param("email") String email);
+
 }
