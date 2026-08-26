@@ -52,7 +52,7 @@ public class LoginController {
             
             if(saveId != null) {
                 Cookie cookie = new Cookie("saveId", userId);
-                cookie.setMaxAge(60 * 60 * 24 * 30); // 30일
+                cookie.setMaxAge(60 * 60 * 24 * 30); 
                 cookie.setPath("/");
                 response.addCookie(cookie);
             } else {
