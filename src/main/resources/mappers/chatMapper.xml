@@ -28,15 +28,6 @@
 			typeHandler="kr.co.sist.login.EncryptTypeHandler" />
 		<result property="sendDate" column="sendDate" />
 	</resultMap>
-	<!-- <select id="selectChatRoom" parameterType="String" resultMap="chatRoomResultMap"> 
-		SELECT cr.chatroom_no AS chatRoomNo, cr.chatroom_name AS chatRoomName, (SELECT 
-		content FROM ( SELECT content FROM chatting c WHERE c.chatroom_no = cr.chatroom_no 
-		ORDER BY send_date DESC ) WHERE ROWNUM = 1) AS lastMessage, (SELECT CASE 
-		WHEN TRUNC(send_date) = TRUNC(SYSDATE) THEN TO_CHAR(send_date, 'AM HH24:MI') 
-		ELSE TO_CHAR(send_date, 'MM.DD') END FROM ( SELECT send_date FROM chatting 
-		c WHERE c.chatroom_no = cr.chatroom_no ORDER BY send_date DESC ) WHERE ROWNUM 
-		= 1) AS lastTime FROM CHATPARTICIPANT cp JOIN CHATROOM cr ON cp.chatroom_no 
-		= cr.chatroom_no WHERE cp.participant_no = #{userNo, jdbcType=VARCHAR} </select> -->
 
 	<select id="selectChatRoom" parameterType="String"
 		resultMap="chatRoomResultMap">
@@ -99,11 +90,6 @@
 		(#{content},#{sendUser},sysdate,#{chatRoomNo})
 	</insert>
 
-	<!-- <insert id="insertChatRoom" parameterType="kr.co.sist.chat.ChatRoomDTO"> 
-		<selectKey keyProperty="chatRoomNo" resultType="string" order="BEFORE"> SELECT 
-		'ROOM_' || SEQ_CHAT_ROOM.NEXTVAL FROM DUAL </selectKey> INSERT INTO CHATROOM 
-		(chatroom_no, chatroom_name,input_date,user_no) VALUES (#{chatRoomNo}, #{chatRoomName},sysdate,#{userNo}) 
-		</insert> -->
 	<insert id="insertChatRoom"
 		parameterType="kr.co.sist.chat.ChatRoomDTO">
 		<selectKey keyProperty="chatRoomNo" resultType="string"
@@ -118,21 +104,16 @@
 		INSERT INTO CHATPARTICIPANT (chatroom_no, participant_no)
 		VALUES (#{chatRoomNo}, #{userNo})
 	</insert>
-
+	
 	<select id="selectSearchUser" parameterType="java.util.Map"
-		resultType="kr.co.sist.chat.ChatRoomDTO">
-		SELECT DISTINCT
-		r.chatroom_no AS chatRoomNo,
-		r.chatroom_name AS chatRoomName
-		FROM chatroom r
-		JOIN chatparticipant p1 ON r.chatroom_no = p1.chatroom_no
-		JOIN chatparticipant p2 ON r.chatroom_no = p2.chatroom_no
-		JOIN users u ON p2.participant_no = u.user_no
-		WHERE p1.participant_no = #{userNo, jdbcType=VARCHAR}
-		AND p2.participant_no != #{userNo, jdbcType=VARCHAR}
-		AND u.company_no = #{companyNo}
-		AND u.user_name LIKE '%' || #{keyword} || '%' OR r.chatroom_name LIKE '%'
-		|| #{keyword} || '%'
+    resultType="kr.co.sist.chat.ChatRoomDTO">
+    SELECT DISTINCT
+        r.chatroom_no AS chatRoomNo,
+        r.chatroom_name AS chatRoomName
+    FROM chatroom r
+    JOIN chatparticipant cp ON r.chatroom_no = cp.chatroom_no
+    WHERE cp.participant_no = #{userNo, jdbcType=VARCHAR}
+      AND r.chatroom_name LIKE #{keyword}
 	</select>
 
 	<delete id="deleteChatParticipant" parameterType="java.util.Map">

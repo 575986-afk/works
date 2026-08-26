@@ -33,9 +33,10 @@ public class ChatService {
 
 	public List<ChatRoomDTO> searchUser(String companyNo, String userNo, String keyword) {
 		Map<String, Object> map = new HashMap<>();
+		
 		map.put("companyNo", companyNo);
-		map.put("myUserNo", userNo);
-		map.put("keyword", keyword);
+		map.put("userNo", userNo);
+		map.put("keyword", "%" + keyword + "%");
 
 		return cm.selectSearchUser(map);
 	}

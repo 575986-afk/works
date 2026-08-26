@@ -89,19 +89,4 @@ public class UserDashboardController {
     
     
     
-    
-    
-    
-    //to do ----------------------------------------------------------------------------------
-//    @PostMapping("/showTodo")
-//    public List<TodoDomain> showTodo(String todoNo, String userNo) {
-//    	List<TodoDomain> list=uds.getTodo(todoNo, userNo);
-//    	return list;
-//    }
-    //조직도 ------------------------------------------------------------------------------------
-//    @PostMapping("/showOrganization")
-//    public List<OrganizationDomain> showOrganization(String organizationNo, String userNo) {
-//    	return uds.getOrganization(organizationNo, userNo);
-//    }
-    
 }

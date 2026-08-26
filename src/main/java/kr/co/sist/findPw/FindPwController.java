@@ -49,12 +49,12 @@ public class FindPwController {
 		int isValid = fps.getVerification(userNo, verificationNo);
 
 		if (isValid > 0) {
-			return "works/login/pwUpdate"; // 인증 성공 시 비밀번호 재설정 화면으로
+			return "works/login/pwUpdate"; 
 		} else {
 			model.addAttribute("errorMessage", "인증번호가 일치하지 않습니다.");
 		}
 
-		return "works/login/verificationChk"; // 실패 시 다시 인증번호 입력 화면으로
+		return "works/login/verificationChk"; 
 	}
 
 	@PostMapping("/pwUpdate")
@@ -73,15 +73,15 @@ public class FindPwController {
 
 		if (!newPw.equals(confirmPw)) {
 			model.addAttribute("errorMessage", "비밀번호가 일치하지 않습니다.");
-			return "works/login/pwUpdate"; // 다시 비밀번호 재설정 페이지로
+			return "works/login/pwUpdate"; 
 		}
 
 		// 비밀번호 변경 서비스 호출
 		int isUpdated = fps.setNewPw(userNo, newPw);
 
 		if (isUpdated == 1) {
-			session.invalidate(); // 세션 초기화
-			return "redirect:/login?success=true"; // 성공 파라미터와 함께 로그인 화면으로 리다이렉트
+			session.invalidate();
+			return "redirect:/login?success=true"; 
 		} else {
 			model.addAttribute("errorMessage", "비밀번호 변경에 실패했습니다.");
 			return "works/login/pwUpdate";

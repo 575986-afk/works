@@ -110,9 +110,6 @@ public class ChatController {
 	@ResponseBody
 	public List<ChatRoomDTO> search(@RequestParam("keyword") String keyword, HttpSession session) {
 		UserDTO loginUser = (UserDTO) session.getAttribute("user");
-		if (loginUser == null) {
-			return null;
-		}
 
 		String companyNo = loginUser.getCompanyNo();
 		String myUserNo = String.valueOf(loginUser.getUserNo());
@@ -125,10 +122,8 @@ public class ChatController {
 	@ResponseBody
 	public String leaveChatRoom(@RequestParam("chatRoomNo") String chatRoomNo, HttpSession session) {
 		UserDTO loginUser = (UserDTO) session.getAttribute("user");
-		if (loginUser == null) {
-			return "FAIL";
-		}
 
+		
 		int result = cs.leaveChatRoom(loginUser.getUserNo(), chatRoomNo);
 		return result > 0 ? "SUCCESS" : "FAIL";
 	}

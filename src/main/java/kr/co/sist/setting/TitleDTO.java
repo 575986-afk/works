@@ -9,5 +9,5 @@ import lombok.ToString;
 @ToString
 public class TitleDTO {
 
-	private String userNo,  rankName, positionName;
+	private String userNo,rankName, positionName;
 }

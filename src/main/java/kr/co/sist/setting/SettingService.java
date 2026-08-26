@@ -43,8 +43,6 @@ public class SettingService {
         if (uDTO.getEmail() != null && !uDTO.getEmail().isEmpty()) {
             uDTO.setEmail(uDTO.getEmail());
         }
-    	//int cnt=settingMapper.updateProfile(uDTO);
-    	//return cnt;
         return settingMapper.updateProfile(uDTO);
     }
    
@@ -56,10 +54,6 @@ public class SettingService {
     	int cnt=settingMapper.updatePwChg(userNo, encodePw);
     	return cnt;
     }
-    
-    
-    
-    
     
     
     public List<StatusDTO> getStatusList() {
