@@ -100,10 +100,15 @@
 .headerLeft:hover{
 	color: white;
 }
-.adminLogo{
-	color: #00b4d8;
-    font-size:12px;
-    font-weight:900;
+.adminLogo {
+    width: 26px; height: 26px;
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+    color: #ffffff;
+    font-weight: 900;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    box-shadow: 0 0 12px rgba(29, 78, 216, 0.4);
 }
 .groupName{
     font-size:13px;
