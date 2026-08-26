@@ -29,7 +29,8 @@ public class AdminSessionInterceptor implements HandlerInterceptor {
 		Object sysAdminId = session.getAttribute("sysAdminId");
 
 		if (sysAdminId == null) {
-			response.sendRedirect(request.getContextPath() + "/admin/login");
+			//response.sendRedirect(request.getContextPath() + "/admin/login");
+			response.sendRedirect("/admin/login");
 			return false;
 		}
 		return true;
