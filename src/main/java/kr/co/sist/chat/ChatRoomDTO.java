@@ -23,4 +23,6 @@ public class ChatRoomDTO {
     private String companyName; 
     private String companyNo; 
     
+    private int participantCount;
+    
 }

@@ -48,6 +48,7 @@ public class ChatController {
 			for (ChatRoomDTO room : chatroom) {
 				if (room.getChatRoomNo().equals(chatRoomNo)) {
 					model.addAttribute("currentRoomName", room.getChatRoomName());
+					model.addAttribute("currentRoomParticipantCount", room.getParticipantCount());
 					break;
 				}
 			}

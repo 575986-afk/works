@@ -29,7 +29,54 @@
 		<result property="sendDate" column="sendDate" />
 	</resultMap>
 
-	<select id="selectChatRoom" parameterType="String"
+<select id="selectChatRoom" parameterType="String"
+		resultMap="chatRoomResultMap">
+		SELECT
+		cr.chatroom_no AS chatRoomNo,
+		cr.chatroom_name AS chatRoomName,
+		
+		<!-- 📌 해당 채팅방의 총 참여자 수 구하는 서브쿼리 추가 -->
+		(SELECT COUNT(*) 
+		 FROM chatparticipant cp_cnt 
+		 WHERE cp_cnt.chatroom_no = cr.chatroom_no
+		) AS participantCount,
+
+		(SELECT content
+		FROM (
+		SELECT content
+		FROM chatting c
+		WHERE c.chatroom_no = cr.chatroom_no
+		ORDER BY c.send_date DESC
+		)
+		WHERE ROWNUM = 1
+		) AS lastMessage,
+		
+		(SELECT
+		CASE
+		WHEN TRUNC(send_date) = TRUNC(SYSDATE)
+		THEN TO_CHAR(send_date, 'AM HH24:MI')
+		ELSE TO_CHAR(send_date, 'MM.DD')
+		END
+		FROM (
+		SELECT send_date
+		FROM chatting c
+		WHERE c.chatroom_no = cr.chatroom_no
+		ORDER BY c.send_date DESC
+		)
+		WHERE ROWNUM = 1
+		) AS lastTime,
+
+		(SELECT MAX(c.send_date)
+		FROM chatting c
+		WHERE c.chatroom_no = cr.chatroom_no
+		) AS lastSendDate
+		FROM CHATPARTICIPANT cp
+		JOIN CHATROOM cr
+		ON cp.chatroom_no = cr.chatroom_no
+		WHERE cp.participant_no = #{userNo, jdbcType=VARCHAR}
+		ORDER BY lastSendDate DESC NULLS LAST
+	</select>
+	<!-- <select id="selectChatRoom" parameterType="String"
 		resultMap="chatRoomResultMap">
 		SELECT
 		cr.chatroom_no AS chatRoomNo,
@@ -67,7 +114,7 @@
 		ON cp.chatroom_no = cr.chatroom_no
 		WHERE cp.participant_no = #{userNo, jdbcType=VARCHAR}
 		ORDER BY lastSendDate DESC NULLS LAST
-	</select>
+	</select> -->
 
 	<select id="selectMessageList" parameterType="String"
 		resultMap="chatRoomResultMap">

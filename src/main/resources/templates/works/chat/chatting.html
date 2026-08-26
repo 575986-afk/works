@@ -71,10 +71,16 @@
                 <div class="room-item" th:each="room : ${chatRoomList}" th:classappend="${room.chatRoomNo == currentRoomId} ? 'active'" th:onclick="|location.href='@{/chatting(chatRoomNo=${room.chatRoomNo})}'|">
                     <div class="room-avatar" th:text="${#strings.substring(room.chatRoomName, 0, 1)}"></div>
                     <div class="room-info">
-                        <div class="room-info-top">
-                            <span class="room-name" th:text="${room.chatRoomName}"></span>
-                            <span class="room-time" th:text="${room.lastTime}"></span>
-                        </div>
+							<div class="room-info-top">
+							    <div style="display: flex; align-items: center; gap: 4px; min-width: 0;">
+							        <span class="room-name" th:text="${room.chatRoomName}"></span>
+							        <span style="font-size: 11px; color: #888; display: flex; align-items: center; gap: 2px; flex-shrink: 0;">
+							            <i class="fa-solid fa-user-group" style="font-size: 10px;"></i>
+							            <span th:text="${room.participantCount}">1</span>
+							        </span>
+							    </div>
+							    <span class="room-time" th:text="${room.lastTime}"></span>
+							</div>
                         <div class="room-preview" th:text="${room.lastMessage != null ? room.lastMessage : ''}"></div>
                     </div>
                 </div>
@@ -82,15 +88,22 @@
         </aside>
 
         <main class="chat-area">
-            <div class="chat-header">
-                <span th:text="${currentRoomName != null ? currentRoomName : '메시지'}">메시지</span>
-                <button type="button" id="leaveRoomBtn" 
-                        th:if="${currentRoomId != null}"
-                        th:data-roomno="${currentRoomId}"
-                        class="px-3 py-1 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded hover:bg-red-100">
-                    나가기
-                </button>
-            </div>
+				<div class="chat-header">
+				    <div style="display: flex; align-items: center; gap: 8px;">
+				        <span th:text="${currentRoomName != null ? currentRoomName : '메시지'}">메시지</span>
+				        <span th:if="${currentRoomId != null}" style="font-size: 12px; color: #666; font-weight: normal; display: flex; align-items: center; gap: 4px;">
+				            <i class="fa-solid fa-user-group"></i>
+				            <span th:text="${currentRoomParticipantCount}">1</span>
+				        </span>
+				    </div>
+    <button type="button" id="leaveRoomBtn" 
+            th:if="${currentRoomId != null}"
+            th:data-roomno="${currentRoomId}"
+            class="px-3 py-1 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded hover:bg-red-100">
+        나가기
+    </button>
+</div>
+
 
             <div class="chat-body">
                 <div class="system-message" style="margin: auto; color: #666; font-size: 13px; text-align: center;" th:if="${currentRoomId == null}">
