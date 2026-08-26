@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>WORKS 회원가입</title>
+    <link rel="stylesheet" th:href="@{/common/css/login.css}" />
     <style>
         :root {
             --bg-color: #f4f4f5;
@@ -247,9 +248,7 @@
 
 <body>
 
-    <header class="header">
-        <div class="header-logo">W</div>
-    </header>
+    <div th:replace="~{fragments/loginHeader :: commonHeader}"></div>
 
     <div class="container">
         <main class="register-card">

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>회원가입 유형 선택</title>
-
+<link rel="stylesheet" th:href="@{/common/css/login.css}" />
 <style>
 *{
     margin:0;
@@ -106,15 +106,7 @@ header img{
 
 <body>
 
-<!-- <header>
-
-    네 헤더
-    <img th:src="@{/images/logo.png}" alt="WORKS">
-
-</header> -->
-<header>
-    <div class="header-logo">W</div>
-</header>
+<div th:replace="~{fragments/loginHeader :: commonHeader}"></div>
 
 <div class="container">
 

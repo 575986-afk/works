@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <title>아이디 찾기</title>
-
+<link rel="stylesheet" th:href="@{/common/css/login.css}" />
 <style>
 *{
     margin:0;
@@ -19,7 +19,7 @@ body{
 
 
 /* 상단 */
-header{
+ header{
     width:100%;
     height:60px;
     background:white;
@@ -45,7 +45,7 @@ header img{
             font-size: 10px;
             font-weight: 800;
         }
-
+ 
 
 /* 중앙 */
 .container{
@@ -207,9 +207,7 @@ header img{
 <body>
 
 
-<header>
-    <div class="header-logo">W</div>
-</header>
+<div th:replace="~{fragments/loginHeader :: commonHeader}"></div>
 
 
 

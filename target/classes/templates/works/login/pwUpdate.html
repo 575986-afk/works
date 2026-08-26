@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>비밀번호 재설정</title>
-
+<link rel="stylesheet" th:href="@{/common/css/login.css}" />
 <style>
 *{
     margin:0;
@@ -106,10 +106,7 @@ header{
 
 <body>
 
-<!-- 헤더 구조 직접 적용 -->
-<header>
-    <div class="header-logo">W</div>
-</header>
+<div th:replace="~{fragments/loginHeader :: commonHeader}"></div>
 
 <div class="container">
     <div class="reset-box">
