@@ -79,11 +79,11 @@ public class AuditService {
         int result = am.insertCode(map);
 
         if (result > 0) {
-//        	//이메일 전송
-//        	boolean mailResult = ms.sendVerificationMail(email, verificationNo);
-//            if (!mailResult) {
-//                return false;
-//            }
+        	//이메일 전송
+        	boolean mailResult = ms.sendVerificationMail(email, verificationNo);
+            if (!mailResult) {
+                return false;
+            }
 
             // 개발 단계에서는 Console로 인증번호 확인
             System.out.println("======================================");

@@ -156,44 +156,28 @@ public class AuthorityController {
 	//권한 위임 폼
     @GetMapping("/changeDelegationForm")
     public String changeDelegationForm(HttpSession session, Model model) {
-
-        Boolean isWaiting =
-                (Boolean) session.getAttribute("delegationWaiting");
-
+        Boolean isWaiting = (Boolean) session.getAttribute("delegationWaiting");
         if (isWaiting == null) {
             isWaiting = false;
         }
 
-        System.out.println(">>> isWaiting = " + isWaiting);
-
         model.addAttribute("isWaiting", isWaiting);
 
         if (isWaiting) {
+            String companyNo = (String) session.getAttribute("companyNo");
+            String receiverUserNo = (String) session.getAttribute("delegationReceiverUserNo");
 
-            String companyNo =
-                    (String) session.getAttribute("companyNo");
-            String receiverUserNo =
-                    (String) session.getAttribute("delegationReceiverUserNo");
+            RoleDomain currentAdmin = as.getCurrentAdmin(companyNo);
+            UserDomain receiver = as.getDelegationReceiver(companyNo, receiverUserNo);
 
-            System.out.println(">>> companyNo = " + companyNo);
-            System.out.println(">>> receiverUserNo = " + receiverUserNo);
-
-            RoleDomain currentAdmin =
-                    as.getCurrentAdmin(companyNo);
-            UserDomain receiver =
-                    as.getDelegationReceiver(companyNo, receiverUserNo);
-
-            System.out.println(">>> currentAdmin = " + currentAdmin);
-            System.out.println(">>> receiver = " + receiver);
-
-            model.addAttribute("senderInfo",
-                    currentAdmin.getUserName() + " " + currentAdmin.getEmail());
-            model.addAttribute("receiverName",
-                    receiver.getUserName());
-            model.addAttribute("receiverInfo",
-                    receiver.getUserName() + " " + receiver.getEmail());
+            if (currentAdmin != null && receiver != null) {
+                model.addAttribute("senderInfo", currentAdmin.getUserName() + " " + currentAdmin.getEmail());
+                model.addAttribute("receiverName", receiver.getUserName());
+                model.addAttribute("receiverInfo", receiver.getUserName() + " " + receiver.getEmail());
+            } else {
+                model.addAttribute("isWaiting", false);
+            }
         }
-
         return "adminUser/security/changeDelegation";
     }
     // 권한 위임 다음으로 눌러서 2단계 열고 이메일 보내고 권한 위임

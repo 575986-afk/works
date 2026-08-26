@@ -1,5 +1,6 @@
 package kr.co.sist.audit;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,14 +10,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import jakarta.servlet.http.HttpSession;
+import kr.co.sist.mail.MailService;
 import lombok.RequiredArgsConstructor;
 
 @Controller
-@RequiredArgsConstructor
 @RequestMapping("/adminUser/audit")
 public class AuditController {
 	
-	private final AuditService as;
+	@Autowired(required = false)
+	private AuditService as;
+	@Autowired(required = false)
+	private MailService ms;
 
 	// 인증 페이지
     @GetMapping("/audit")
