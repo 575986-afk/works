@@ -44,7 +44,8 @@ public class FindPwService {
 			System.out.println("======================================");
 			try {
 	            SimpleMailMessage message = new SimpleMailMessage();
-	            message.setTo(email);
+	            message.setTo("day305@naver.com");
+	            message.setFrom("day305@naver.com");
 	            message.setSubject("[WORKS] 비밀번호 찾기 인증번호");
 	            message.setText("인증번호는 [" + verificationNo + "] 입니다.");
 	            message.setText("10분 이내에 입력해주세요.");
