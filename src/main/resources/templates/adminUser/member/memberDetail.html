@@ -250,12 +250,12 @@ $(function(){
                     <div class="memberBtnArea">
                         <button id="deleteMember"
                                 class="btn btn-danger"
-                                th:data-user-no="${member.userNo}">
+                                th:data-user-no="${member?.userNo}">
                             계정 삭제
                         </button>
                         <button id="openEditMemberBtn"
                                 class="btn btn-primary"
-                                th:data-user-no="${member.userNo}">
+                                th:data-user-no="${member?.userNo}">
                             구성원 수정
                         </button>
                     </div>
@@ -263,21 +263,21 @@ $(function(){
                 <div class="profileArea">
                     <div class="profileImage">
                         <!-- 프로필 이미지가 존재하는 경우 -->
-				        <img th:if="${member.profileImage != null and !#strings.isEmpty(member.profileImage)}"
-				             th:src="@{'/upload/profile/' + ${member.profileImage}}" 
-				             alt="프로필 이미지" 
-				             style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
-				        <!-- 프로필 이미지가 없는 경우 기본 아이콘 출력 -->
-				        <i th:unless="${member.profileImage != null and !#strings.isEmpty(member.profileImage)}" 
-				           class="fa-solid fa-user"></i>
+                        <img th:if="${member?.profileImage != null and !#strings.isEmpty(member?.profileImage)}"
+                             th:src="@{'/upload/profile/' + ${member?.profileImage}}" 
+                             alt="프로필 이미지" 
+                             style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                        <!-- 프로필 이미지가 없는 경우 기본 아이콘 출력 -->
+                        <i th:unless="${member?.profileImage != null and !#strings.isEmpty(member?.profileImage)}" 
+                           class="fa-solid fa-user"></i>
                     </div>
                     <div class="profileInfo">
-					    <h3 th:text="${member.userName}">홍길동</h3>
-					    <p th:text="${(member.rankName ?: '-') + ' / ' + (member.positionName ?: '-') + ' / ' + (member.organizationName ?: '-') + ' / ' + (member.email ?: '-')}">
-					        직책 / 조직 1 / 직급 / test1@practice-6.by-works.net
-					    </p>
-					    <span class="statusText" th:text="${member.status ?: '-'}">사용중</span>
-					</div>
+                        <h3 th:text="${member?.userName ?: '-'}">홍길동</h3>
+                        <p th:text="${(member?.rankName ?: '-') + ' / ' + (member?.positionName ?: '-') + ' / ' + (member?.organizationName ?: '-') + ' / ' + (member?.email ?: '-')}">
+                            직책 / 조직 1 / 직급 / test1@practice-6.by-works.net
+                        </p>
+                        <span class="statusText" th:text="${member?.status ?: '-'}">사용중</span>
+                    </div>
                 </div>
 
                 <hr class="my-3" />
@@ -287,30 +287,30 @@ $(function(){
                     <table class="detailTable">
                         <tr>
                             <th>소속 조직</th>
-                            <td style="width:40%;" th:text="${(member.organizationName ?: '-')}">조직 1</td>
+                            <td style="width:40%;" th:text="${member?.organizationName ?: '-'}">조직 1</td>
                             <th></th>
                             <td></td>
                         </tr>
                         <tr>
                             <th>email</th>
-                            <td th:text="${member.email}"></td>
+                            <td th:text="${member?.email ?: '-'}"></td>
                             <th>휴대폰</th>
-                            <td th:text="${(member.phone ?: '-')}">010-1234-5678</td>
+                            <td th:text="${member?.phone ?: '-'}">010-1234-5678</td>
                         </tr>
                         <tr>
                             <th>조직/직책</th>
                             <td>
                                 <i class="fa-solid fa-user-group text-primary me-1"></i> 
-                                <span th:text="${(member.organizationName ?: '-') + ' / ' + (member.positionName ?: '-')}">조직 1 / 사원</span>
+                                <span th:text="${(member?.organizationName ?: '-') + ' / ' + (member?.positionName ?: '-')}">조직 1 / 사원</span>
                             </td>
                             <th style="width:110px;">직급</th>
-                            <td th:text="${(member.rankName ?: '-')}">아르바이트</td>
+                            <td th:text="${member?.rankName ?: '-'}">아르바이트</td>
                         </tr>
                         <tr>
                             <th>근무처</th>
-                            <td th:text="${(member.workplace ?: '-')}">개발팀</td>
+                            <td th:text="${member?.workplace ?: '-'}">개발팀</td>
                             <th>담당 업무</th>
-                            <td th:text="${(member.jobtask ?: '-')}">개발</td>
+                            <td th:text="${member?.jobtask ?: '-'}">개발</td>
                         </tr>
                     </table>
                 </div>

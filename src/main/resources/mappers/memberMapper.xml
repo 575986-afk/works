@@ -100,7 +100,7 @@
 	            WHERE om.orgmember_no = u.user_no
 	        ) AS organizationName
 	    FROM USERS u
-	    JOIN TITLE t
+	    LEFT JOIN TITLE t
 	        ON u.user_no = t.user_no
 	    LEFT JOIN RANK r
 	        ON t.rank_no = r.rank_no
@@ -148,8 +148,8 @@
 	    UPDATE USERS
 	    SET
 	        company_no = #{companyNo},
-	        workplace = #{workplace},
-	        jobtask = #{jobtask}
+	        workplace = #{workplace, jdbcType=VARCHAR},
+	        jobtask = #{jobtask, jdbcType=VARCHAR}
 	    WHERE user_no = #{userNo}
 	</update>
 	<!-- 구성원 정보 등록 role -->
@@ -168,8 +168,8 @@
 	    )
 	    VALUES (
 	        #{userNo},
-	        #{rankNo},
-	        #{positionNo}
+	        #{rankNo, jdbcType=VARCHAR},
+	        #{positionNo, jdbcType=VARCHAR}
 	    )
 	</insert>
 	<!-- 조직 등록 -->
@@ -179,7 +179,7 @@
 	        orgmember_no
 	    )
 	    VALUES (
-	        #{organizationNo},
+	        #{organizationNo, jdbcType=VARCHAR},
 	        #{userNo}
 	    )
 	</insert>
@@ -189,8 +189,8 @@
 	<update id="updateUsers">
 	    UPDATE USERS
 	    SET
-	        workplace = #{workplace},
-	        jobtask = #{jobtask}
+	        workplace = #{workplace, jdbcType=VARCHAR},
+	        jobtask = #{jobtask, jdbcType=VARCHAR}
 	    WHERE user_no = #{userNo}
 	</update>
 
@@ -198,8 +198,8 @@
 	<update id="updateMemberTitle">
 	    UPDATE TITLE
 	    SET
-	        rank_no = #{rankNo},
-	        position_no = #{positionNo}
+	        rank_no = #{rankNo, jdbcType=VARCHAR},
+	        position_no = #{positionNo, jdbcType=VARCHAR}
 	    WHERE user_no = #{userNo}
 	</update>
 
