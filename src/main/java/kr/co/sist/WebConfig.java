@@ -47,7 +47,8 @@ public class WebConfig implements WebMvcConfigurer{
                    "/loginProcess",
                    "/css/**",
                    "/js/**",
-                   "/images/**"
+                   "/images/**",
+                   "/common/**"
                );
 
 	// 권한 레벨 인터셉터
