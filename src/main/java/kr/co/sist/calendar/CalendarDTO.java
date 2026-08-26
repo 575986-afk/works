@@ -18,7 +18,7 @@ import lombok.Data;
 @Data
 public class CalendarDTO {
 
-	private int scheduleNo;       // CALENDER_NO (PK, number)
+	private String scheduleNo;       // CALENDER_NO (PK, number)
 	private String calendarId;    // CALENDER_NO를 문자열로 다룰 때 사용
 
 	private String title;         // 제목

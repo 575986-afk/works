@@ -38,9 +38,7 @@ public class CompanyCalService {
 
 	// 회사 일정 삭제 (자식 테이블부터 순차 삭제)
 	@Transactional
-	public void removeCompanyCal(String calenderNo) {
-		ccm.deleteCompanyCalMember(calenderNo);
-		ccm.deleteCompanyCalConnection(calenderNo);
-		ccm.deleteCompanyCal(calenderNo);
+	public boolean removeCompanyCal(String calenderNo) {
+	    return ccm.deleteCompanyCal(calenderNo) > 0;
 	}
 }

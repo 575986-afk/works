@@ -4,16 +4,6 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.sist.calendar.CalendarDAO">
 
-	<!--
-	  전제 조건(스키마):
-	  - CALENDER(CALENDER_NO, TITLE, CONTENT, START_DATE, END_DATE, CATEGORY, FAVORITE_YN)
-	    * FAVORITE_YN, CATEGORY 컬럼은 기존 companyCalMapper.xml에는 없던 컬럼으로,
-	      "즐겨찾기(중요)"/"캘린더 구분" 기능을 위해 추가가 필요함.
-	  - CALENDERCONNECTION(CALENDER_NO, USER_NO) : 캘린더-사용자 매핑
-	  - USERS(USER_NO, USER_NAME, COMPANY_NO, ...) : 기존 테이블
-	  - SEQ_CALENDER_NO : CALENDER_NO 채번용 시퀀스 (없으면 생성 필요)
-	-->
-
 	<resultMap id="calendarResultMap" type="calendarDTO">
 		<result property="scheduleNo" column="scheduleNo"/>
 		<result property="calendarId" column="calendarId"/>
@@ -47,12 +37,13 @@
 		INNER JOIN CALENDERCONNECTION cc
 			ON c.CALENDER_NO = cc.CALENDER_NO
 		WHERE cc.USER_NO = #{userNo}
+			AND NVL(c.IS_DELETED, 'N') = 'N'
 			AND c.START_DATE &lt; ADD_MONTHS(TO_DATE(#{yearMonth}, 'YYYYMM'), 1)
 			AND c.END_DATE &gt;= TO_DATE(#{yearMonth}, 'YYYYMM')
 		ORDER BY startDate, startTime
 	</select>
 
-	<!-- 개인 전체 기간 일정 조회 (전체/중요/범주 일정 보기용 - 월 캐시에 의존하지 않음) -->
+	<!-- 개인 전체 기간 일정 조회 -->
 	<select id="selectPersonalAll" resultMap="calendarResultMap">
 		SELECT DISTINCT
 			c.CALENDER_NO   AS scheduleNo,
@@ -69,6 +60,7 @@
 		INNER JOIN CALENDERCONNECTION cc
 			ON c.CALENDER_NO = cc.CALENDER_NO
 		WHERE cc.USER_NO = #{userNo}
+			AND NVL(c.IS_DELETED, 'N') = 'N'
 		ORDER BY startDate, startTime
 	</select>
 
@@ -93,6 +85,7 @@
 		INNER JOIN USERS u
 			ON cc.USER_NO = u.USER_NO
 		WHERE u.COMPANY_NO = #{companyNo}
+			AND NVL(c.IS_DELETED, 'N') = 'N'
 			AND c.START_DATE &lt; TO_DATE(#{date}, 'YYYY-MM-DD') + 1
 			AND c.END_DATE &gt;= TO_DATE(#{date}, 'YYYY-MM-DD')
 		ORDER BY u.USER_NO, startTime
@@ -112,9 +105,10 @@
 			c.FAVORITE_YN   AS favoriteYn
 		FROM CALENDER c
 		WHERE c.CALENDER_NO = #{calendarId}
+			AND NVL(c.IS_DELETED, 'N') = 'N'
 	</select>
 
-	<!-- 일정 상세 정보 조회(예약/작성자 정보 포함) -->
+	<!-- 일정 상세 정보 조회 -->
 	<select id="selectDetail" resultMap="calendarResultMap">
 		SELECT
 			c.CALENDER_NO   AS scheduleNo,
@@ -135,15 +129,16 @@
 		LEFT JOIN USERS u
 			ON cc.USER_NO = u.USER_NO
 		WHERE c.CALENDER_NO = #{calendarId}
+			AND NVL(c.IS_DELETED, 'N') = 'N'
 	</select>
 
 	<!-- 일정 등록 -->
 	<insert id="insert" parameterType="calendarDTO">
-		<selectKey keyProperty="scheduleNo" order="BEFORE" resultType="int">
-			SELECT SEQ_CALENDER_NO.NEXTVAL FROM DUAL
+		<selectKey keyProperty="scheduleNo" order="BEFORE" resultType="String">
+			SELECT 'CAL_' || LPAD(SEQ_CALENDER_NO.NEXTVAL, 6, '0') FROM DUAL
 		</selectKey>
 		INSERT INTO CALENDER (
-			CALENDER_NO, TITLE, CONTENT, START_DATE, END_DATE, CATEGORY, FAVORITE_YN
+			CALENDER_NO, TITLE, CONTENT, START_DATE, END_DATE, CATEGORY, FAVORITE_YN, IS_DELETED
 		) VALUES (
 			#{scheduleNo},
 			#{title, jdbcType=VARCHAR},
@@ -151,6 +146,7 @@
 			TO_DATE(#{startDate} || ' ' || NVL(#{startTime}, '00:00'), 'YYYY-MM-DD HH24:MI'),
 			TO_DATE(#{endDate} || ' ' || NVL(#{endTime}, '23:59'), 'YYYY-MM-DD HH24:MI'),
 			#{category, jdbcType=VARCHAR},
+			'N',
 			'N'
 		)
 	</insert>
@@ -158,7 +154,7 @@
 	<!-- 캘린더-작성자 연결 (insert 직후 호출) -->
 	<insert id="insertConnection">
 		INSERT INTO CALENDERCONNECTION (CALENDER_NO, USER_NO)
-		VALUES (#{calendarId}, #{userNo})
+		VALUES (#{scheduleNo}, #{userNo})
 	</insert>
 
 	<!-- 즐겨찾기(중요) 등록 -->
@@ -186,16 +182,17 @@
 		WHERE CALENDER_NO = #{scheduleNo}
 	</update>
 
-	<!-- 캘린더-작성자 연결 해제 (delete 이전 호출, FK CASCADE 없을 경우 대비) -->
+	<!-- 캘린더-작성자 연결 해제 -->
 	<delete id="deleteConnection">
 		DELETE FROM CALENDERCONNECTION
 		WHERE CALENDER_NO = #{scheduleNo}
 	</delete>
 
-	<!-- 일정 삭제 -->
-	<delete id="delete">
-		DELETE FROM CALENDER
+	<!-- 일정 삭제 (논리 삭제 처리) -->
+	<update id="delete">
+		UPDATE CALENDER
+		SET IS_DELETED = 'Y'
 		WHERE CALENDER_NO = #{scheduleNo}
-	</delete>
+	</update>
 
 </mapper>

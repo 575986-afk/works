@@ -14,20 +14,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import jakarta.servlet.http.HttpSession;
 
-/**
- * 다이어그램 상 모든 메서드가 String을 반환하도록 설계되어 있음.
- *
- * - selectPersonalMonth : 최초 페이지 진입(Model + HttpSession 사용) → 뷰 이름 반환
- * - 그 외 조회/등록/수정/삭제 : 화면 JS(calendar.html)가 fetch로 호출하는
- *   AJAX 엔드포인트 → @ResponseBody로 JSON 문자열을 그대로 반환
- *   (다이어그램의 반환형 String과 실제 JSON 문자열 응답을 그대로 일치시킴)
- *
- * 주의: 기존 kr.co.sist.calendar.CalendarPageController(GET /calendar, 뷰만 반환)는
- * 이 컨트롤러로 대체되므로 프로젝트에서 함께 쓰지 말고 제거해야 함(같은 매핑 충돌 남).
- *
- * Jackson(ObjectMapper)이 프로젝트 클래스패스에서 잡히지 않는 환경이라
- * 외부 라이브러리 의존 없이 JSON을 직접 문자열로 만들어 반환한다.
- */
 @Controller
 public class CalendarController {
 
@@ -56,7 +42,7 @@ public class CalendarController {
 		return "works/calendar/calendar";
 	}
 
-	// (다이어그램에는 없지만) 월 이동 시 화면 새로고침 없이 JSON만 다시 받기 위한 보조 엔드포인트
+	// 월 이동 시 화면 새로고침 없이 JSON만 다시 받기 위한 보조 엔드포인트
 	@GetMapping("/calendar/personalMonth")
 	@ResponseBody
 	public String selectPersonalMonthJson(@RequestParam("yearMonth") String yearMonth, HttpSession session) {
@@ -64,7 +50,7 @@ public class CalendarController {
 		return toJsonArray(cs.selectPersonalMonth(userId, yearMonth));
 	}
 
-	// 전체/중요/범주 일정 보기용 - 월 캐시에 의존하지 않고 전체 기간을 그대로 내려줌
+	// 전체/중요/범주 일정 보기용
 	@GetMapping("/calendar/personalAll")
 	@ResponseBody
 	public String selectPersonalAllJson(HttpSession session) {
@@ -131,7 +117,7 @@ public class CalendarController {
 	// 일정 삭제
 	@PostMapping("/calendar/delete")
 	@ResponseBody
-	public String delete(@RequestParam("scheduleNo") int scheduleNo) {
+	public String delete(@RequestParam("scheduleNo") String scheduleNo) {
 		int result = cs.delete(scheduleNo);
 		return resultJson(result == 1, scheduleNo);
 	}
@@ -152,7 +138,8 @@ public class CalendarController {
 	private String toJsonObject(CalendarDTO d) {
 		if (d == null) return "null";
 		StringBuilder sb = new StringBuilder("{");
-		sb.append("\"scheduleNo\":").append(d.getScheduleNo()).append(",");
+		// [수정] d.getScheduleNo() -> str(d.getScheduleNo())로 감싸 큰따옴표 추가
+		sb.append("\"scheduleNo\":").append(str(d.getScheduleNo())).append(",");
 		sb.append("\"calendarId\":").append(str(d.getCalendarId())).append(",");
 		sb.append("\"title\":").append(str(d.getTitle())).append(",");
 		sb.append("\"content\":").append(str(d.getContent())).append(",");
@@ -168,8 +155,9 @@ public class CalendarController {
 		return sb.toString();
 	}
 
-	private String resultJson(boolean success, int scheduleNo) {
-		return "{\"result\":\"" + (success ? "success" : "fail") + "\",\"scheduleNo\":" + scheduleNo + "}";
+	private String resultJson(boolean success, String string) {
+		// [수정] string -> str(string)으로 감싸 큰따옴표 추가
+		return "{\"result\":\"" + (success ? "success" : "fail") + "\",\"scheduleNo\":" + str(string) + "}";
 	}
 
 	// null-safe 문자열을 JSON 문자열 리터럴로 (없으면 null 그대로)

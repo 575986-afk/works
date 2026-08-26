@@ -4,7 +4,7 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="kr.co.sist.service.CompanyCalMapper">
 
-	<resultMap id="comCalDetailResultMap" type="kr.co.sist.service.CompanyCalDetailDomain">
+    <resultMap id="comCalDetailResultMap" type="kr.co.sist.service.CompanyCalDetailDomain">
         <result property="calenderNo" column="calenderNo"/>
         <result property="title" column="title"/>
         <result property="content" column="content"/>
@@ -35,6 +35,7 @@
      WHERE U.COMPANY_NO = #{companyNo}
        AND U.ACCOUNT_STATUS = '활성'
        AND C.DISCLOSURE_STATUS = '1'
+       AND NVL(C.IS_DELETED, 'N') = 'N'  <!-- [수정] 삭제 처리 안 된 일정만 조회 -->
      <if test="year != null and year != '' and month != null and month != ''">
         AND C.START_DATE &lt; ADD_MONTHS(
             TO_DATE(#{year} || LPAD(#{month}, 2, '0'), 'YYYYMM'), 1
@@ -77,26 +78,28 @@
      LEFT JOIN COMPANY CO 
      		ON U.COMPANY_NO = CO.COMPANY_NO
      WHERE C.CALENDER_NO = #{calenderNo}
+       AND NVL(C.IS_DELETED, 'N') = 'N'  <!-- [수정] 삭제된 일정은 상세조회 불가 -->
      	AND ROWNUM = 1
     </select>
     
     <!-- 일정 등록 -->
-    <!-- 캘린더 테이블 등록 -->
     <insert id="insertCompanyCal" parameterType="companyCalDTO">
      <selectKey keyProperty="calenderNo" resultType="String" order="BEFORE">
         SELECT 'CAL_' || LPAD(SEQ_CALENDER_NO.NEXTVAL, 6, '0') FROM DUAL
      </selectKey>
      INSERT INTO CALENDER (
-        CALENDER_NO, TITLE, CONTENT, START_DATE, END_DATE, DISCLOSURE_STATUS
+        CALENDER_NO, TITLE, CONTENT, START_DATE, END_DATE, DISCLOSURE_STATUS, IS_DELETED <!-- [수정] IS_DELETED 추가 -->
      ) VALUES (
         #{calenderNo},
         #{title},
         #{content},
         TO_DATE(#{startDate} || ' ' || #{startTime}, 'YYYY-MM-DD HH24:MI'),
         TO_DATE(#{endDate} || ' ' || #{endTime}, 'YYYY-MM-DD HH24:MI'),
-        '1'
+        '1',
+        'N'  <!-- [수정] 기본값 'N' 저장 -->
      )
 	</insert>
+
 	<!-- 캘린더연결 테이블 등록 -->
 	<insert id="insertCompanyCalConnection" parameterType="companyCalDTO">
       INSERT INTO CALENDERCONNECTION (
@@ -107,6 +110,7 @@
          #{organizationNo, jdbcType=VARCHAR}
       )
 	</insert>
+
 	<!-- 캘린더공유자 테이블 등록 -->
 	<insert id="insertCompanyCalMembers" parameterType="companyCalDTO">
      INSERT INTO CALENDERMEMBER (
@@ -128,21 +132,23 @@
      WHERE CALENDER_NO = #{calenderNo}
 	</update>
     
-    <!-- 일정 삭제 -->
-    <!-- 공유 대상자 삭제 -->
+    <!-- 일정 삭제 (논리 삭제 처리) -->
+    <!-- [선택 사항] 연결 관계를 유지해야 감사 로그에서 원본 조회가 가능하므로, 아래 두 delete 문은 실행하지 않거나 제거하셔도 됩니다. -->
 	<delete id="deleteCompanyCalMember" parameterType="String">
 	    DELETE FROM CALENDERMEMBER 
 	    WHERE CALENDER_NO = #{calenderNo}
 	</delete>
-	<!-- 캘린더연결 삭제 -->
+
 	<delete id="deleteCompanyCalConnection" parameterType="String">
 	    DELETE FROM CALENDERCONNECTION 
 	    WHERE CALENDER_NO = #{calenderNo}
 	</delete>
-	<!-- 메인 일정 삭제 -->
-	<delete id="deleteCompanyCal" parameterType="String">
-	    DELETE FROM CALENDER 
-	    WHERE CALENDER_NO = #{calenderNo}
-	</delete>
+
+	<!-- 메인 일정 논리 삭제 (DELETE -> UPDATE) -->
+	<update id="deleteCompanyCal" parameterType="String"> <!-- [수정] <delete>에서 <update>로 변경 -->
+	    UPDATE CALENDER 
+	       SET IS_DELETED = 'Y' 
+	     WHERE CALENDER_NO = #{calenderNo}
+	</update>
 
 </mapper>

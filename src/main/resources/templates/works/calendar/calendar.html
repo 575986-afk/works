@@ -582,7 +582,7 @@
   // CalendarDTO(JSON) -> 화면에서 쓰는 로컬 이벤트 객체로 변환
   function dtoToLocalEvent(dto) {
     return {
-      id: String(dto.scheduleNo),
+      scheduleNo: dto.scheduleNo,
       title: dto.title,
       time: dto.startTime || '',
       category: dto.category || 'default',

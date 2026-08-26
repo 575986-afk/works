@@ -100,7 +100,7 @@ public class CalendarService {
 
 	// 일정 삭제
 	@Transactional
-	public int delete(int scheduleNo) {
+	public int delete(String scheduleNo) {
 		// CALENDERLOG.CALENDER_NO -> CALENDER.CALENDER_NO FK 때문에, 로그가
 		// 남아있으면 CALENDER 삭제가 거부된다(ORA-02292). 먼저 로그를 정리한다.
 		// (그 결과 이 일정의 등록/수정 이력도 함께 사라짐 - 알려진 트레이드오프)

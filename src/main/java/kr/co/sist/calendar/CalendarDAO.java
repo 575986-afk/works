@@ -48,9 +48,9 @@ public interface CalendarDAO {
 	public int update(CalendarDTO cDTO);
 
 	// 일정 삭제
-	public int delete(@Param("scheduleNo") int scheduleNo);
+	public int delete(@Param("scheduleNo") String scheduleNo);
 
 	// CALENDERCONNECTION에 FK ON DELETE CASCADE가 없는 경우를 대비해
 	// delete() 이전에 명시적으로 먼저 지워준다.
-	public int deleteConnection(@Param("scheduleNo") int scheduleNo);
+	public int deleteConnection(@Param("scheduleNo") String scheduleNo);
 }
