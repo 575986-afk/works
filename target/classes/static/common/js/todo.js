@@ -333,28 +333,47 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelTodoModalBtn = document.getElementById('cancelTodoModalBtn');
     const modalTitleInput = document.getElementById('modalTitleInput');
     const modalContentInput = document.getElementById('modalContentInput');
+	const todoForm = document.getElementById('todoForm');
+	const modalTodoNoInput = document.getElementById('modalTodoNoInput');
 
     // 모달 열기
-    if (openTodoModalBtn) {
-        openTodoModalBtn.addEventListener('click', () => {
-            if (modalTitleInput) modalTitleInput.value = '';
-            if (modalContentInput) modalContentInput.value = '';
-            if (todoModal) todoModal.classList.remove('hidden');
-        });
-    }
+	if (openTodoModalBtn) {
+	    openTodoModalBtn.addEventListener('click', () => {
+	        // action을 등록 경로로 설정
+	        if (todoForm) todoForm.action = '/addTodo';
+	        
+	        // 입력값 초기화
+	        if (modalTodoNoInput) modalTodoNoInput.value = '';
+	        if (modalTitleInput) modalTitleInput.value = '';
+	        if (modalContentInput) modalContentInput.value = '';
+	        // (필요 시 기한, 담당자 데이터 초기화 로직 추가)
+	        
+	        if (todoModal) todoModal.classList.remove('hidden');
+	    });
+	}
 
-    if (editTodoBtn) {
-        editTodoBtn.addEventListener('click', () => {
-            if (!currentSelectedTodo) return;
+	if (editTodoBtn) {
+	    editTodoBtn.addEventListener('click', () => {
+	        if (!currentSelectedTodo) return;
 
-            const title = currentSelectedTodo.dataset.title || '';
-            const content = currentSelectedTodo.dataset.content || '';
+	        // action을 수정 경로로 설정
+	        if (todoForm) todoForm.action = '/updateTodo';
 
-            if (modalTitleInput) modalTitleInput.value = title;
-            if (modalContentInput) modalContentInput.value = content;
-            if (todoModal) todoModal.classList.remove('hidden');
-        });
-    }
+	        // 선택된 데이터 가져오기
+	        const todoNo = currentSelectedTodo.dataset.no || '';
+	        const title = currentSelectedTodo.dataset.title || '';
+	        const content = currentSelectedTodo.dataset.content || '';
+
+	        // 모달창에 데이터 세팅
+	        if (modalTodoNoInput) modalTodoNoInput.value = todoNo;
+	        if (modalTitleInput) modalTitleInput.value = title;
+	        if (modalContentInput) modalContentInput.value = content;
+	        
+	        // (필요 시 기존에 선택된 기한(endDate)과 담당자 정보를 모달에 세팅하는 로직도 여기에 추가해야 합니다.)
+	        
+	        if (todoModal) todoModal.classList.remove('hidden');
+	    });
+	}
 
     // 모달 닫기 함수
     const closeModal = () => {

@@ -222,12 +222,12 @@
 		class="fixed inset-0 z-50 hidden bg-black/40 flex items-center justify-center p-4">
 		<form id="todoForm" th:action="@{/addTodo}" method="POST"
 			class="bg-white rounded-xl shadow-xl w-full max-w-[600px] flex flex-col overflow-hidden">
-
+			<input type="hidden" id="modalTodoNoInput" name="todoNo" value="">
 			<!-- 헤더 -->
 			<div
 				class="flex justify-between items-center px-6 py-4 border-b border-gray-100">
 				<h2 class="text-[16px] font-bold text-gray-800">할 일 쓰기</h2>
-				<button id="closeTodoModalBtn"
+				<button id="closeTodoModalBtn" type="button"
 					class="text-gray-400 hover:text-gray-600 transition">
 					<i class="fa-solid fa-xmark text-xl"></i>
 				</button>
@@ -284,7 +284,7 @@
 				<div class="flex items-center">
 					<label
 						class="w-24 text-[14px] font-bold text-gray-700 shrink-0 flex items-center gap-1">
-						요청자 <i class="fa-regular fa-circle-question text-gray-300 text-xs"></i>
+						요청자
 					</label>
 					<div class="flex items-center gap-2">
 						<span th:text="${userName}"
@@ -301,7 +301,7 @@
 				<div class="flex items-start">
 					<label
 						class="w-24 text-[14px] font-bold text-gray-700 shrink-0 mt-2 flex items-center gap-1">
-						담당자 <i class="fa-regular fa-circle-question text-gray-300 text-xs"></i>
+						담당자
 					</label>
 					<div class="flex-1 flex flex-col gap-2">
 						<!-- 입력창 & 주소록 버튼 -->

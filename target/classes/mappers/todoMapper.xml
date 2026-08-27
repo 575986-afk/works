@@ -66,6 +66,7 @@
 			</if>
 			AND T.isdeleted = '0'
 		</where>
+		ORDER BY t.start_date DESC
 	</select>
 	<select id="selectrepresentativeList"
 		parameterType="todoRangeDTO" resultType="usertodoDomain">
@@ -104,6 +105,26 @@
 		'0'
 		)
 	</insert>
+	<update id="updateTodo" parameterType="todoDTO">
+    UPDATE todo
+    SET 
+        title = #{title},
+        content = #{content},
+        end_date = 
+        <choose>
+            <when test="endDate != null and endDate != ''">
+                to_timestamp(#{endDate}, 'YYYY-MM-DD')
+            </when>
+            <otherwise>
+                null
+            </otherwise>
+        </choose>
+    WHERE todo_no = #{todoNo}
+</update>
+
+<delete id="deleteRepre" parameterType="String">
+delete from REPRESENTATIVE where todo_no = #{todoNo}
+</delete>
 
 	<!-- 담당자 매핑 테이블 (그대로 사용하시면 됩니다) -->
 	<insert id="insertTodoRepresentative">
