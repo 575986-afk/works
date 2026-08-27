@@ -18,77 +18,67 @@ public class WebConfig implements WebMvcConfigurer{
 	private final LoginInterceptor loginInterceptor;
 	private final Audit2FAInterceptor audit2FAInterceptor;
 	private final RoleLevelInterceptor roleLevelInterceptor;
-	  private final AdminSessionInterceptor adminSessionInterceptor;
+	private final AdminSessionInterceptor adminSessionInterceptor;
 
-	/**
-	 * 정적 리소스 매핑
-	 */
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
 		registry.addResourceHandler("/upload/**")
 		.addResourceLocations("file:///c:/spring/upload/");
 	}
 	
-	/**
-    * 인터셉터 등록
-    */
-   @Override
-   public void addInterceptors(InterceptorRegistry registry) {
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
 
-       // 로그인 인터셉터
-       registry.addInterceptor(loginInterceptor)
-               .addPathPatterns("/**")
-               .excludePathPatterns(
-                   "/",
-                   "/admin/**",
-                   "/policy/**",
-                   "/error",        
-                   "/favicon.ico",
-                   "/user/notices",
-                   "/notice/notice",
-                   "/login",
-                   "/works/login/**",
-                   "/works/login/**",
-                   "/findId",
-                   "/findPw",
-                   "/joinForm",
-                   "/pwUpdate",
-                   "/signupChk",
-                   "/verificationChk",
-                   "/userJoinForm",
-                   "/managerJoinForm",
-                   "/loginProcess",
-                   "/checkUser",
-                   "/verificationChk",
-                   "/verifyCodeProcess",
-                   "/pwUpdate",
-                   "/resetPwProcess",
-                   "/findIdProcess",
-                   "/idDup",
-                   "/userJoin",
-                   "/managerJoin",
-                   "/css/**",
-                   "/js/**",
-                   "/images/**",
-                   "/common/**"
-               );
+        registry.addInterceptor(loginInterceptor)
+                .addPathPatterns("/**")
+                .excludePathPatterns(
+                    "/",
+                    "/admin/**",
+                    "/policy/**",
+                    "/error",        
+                    "/favicon.ico",
+                    "/user/notices",
+                    "/notice/notice",
+                    "/login",
+                    "/works/login/**",
+                    "/findId",
+                    "/findPw",
+                    "/joinForm",
+                    "/pwUpdate",
+                    "/signupChk",
+                    "/verificationChk",
+                    "/userJoinForm",
+                    "/managerJoinForm",
+                    "/loginProcess",
+                    "/checkUser",
+                    "/verifyCodeProcess",
+                    "/resetPwProcess",
+                    "/findIdProcess",
+                    "/idDup",
+                    "/userJoin",
+                    "/managerJoin",
+                    "/css/**",
+                    "/js/**",
+                    "/images/**",
+                    "/common/**"
+                );
 
-	// 권한 레벨 인터셉터
-	    registry.addInterceptor(roleLevelInterceptor)
-	            .addPathPatterns(
-	                "/adminUser/company/info",
-	                "/adminUser/member/member",
-	                "/adminUser/member/organization",
-	                "/adminUser/member/group",
-	                "/adminUser/member/title",
-	                "/adminUser/security/authority",
-	                "/adminUser/service/calendar",
-	                "/adminUser/audit/loginAudit",
-	                "/adminUser/audit/calAudit",
-	                "/adminUser/audit/todoAudit",
-	                "/adminUser/audit/addrAudit"
-	            );
-	    
+        // 권한 레벨 인터셉터
+        registry.addInterceptor(roleLevelInterceptor)
+                .addPathPatterns(
+                    "/adminUser/company/info",
+                    "/adminUser/member/member",
+                    "/adminUser/member/organization",
+                    "/adminUser/member/group",
+                    "/adminUser/member/title",
+                    "/adminUser/security/authority",
+                    "/adminUser/service/calendar",
+                    "/adminUser/audit/loginAudit",
+                    "/adminUser/audit/calAudit",
+                    "/adminUser/audit/todoAudit",
+                    "/adminUser/audit/addrAudit"
+                );
+        
        // 감사 2단계 인증 인터셉터
        registry.addInterceptor(audit2FAInterceptor)
                .addPathPatterns(
@@ -96,10 +86,11 @@ public class WebConfig implements WebMvcConfigurer{
                    "/adminUser/audit/calAudit",
                    "/adminUser/audit/todoAudit",
                    "/adminUser/audit/addrAudit"
-               );
+              );
+              
        // 시스템관리자
        registry.addInterceptor(adminSessionInterceptor)
-                  .addPathPatterns("/admin/**")
-                  .excludePathPatterns("/admin/login");
+                .addPathPatterns("/admin/**")
+                .excludePathPatterns("/admin/login");
    }
 }

@@ -143,50 +143,6 @@
     let attachedFile = null;
 
     $(document).ready(function() {
-        const appLauncherBtn = document.getElementById('appLauncherBtn');
-        const appLauncherDropdown = document.getElementById('appLauncherDropdown');
-        const notiBtn = document.getElementById('notiBtn');
-        const notiDropdown = document.getElementById('notiDropdown');
-        const profileBtn = document.getElementById('profileBtn');
-        const profileDropdown = document.getElementById('profileDropdown');
-
-        if(appLauncherBtn) {
-            appLauncherBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const isHidden = appLauncherDropdown.classList.contains('hidden');
-                closeAllDropdowns();
-                if (isHidden) appLauncherDropdown.classList.remove('hidden');
-            });
-        }
-
-        if(notiBtn) {
-            notiBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const isHidden = notiDropdown.classList.contains('hidden');
-                closeAllDropdowns();
-                if (isHidden) notiDropdown.classList.remove('hidden');
-            });
-        }
-
-        if(profileBtn) {
-            profileBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const isHidden = profileDropdown.classList.contains('hidden');
-                closeAllDropdowns();
-                if (isHidden) profileDropdown.classList.remove('hidden');
-            });
-        }
-
-        document.addEventListener('click', () => {
-            closeAllDropdowns();
-        });
-
-        function closeAllDropdowns() {
-            if(appLauncherDropdown) appLauncherDropdown.classList.add('hidden');
-            if(notiDropdown) notiDropdown.classList.add('hidden');
-            if(profileDropdown) profileDropdown.classList.add('hidden');
-        }
-
         if (currentRoomNo) {
             fetchMessages();
             connectWebSocket();
@@ -420,7 +376,7 @@
                 let contentHtml = '';
 
                 if (rawContent.startsWith('[파일] ')) {
-                    let fileData = rawContent.substring(5); // '[파일] ' 제거
+                    let fileData = rawContent.substring(5);
                     let parts = fileData.split('|');
                     let originalName = parts[0];
                     let savedName = parts[1];
@@ -457,29 +413,12 @@
     function escapeHtml(text) { return $('<div>').text(text).html(); }
 
     function openAddressPopupWithRoomName() {
+        const roomName = prompt("생성할 채팅방 이름을 입력하세요:", "새로운 대화방");
+        if (roomName === null) return;
 
-        console.log("★★★ 새로 만들기 함수 실행됨 ★★★");
-
-        const roomName = prompt(
-            "생성할 채팅방 이름을 입력하세요:",
-            "새로운 대화방"
-        );
-
-        if (roomName === null) {
-            return;
-        }
-
-        const trimmedName =
-            roomName.trim() === ""
-                ? "새로운 대화방"
-                : roomName.trim();
-
-        console.log("입력한 방 이름:", trimmedName);
-
-        // 주소록 팝업에서 저장할 때 사용할 채팅방 이름
+        const trimmedName = roomName.trim() === "" ? "새로운 대화방" : roomName.trim();
         window.pendingChatRoomName = trimmedName;
 
-        // 주소록 팝업 열기
         window.open(
             "/popupAddr",
             "addGroupPopup",
@@ -487,58 +426,30 @@
         );
     }
 
-
-    // ======================================================
-    // 주소록 팝업에서 "저장"을 눌렀을 때만 실행
-    // ======================================================
-
     window.addEventListener('message', function(event) {
-
-        if (event.origin !== window.location.origin) {
-            return;
-        }
-
-        if (!event.data || event.data.type !== 'CHAT_ROOM_CREATE') {
-            return;
-        }
+        if (event.origin !== window.location.origin) return;
+        if (!event.data || event.data.type !== 'CHAT_ROOM_CREATE') return;
 
         const selectedUserNos = event.data.selectedUserNos || [];
 
-
-
-        // 채팅방 생성
         $.ajax({
-
             url: '/chat/create',
-
             type: 'POST',
-
             data: {
                 chatRoomName: window.pendingChatRoomName,
                 userNos: selectedUserNos
             },
-
             success: function(response) {
-
                 if (response === 'SUCCESS') {
-
                     location.reload();
-
                 } else {
-
                     alert('채팅방 생성에 실패했습니다.');
-
                 }
             },
-
             error: function() {
-
                 alert('채팅방 생성 중 오류가 발생했습니다.');
-
             }
-
         });
-
     });
 
     function refreshChatRoomList() {
@@ -565,7 +476,6 @@
             });
         });
     }
-    
     </script>
 </body>
 </html>

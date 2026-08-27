@@ -31,7 +31,7 @@
 					<li class="text-xs font-semibold text-gray-400 mb-2 px-3">내 할일</li>
 
 					<!-- 1. 전체 할일: URL에 담당자(representativeUserNo)와 요청자(userNo) 파라미터가 모두 없을 때 파란색 -->
-					<li><a th:href="@{todo}"
+					<li><a th:href="@{/todo}"
 						class="flex items-center gap-2 px-3 py-2 rounded"
 						th:classappend="${param.representativeUserNo == null and param.userNo == null} ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-100'">
 							<i class="fa-regular fa-circle-check"></i> 전체 할일
@@ -39,14 +39,14 @@
 
 					<!-- 2. 담당 할일: URL에 담당자(representativeUserNo) 파라미터가 있을 때 파란색 -->
 					<li><a
-						th:href="@{todo(representativeUserNo=${session.userNo})}"
+						th:href="@{/todo(representativeUserNo=${session.userNo})}"
 						class="flex items-center gap-2 px-3 py-2 rounded"
 						th:classappend="${param.representativeUserNo != null} ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-100'">
 							<i class="fa-regular fa-user"></i> 담당 할일
 					</a></li>
 
 					<!-- 3. 요청 할일: URL에 요청자(userNo) 파라미터가 있을 때 파란색 -->
-					<li><a th:href="@{todo(userNo=${session.userNo})}"
+					<li><a th:href="@{/todo(userNo=${session.userNo})}"
 						class="flex items-center gap-2 px-3 py-2 rounded"
 						th:classappend="${param.userNo != null} ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-100'">
 							<i class="fa-solid fa-user-pen"></i> 요청 할일

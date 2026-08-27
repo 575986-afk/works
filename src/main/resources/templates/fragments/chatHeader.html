@@ -1,88 +1,209 @@
-<header th:fragment="chatHeader" class="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 shrink-0 z-50 relative">
-        <div class="flex items-center gap-6">
-            <a th:href="@{/userDashboard}" class="flex items-center gap-2 text-teal-500 font-bold text-lg hover:opacity-80">
-                <i class="fa-solid fa-comment text-blue-500 text-2xl mb-2"></i>
-                <span class="text-gray-800">메시지</span>
-            </a>
+<!-- Header -->
+<header class="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 shrink-0 z-50 relative" th:fragment="chatHeader">
+    
+    <!-- 로고 영역 -->
+    <div class="flex items-center gap-6">
+        <a th:href="@{/userDashboard}" class="flex items-center gap-2 text-teal-500 font-bold text-lg hover:opacity-80">
+            <i class="fa-solid fa-house text-blue-500 text-2xl mb-2"></i>
+            <span class="text-gray-800">홈</span>
+        </a>
+    </div>
+
+    <!-- 검색창 영역 -->
+    <div style="flex: 0 1 340px; position: relative; margin: 0 20px;">
+        <div style="background-color: #f1f3f5; border-radius: 4px; padding: 6px 12px 6px 32px; display: flex; align-items: center; width: 100%; position: relative;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%);">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="searchKeyword" placeholder="검색어 입력" style="border: none; background: transparent; outline: none; font-size: 13px; width: 100%; color: #333;" autocomplete="off">
         </div>
         
-        <div style="flex: 0 1 340px; position: relative; margin: 0 20px;">
-            <div style="background-color: #f1f3f5; border-radius: 4px; padding: 6px 12px 6px 32px; display: flex; align-items: center; width: 100%; position: relative;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%);">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                <input type="text" id="searchKeyword" placeholder="채팅방 이름 검색" style="border: none; background: transparent; outline: none; font-size: 13px; width: 100%; color: #333;" autocomplete="off">
-            </div>
-            
-            <div id="searchDropdown" style="display: none; position: absolute; top: 100%; left: 0; width: 100%; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 1000; max-height: 300px; overflow-y: auto; margin-top: 5px;">
-            </div>
+        <div id="searchDropdown" style="display: none; position: absolute; top: 100%; left: 0; width: 100%; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 1000; max-height: 300px; overflow-y: auto; margin-top: 5px;">
         </div>
+    </div>
 
-        <div class="flex items-center gap-4 text-gray-600 text-lg">
-            <div class="relative">
-                <button id="appLauncherBtn" class="hover:text-gray-800 focus:outline-none pt-1">
-                    <i class="fa-solid fa-grip"></i>
-                </button>
-                <div id="appLauncherDropdown" class="hidden absolute top-full right-0 mt-3 w-72 bg-white border border-gray-200 rounded-lg shadow-xl p-4 z-50">
-                    <div class="grid grid-cols-3 gap-y-4 gap-x-2 text-center">
-                        <a th:href="@{/userDashboard}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
-                            <i class="fa-solid fa-house text-blue-500 text-2xl mb-2"></i>
-                            <span class="text-xs text-gray-700">홈</span>
-                        </a>
-                        <a th:href="@{/chatting}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
-                            <i class="fa-solid fa-comment text-green-500 text-2xl mb-2"></i>
-                            <span class="text-xs text-gray-700">메시지</span>
-                        </a>
-                        <a th:href="@{/calendar}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
-                            <i class="fa-solid fa-calendar text-indigo-500 text-2xl mb-2"></i>
-                            <span class="text-xs text-gray-700">캘린더</span>
-                        </a>
-                        <a th:href="@{/addressBook}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
-                            <i class="fa-solid fa-address-book text-teal-500 text-2xl mb-2"></i>
-                            <span class="text-xs text-gray-700">주소록</span>
-                        </a>
-                        <a th:href="@{/todo}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
-                            <i class="fa-solid fa-circle-check text-purple-500 text-2xl mb-2"></i>
-                            <span class="text-xs text-gray-700">할 일</span>
-                        </a>
-                        <a th:if="${session.user != null and session.user.role_level != null and session.user.role_level ge 50}"
+    <!-- 우측 유틸리티 메뉴 영역 -->
+    <div class="flex items-center gap-4 text-gray-600 text-lg">
+        
+        <!-- 앱 런처 (점 9개) -->
+        <div class="relative">
+            <button id="appLauncherBtn" class="hover:text-gray-800 focus:outline-none pt-1">
+                <i class="fa-solid fa-grip"></i>
+            </button>
+            <div id="appLauncherDropdown" class="hidden absolute top-full right-0 mt-3 w-72 bg-white border border-gray-200 rounded-lg shadow-xl p-4 z-50">
+                <div class="grid grid-cols-3 gap-y-4 gap-x-2 text-center">
+                    <a th:href="@{/userDashboard}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
+                        <i class="fa-solid fa-house text-blue-500 text-2xl mb-2"></i>
+                        <span class="text-xs text-gray-700">홈</span>
+                    </a>
+                    <a th:href="@{/chatting}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
+                        <i class="fa-solid fa-comment text-green-500 text-2xl mb-2"></i>
+                        <span class="text-xs text-gray-700">메시지</span>
+                    </a>
+                    <a th:href="@{/calendar}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
+                        <i class="fa-solid fa-calendar text-indigo-500 text-2xl mb-2"></i>
+                        <span class="text-xs text-gray-700">캘린더</span>
+                    </a>
+                    <a th:href="@{/addressBook}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
+                        <i class="fa-solid fa-address-book text-teal-500 text-2xl mb-2"></i>
+                        <span class="text-xs text-gray-700">주소록</span>
+                    </a>
+                    <a th:href="@{/todo}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
+                        <i class="fa-solid fa-circle-check text-purple-500 text-2xl mb-2"></i>
+                        <span class="text-xs text-gray-700">할 일</span>
+                    </a>
+                    <a th:if="${session.user != null and session.user.role_level != null and session.user.role_level ge 50}"
                     th:href="@{dashboard}" class="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg">
                         <i class="fa-solid fa-user-tie text-gray-500 text-2xl mb-2"></i>
                         <span class="text-xs text-gray-700">Admin</span>
                     </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="w-px h-4 bg-gray-300 mx-1"></div>
-
-            <div class="relative">
-                <button id="notiBtn" class="hover:text-gray-800 focus:outline-none pt-1">
-                    <i class="fa-regular fa-bell"></i>
-                </button>
-                <div id="notiDropdown" class="hidden absolute top-full right-0 mt-3 w-80 bg-white border border-gray-200 rounded-lg shadow-xl p-4 z-50">
-                    <div class="text-center text-gray-500 text-sm py-4">새로운 알림이 없습니다.</div>
-                </div>
-            </div>
-
-            <div class="relative ml-2">
-                <button id="profileBtn"
-                    class="w-8 h-8 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold text-sm focus:outline-none"
-                    th:text="${not #strings.isEmpty(session.user?.name) ? #strings.substring(session.user?.name, 0, 1) : 'U'}">
-                </button>
-                <div id="profileDropdown" class="hidden absolute top-full right-0 mt-3 w-64 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden">
-                   <div class="p-4 flex items-center gap-3 border-b border-gray-100 bg-gray-50">
-                        <div class="w-11 h-11 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold text-lg"
-                            th:text="${not #strings.isEmpty(session.user?.name) ? #strings.substring(session.user?.name, 0, 1) : 'U'}">U</div>
-                        <div class="font-bold text-gray-800 text-base" th:text="${session.user?.name != null ? session.user?.name : '로그인 필요'}">이름</div>
-                    </div>
-                    <div class="border-t border-gray-100 p-2">
-                        <a th:href="@{/logout}" class="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-md flex items-center gap-2 font-medium">
-                            <i class="fa-solid fa-arrow-right-from-bracket"></i>로그아웃
-                        </a>
-                    </div>
                 </div>
             </div>
         </div>
-    </header>
+
+        <!-- 구분선 -->
+        <div class="w-px h-4 bg-gray-300 mx-1"></div>
+
+        <!-- 종 (알림) -->
+        <div class="relative">
+            <button id="notiBtn" class="hover:text-gray-800 focus:outline-none pt-1">
+                <i class="fa-regular fa-bell"></i>
+            </button>
+            <div id="notiDropdown" class="hidden absolute top-full right-0 mt-3 w-80 bg-white border border-gray-200 rounded-lg shadow-xl p-4 z-50">
+            </div>
+        </div>
+
+        <!-- 고객센터 -->
+        <a th:href="@{/user/notices2}" class="hover:text-gray-800 pt-1">
+            <i class="fa-regular fa-circle-question"></i>
+        </a>
+
+        <!-- 환경설정 -->
+        <a th:href="@{/userInfo}" class="hover:text-gray-800 pt-1">
+            <i class="fa-solid fa-gear"></i>
+        </a>
+
+        <!-- 프로필 -->
+        <div class="relative ml-2">
+            <button id="profileBtn"
+                class="w-8 h-8 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold text-sm focus:outline-none"
+                th:text="${not #strings.isEmpty(session.user?.name) ? #strings.substring(session.user?.name, 0, 1) : 'U'}">
+            </button>
+            <div id="profileDropdown" class="hidden absolute top-full right-0 mt-3 w-64 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden">
+               <div class="p-4 flex items-center gap-3 border-b border-gray-100 bg-gray-50">
+                  <div class="w-11 h-11 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold text-lg"
+                    th:text="${not #strings.isEmpty(session.user?.name) ? #strings.substring(session.user?.name, 0, 1) : 'U'}">
+                    U</div>
+                  <div class="font-bold text-gray-800 text-base" th:text="${session.user?.name != null ? session.user?.name : '로그인 필요'}">이름</div>
+                </div>
+                <div class="p-2">
+                    <button class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2">
+                        <i class="fa-solid fa-plus border border-gray-400 rounded-full p-0.5 text-[10px]"></i>상태 설정
+                    </button>
+                    <button class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2">
+                        <i class="fa-solid fa-bell-slash text-gray-500"></i>알림 일시 정지
+                    </button>
+                </div>
+                <div class="border-t border-gray-100 p-2">
+                    <a th:href="@{/logout}" class="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-md flex items-center gap-2 font-medium">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>로그아웃
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const appLauncherBtn = document.getElementById('appLauncherBtn');
+    const appLauncherDropdown = document.getElementById('appLauncherDropdown');
+    
+    const notiBtn = document.getElementById('notiBtn');
+    const notiDropdown = document.getElementById('notiDropdown');
+    
+    const profileBtn = document.getElementById('profileBtn');
+    const profileDropdown = document.getElementById('profileDropdown');
+
+    // 앱 런처 클릭
+    if(appLauncherBtn) {
+        appLauncherBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = appLauncherDropdown.classList.contains('hidden');
+            closeAllDropdowns();
+            if (isHidden) appLauncherDropdown.classList.remove('hidden');
+        });
+    }
+
+    // 알림(종) 클릭 - AJAX 요청
+    if(notiBtn) {
+        notiBtn.addEventListener('click', async function(e) {
+            e.stopPropagation();
+            const isHidden = notiDropdown.classList.contains('hidden');
+            closeAllDropdowns();
+            
+            if (isHidden) {
+                notiDropdown.classList.remove('hidden');
+                notiDropdown.innerHTML = '<div class="text-center text-gray-400 py-4"><i class="fa-solid fa-spinner fa-spin"></i> 알림을 불러오는 중...</div>';
+
+                try {
+                    const response = await fetch('/api/noti');
+                    const notiList = await response.json(); 
+
+                    if (notiList.length === 0) {
+                        notiDropdown.innerHTML = '<div class="text-center text-gray-500 text-sm py-4">새로운 알림이 없습니다.</div>';
+                    } else {
+                        let html = '<div class="max-h-64 overflow-y-auto">';
+                        notiList.forEach(noti => {
+                            html += `
+                                <div class="border-b py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-50 transition">
+                                    <span>${noti.duty}</span>
+                                    <span class="text-xs text-gray-400 block mt-1">${noti.inputDate}</span>
+                                </div>
+                            `;
+                        });
+                        html += '</div>';
+                        notiDropdown.innerHTML = html; 
+                    }
+                } catch (error) {
+                    console.error("알림 조회 실패:", error);
+                    notiDropdown.innerHTML = '<div class="text-center text-red-500 text-sm py-4">알림을 불러오는데 실패했습니다.</div>';
+                }
+            }
+        });
+    }
+    
+    // 프로필 클릭
+    if(profileBtn) {
+        profileBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = profileDropdown.classList.contains('hidden');
+            closeAllDropdowns();
+            if (isHidden) profileDropdown.classList.remove('hidden');
+        });
+    }
+
+    // 바깥 영역 클릭 시 모든 드롭다운 닫기
+    document.addEventListener('click', () => {
+        closeAllDropdowns();
+    });
+
+    // 드롭다운 내부 클릭 시 닫히지 않도록 이벤트 전파 차단
+    const dropdowns = [appLauncherDropdown, notiDropdown, profileDropdown];
+    dropdowns.forEach(dropdown => {
+        if(dropdown) {
+            dropdown.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        }
+    });
+
+    function closeAllDropdowns() {
+        if(appLauncherDropdown) appLauncherDropdown.classList.add('hidden');
+        if(notiDropdown) notiDropdown.classList.add('hidden');
+        if(profileDropdown) profileDropdown.classList.add('hidden');
+    }
+});
+</script>
+</header>

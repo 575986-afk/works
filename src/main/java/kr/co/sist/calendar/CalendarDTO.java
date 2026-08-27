@@ -31,6 +31,7 @@ public class CalendarDTO {
 
 	private String category;      // 캘린더 구분 (default/todo/company/커스텀 id)
 	private String favoriteYn;    // 중요(즐겨찾기) 일정 여부 'Y'/'N'
+	private String disclosureStatus; // 공개여부('1'=회사 전체 공개 일정) - CompanyCalService.addCompanyCal()에서 등록
 
 	private String userNo;        // 작성자(사용자) 사번
 	private String userName;      // 조회 시 표시용 (복호화된 이름)

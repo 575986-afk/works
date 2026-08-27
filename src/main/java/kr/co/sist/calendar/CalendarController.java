@@ -38,6 +38,8 @@ public class CalendarController {
 		model.addAttribute("eventListJson", toJsonArray(eventList));
 		model.addAttribute("eventList", eventList);
 		model.addAttribute("yearMonth", yearMonth);
+		// 회사 일정 수정/삭제 권한 판단(98 이상만 가능)에 프론트에서 사용
+		model.addAttribute("roleLevel", getRoleLevel(session));
 
 		return "works/calendar/calendar";
 	}
@@ -100,8 +102,8 @@ public class CalendarController {
 	// 즐겨찾기(중요) 수정
 	@PostMapping("/calendar/updateFavorite")
 	@ResponseBody
-	public String updateFavorite(CalendarDTO cDTO) {
-		int result = cs.updateFavorite(cDTO);
+	public String updateFavorite(CalendarDTO cDTO, HttpSession session) {
+		int result = cs.updateFavorite(cDTO, getRoleLevel(session));
 		return resultJson(result == 1, cDTO.getScheduleNo());
 	}
 
@@ -110,16 +112,26 @@ public class CalendarController {
 	@ResponseBody
 	public String update(CalendarDTO cDTO, HttpSession session) {
 		cDTO.setUserNo((String) session.getAttribute("userNo"));
-		int result = cs.update(cDTO);
+		int result = cs.update(cDTO, getRoleLevel(session));
 		return resultJson(result == 1, cDTO.getScheduleNo());
 	}
 
 	// 일정 삭제
 	@PostMapping("/calendar/delete")
 	@ResponseBody
-	public String delete(@RequestParam("scheduleNo") String scheduleNo) {
-		int result = cs.delete(scheduleNo);
+	public String delete(@RequestParam("scheduleNo") String scheduleNo, HttpSession session) {
+		int result = cs.delete(scheduleNo, getRoleLevel(session));
 		return resultJson(result == 1, scheduleNo);
+	}
+
+	// 세션의 role_level을 안전하게 int로 변환 (없으면 0 = 최저권한)
+	private int getRoleLevel(HttpSession session) {
+		Object roleLevel = session.getAttribute("role_level");
+		if (roleLevel instanceof Integer) return (Integer) roleLevel;
+		if (roleLevel instanceof String) {
+			try { return Integer.parseInt((String) roleLevel); } catch (NumberFormatException e) { return 0; }
+		}
+		return 0;
 	}
 
 	// ---------- 수동 JSON 직렬화 (Jackson 미사용) ----------
@@ -149,6 +161,7 @@ public class CalendarController {
 		sb.append("\"endTime\":").append(str(d.getEndTime())).append(",");
 		sb.append("\"category\":").append(str(d.getCategory())).append(",");
 		sb.append("\"favoriteYn\":").append(str(d.getFavoriteYn())).append(",");
+		sb.append("\"disclosureStatus\":").append(str(d.getDisclosureStatus())).append(",");
 		sb.append("\"userNo\":").append(str(d.getUserNo())).append(",");
 		sb.append("\"userName\":").append(str(d.getUserName()));
 		sb.append("}");
