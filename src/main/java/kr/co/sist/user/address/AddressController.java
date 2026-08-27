@@ -20,7 +20,7 @@ public class AddressController {
 	@Autowired(required = false)
 	private AddressService as;
 
-	@GetMapping("addressBook")
+	@GetMapping("/addressBook")
     public String showAddressPage(HttpSession session, RangeDTO rDTO, Model model) {
         rDTO.setUserNo((String)session.getAttribute("userNo"));
         rDTO.setCompanyNo((String)session.getAttribute("companyNo"));

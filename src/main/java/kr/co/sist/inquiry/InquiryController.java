@@ -12,17 +12,17 @@ import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class InquiryController {
-	
+
 	@Autowired
 	private InquiryService is;
-	
-	@GetMapping("user/inquiry")
+
+	@GetMapping("/user/inquiry")
 	public String showInquiry() {
 		return "inquiry/inquiry";
 	}
-	
-	@PostMapping("inquiryProcess")
-	public String addInquiry(@RequestParam(value = "uploadFile", required = false)MultipartFile uploadFile,
+
+	@PostMapping("/inquiryProcess")
+	public String addInquiry(@RequestParam(value = "uploadFile", required = false) MultipartFile uploadFile,
 			InquiryDTO iDTO, Model model, HttpSession session) {
 
 		// 기존에는 이 값이 채워지지 않아 INQUIRY.USER_NO가 항상 NULL로 저장되고

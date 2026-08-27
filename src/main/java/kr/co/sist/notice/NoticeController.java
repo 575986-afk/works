@@ -11,24 +11,24 @@ public class NoticeController {
 	@Autowired
 	private NoticeService ns;
 	
-	@GetMapping("user/notices")
+	@GetMapping("/user/notices")
 	public String showNotice(Model model) {
 		model.addAttribute("notices", ns.getNoticeList());
 		return "notice/notices";
 	}
 	
-	@GetMapping("notice/notice")
+	@GetMapping("/notice/notice")
 	public String showNoticeDetail(Model model, String noticeNo) {
 		model.addAttribute("notice", ns.getNoticeDetail(noticeNo));
 		return "notice/notice";
 	}
-	@GetMapping("user/notices2")
+	@GetMapping("/user/notices2")
 	public String showNotice2(Model model) {
 		model.addAttribute("notices", ns.getNoticeList());
 		return "notice2/notices";
 	}
 	
-	@GetMapping("notice2/notice")
+	@GetMapping("/notice2/notice")
 	public String showNoticeDetail2(Model model, String noticeNo) {
 		model.addAttribute("notice", ns.getNoticeDetail(noticeNo));
 		return "notice2/notice";

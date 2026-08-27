@@ -23,7 +23,7 @@ public class PopupAddressController {
 	@Autowired
 	private PopupAddressService pas;
 
-	@GetMapping("popupAddr")
+	@GetMapping("/popupAddr")
 	public String showAddrPopupPage(HttpSession session, Model model, RangeDTO rDTO) {
 		rDTO.setCompanyNo((String)session.getAttribute("companyNo"));
 		rDTO.setUserNo((String)session.getAttribute("userNo"));

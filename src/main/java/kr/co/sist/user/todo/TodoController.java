@@ -21,7 +21,7 @@ public class TodoController {
 	@Autowired(required = false)
 	private TodoService ts;
 	
-	@GetMapping("todo")
+	@GetMapping("/todo")
 	public String showTodoPage(RangeDTO rDTO, HttpSession session, Model model) {
 		String userNo = (String) session.getAttribute("userNo");
 		
@@ -45,7 +45,7 @@ public class TodoController {
 		return "user/todo";
 	}
 	
-	@PostMapping("addTodo")
+	@PostMapping("/addTodo")
 	public String addTodo(TodoDTO tdDTO, HttpSession session) {
 		tdDTO.setUserNo((String) session.getAttribute("userNo"));
 		ts.createTodo(tdDTO);
@@ -53,7 +53,7 @@ public class TodoController {
 	}
 	
 	
-	@PostMapping("deleteTodos")
+	@PostMapping("/deleteTodos")
 	@ResponseBody
 	public ResponseEntity<String> deleteTodos(@RequestBody List<String> todoNos) {
 		try {
@@ -69,7 +69,7 @@ public class TodoController {
 		}
 	}
 	
-	@PostMapping("modifyTodoStatus")
+	@PostMapping("/modifyTodoStatus")
 	public String modifyTodoStatus(String status, String todoNo, HttpSession sesseion) {
 		ts.changeTodoStatus(status, todoNo);
 		return "redirect:/todo";
