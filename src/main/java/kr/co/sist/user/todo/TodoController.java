@@ -52,6 +52,13 @@ public class TodoController {
 		return "redirect:/todo";
 	}
 	
+	@PostMapping("/updateTodo")
+	public String updateTodo(TodoDTO tdDTO, HttpSession session) {
+		tdDTO.setUserNo((String) session.getAttribute("userNo"));
+		ts.updateTodo(tdDTO);
+		return "redirect:/todo";
+	}
+	
 	
 	@PostMapping("/deleteTodos")
 	@ResponseBody
