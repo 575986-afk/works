@@ -170,13 +170,12 @@
 		    </div>
 		
 		    <div>
-        <a th:href="@{/inquiry/download(inquiryNo=${inquiry.inquiry_no})}" th:text="${inquiry.files}" style="color: #0066cc; text-decoration: underline;">파일이름.jpg</a>
-    </div>
+			    <a th:href="@{/inquiry/download(inquiryNo=${inquiry.inquiry_no})}" 
+			       th:download="${inquiry.files}" 
+			       style="color: #0066cc; text-decoration: underline;" 
+			       th:text="${inquiry.files}">파일이름.jpg</a>
+			</div>
 </div>
-          <!-- <div class="file-section" th:if="${inquiry.files != null and inquiry.files != ''}" style="margin-bottom: 20px; padding: 10px; background-color: #f8f9fa; border-radius: 4px; font-size: 13px;">
-		    <span class="file-label" style="font-weight: bold; color: #555; margin-right: 10px;">첨부파일:</span>
-		    <span th:text="${inquiry.files}" style="color: #333;">파일이름.jpg</span>
-		</div> -->
 
             <div class="answer-section">
                 <span class="answer-label">문의 답변</span>
@@ -212,7 +211,27 @@
                 icon.textContent = '▲';
             }
         }
+function downloadFile(inquiryNo, fileName) {
+    fetch('/inquiry/download?inquiryNo=' + inquiryNo)
+        .then(response => {
+            if (!response.ok) throw new Error('다운로드 실패');
+            return response.blob();
+        })
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        })
+        .catch(error => {
+            alert('파일 다운로드 중 오류가 발생했습니다.');
+            console.error(error);
+        });
+}
     </script>
-
 </body>
 </html>

@@ -305,8 +305,7 @@ public class SettingController {
                 return ResponseEntity.notFound().build();
             }
 
-            String uploadDir = "C:/upload/inquiry/"; 
-            Path path = Paths.get(uploadDir + fileName);
+            Path path = Paths.get(uploadDir, "inquiry", fileName);
             Resource resource = new UrlResource(path.toUri());
 
             if (!resource.exists() || !resource.isReadable()) {
@@ -335,8 +334,8 @@ public class SettingController {
                 return ResponseEntity.notFound().build();
             }
 
-            String uploadDir = "C:/upload/inquiry/"; 
-            Path path = Paths.get(uploadDir + fileName);
+            Path path = Paths.get(uploadDir, fileName);
+
             Resource resource = new UrlResource(path.toUri());
 
             if (!resource.exists() || !resource.isReadable()) {
