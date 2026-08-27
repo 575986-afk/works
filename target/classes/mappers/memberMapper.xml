@@ -55,8 +55,22 @@
          p.position_no AS positionNo,
          p.position_name AS positionName,
          r.rank_no AS rankNo,
-         r.rank_name AS rankName,
-         om.organization_no AS organizationNo
+         r.rank_name AS rankName
+         <choose>
+             <!-- 특정 조직 선택 시: 해당 조직 번호 반환 -->
+             <when test="organizationNo != null and organizationNo != 'ALL'">
+                 , om.organization_no AS organizationNo
+             </when>
+             <!-- 전체 회사 선택 시: 소속된 모든 부서명을 콤마로 합쳐서 반환 -->
+             <otherwise>
+                 , (
+                     SELECT LISTAGG(o.organization_name, ', ') WITHIN GROUP (ORDER BY o.organization_no)
+                     FROM ORGANIZATION o
+                     JOIN ORGANIZATIONMEMBER om ON o.organization_no = om.organization_no
+                     WHERE om.orgmember_no = u.user_no
+                 ) AS organizationName
+             </otherwise>
+         </choose>
      FROM USERS u
      LEFT JOIN TITLE t
             ON u.user_no = t.user_no
@@ -64,12 +78,19 @@
             ON t.rank_no = r.rank_no
      LEFT JOIN POSITION p
             ON t.position_no = p.position_no
-     LEFT JOIN ORGANIZATIONMEMBER om
-            ON u.user_no = om.orgmember_no
-     WHERE u.company_no = #{companyNo}
-     <if test="organizationNo != null and organizationNo != 'ALL'">
-         AND om.organization_no = #{organizationNo}
-     </if>
+     <choose>
+         <!-- 특정 조직 선택 시 -->
+         <when test="organizationNo != null and organizationNo != 'ALL'">
+             INNER JOIN ORGANIZATIONMEMBER om
+                     ON u.user_no = om.orgmember_no
+             WHERE u.company_no = #{companyNo}
+               AND om.organization_no = #{organizationNo}
+         </when>
+         <!-- 전체 회사 선택 시 -->
+         <otherwise>
+             WHERE u.company_no = #{companyNo}
+         </otherwise>
+     </choose>
     </select>
     
     <!-- 회사 이름과 구성원 수 조회 -->

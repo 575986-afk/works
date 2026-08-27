@@ -298,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             logsHtml += `
 								         <div class="border-b border-gray-200/60 pb-4">
 								         <p class="text-[11.5px] text-gray-400 mb-1">
-								                  ${log.input_date || '날짜 없음'}
+								                  ${log.inputDate || '날짜 없음'}
 								           </p>
 										   <p class="text-[13.5px] text-gray-700">
 										       <span class="font-bold text-gray-800">${log.userName || '알 수 없는 사용자'}</span>님이 
