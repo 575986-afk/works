@@ -76,7 +76,6 @@ public class FindPwController {
 			return "works/login/pwUpdate"; 
 		}
 
-		// 비밀번호 변경 서비스 호출
 		int isUpdated = fps.setNewPw(userNo, newPw);
 
 		if (isUpdated == 1) {

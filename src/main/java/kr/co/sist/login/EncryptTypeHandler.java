@@ -40,7 +40,6 @@ public class EncryptTypeHandler extends BaseTypeHandler<String> {
     private String encrypt(String value) {
         if (value == null) return null;
         try {
-            // 프로젝트 내에 있는 실제 AES 암호화 메서드 호출 (메서드명은 AESUtil 구현체에 맞게 확인 필요)
             return AESUtil.encrypt(value); 
         } catch (Exception e) {
             throw new RuntimeException("암호화 실패", e);
