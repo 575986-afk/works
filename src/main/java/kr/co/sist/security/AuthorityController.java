@@ -203,14 +203,14 @@ public class AuthorityController {
         }
 
         // 2. 권한 위임 성공 후 안내 메일 발송
-        boolean mailResult = ms.sendDelegationMail(receiver.getEmail(),receiver.getUserName());
+//        boolean mailResult = ms.sendDelegationMail(receiver.getEmail(),receiver.getUserName());
 
         // 3. 세션 완전 파기 (권한이 박탈되었으므로 즉시 로그아웃 처리)
         session.invalidate();
 
-        if (!mailResult) {
-            return "mailFail";
-        }
+//        if (!mailResult) {
+//            return "mailFail";
+//        }
 
         return "success";
     }
@@ -226,23 +226,39 @@ public class AuthorityController {
     }
 	
 	// 사용자 권한 추가
-	@PostMapping("/addNewUserRole")
-	@ResponseBody
-	public String addNewUserRole(HttpSession session,
-	        @RequestParam(name = "roleName") String roleName,
-	        @RequestParam(name = "roleLevel") int roleLevel,
-	        @RequestParam(name = "userNo") String userNo) {
+ // 사용자 권한 추가
+ 	@PostMapping("/addNewUserRole")
+ 	@ResponseBody
+ 	public String addNewUserRole(HttpSession session,
+ 	        @RequestParam(name = "roleName") String roleName,
+ 	        @RequestParam(name = "roleLevel") int roleLevel,
+ 	        @RequestParam(name = "userNo") List<String> rawUserNoList) {
 
-	    String companyNo = (String) session.getAttribute("companyNo");
+ 	    String companyNo = (String) session.getAttribute("companyNo");
 
-	    System.out.println(">>> addNewUserRole - companyNo: " + companyNo 
-	                       + ", roleName: " + roleName 
-	                       + ", roleLevel: " + roleLevel 
-	                       + ", userNo: " + userNo);
-	    
-	    boolean result = as.addNewUserRole(companyNo, roleName, roleLevel, userNo);
-	    return result ? "success" : "fail";
-	}
+ 	    if (companyNo == null || rawUserNoList == null || rawUserNoList.isEmpty()) {
+ 	        return "fail";
+ 	    }
+
+ 	    List<String> userNoList = new java.util.ArrayList<>();
+ 	    for (String raw : rawUserNoList) {
+ 	        if (raw != null) {
+ 	            for (String s : raw.split(",")) {
+ 	                String trimmed = s.trim();
+ 	                if (!trimmed.isEmpty()) {
+ 	                    userNoList.add(trimmed);
+ 	                }
+ 	            }
+ 	        }
+ 	    }
+
+ 	    if (userNoList.isEmpty()) {
+ 	        return "fail";
+ 	    }
+
+ 	    boolean result = as.addNewUserRole(companyNo, roleName, roleLevel, userNoList);
+ 	    return result ? "success" : "fail";
+ 	}
 
 	// 사용자 권한 삭제
 	@PostMapping("/removeUserRole")

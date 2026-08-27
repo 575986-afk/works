@@ -16,7 +16,9 @@ public interface AuthorityMapper {
     
     public int updateRoleName(RoleDTO rDTO);
     
-    public int deleteRole(@Param("companyNo") String companyNo, @Param("roleName") String roleName);
+//    public int deleteRole(@Param("companyNo") String companyNo, @Param("roleName") String roleName);
+    public int updateUserRoleToDefault(@Param("companyNo") String companyNo, @Param("roleName") String roleName);
+    public int deleteRoleTemplate(@Param("companyNo") String companyNo, @Param("roleName") String roleName);
     
     public int updateDelegationReceiver(
             @Param("receiverUserNo") String receiverUserNo,
@@ -35,8 +37,15 @@ public interface AuthorityMapper {
     public List<UserDomain> searchDelegationMember(@Param("companyNo") String companyNo, 
     		@Param("keyword") String keyword);
     
-    public int insertUserRole(@Param("companyNo") String companyNo, @Param("roleName") String roleName,
-            @Param("roleLevel") int roleLevel, @Param("userNo") String userNo);
+    public int insertUserRole(@Param("companyNo") String companyNo,
+    		@Param("roleName") String roleName,
+    	    @Param("roleLevel") int roleLevel,
+    	    @Param("userNoList") List<String> userNoList);
+
+    public int insertUserRoleDirect(@Param("companyNo") String companyNo, 
+    		@Param("roleName") String roleName, 
+    		@Param("roleLevel") int roleLevel, 
+    		@Param("userNoList") List<String> userNoList);
     
     public int deleteUserRole(@Param("companyNo") String companyNo, @Param("userNo") String userNo);
     

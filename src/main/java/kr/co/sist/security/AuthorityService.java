@@ -36,10 +36,15 @@ public class AuthorityService {
 	
 	// 권한 삭제
 	public boolean deleteRole(String companyNo, String roleName) {
-	    if ("최고운영자".equals(roleName) || "운영관리자".equals(roleName)) {
+		if ("최고운영자".equals(roleName) || "운영관리자".equals(roleName)) {
 	        return false;
 	    }
-	    return am.deleteRole(companyNo, roleName) > 0;
+	    
+	    // 1. 해당 권한을 가졌던 사용자들을 일반사용자로 변경
+	    am.updateUserRoleToDefault(companyNo, roleName);
+	    
+	    // 2. 권한 템플릿 삭제
+	    return am.deleteRoleTemplate(companyNo, roleName) > 0;
 	}
 	
 	// 권한 위임
@@ -88,9 +93,22 @@ public class AuthorityService {
 	    return am.searchDelegationMember(companyNo, keyword);
 	}
 	
-	// 구성원에게 권한 추가
-	public boolean addNewUserRole(String companyNo, String roleName, int roleLevel, String userNo) {
-		return am.insertUserRole(companyNo, roleName, roleLevel, userNo)==1;
+	@Transactional
+	public boolean addNewUserRole(String companyNo, String roleName, int roleLevel, List<String> userNoList) {
+	    if (userNoList == null || userNoList.isEmpty()) {
+	        return false;
+	    }
+
+	    // 기존 데이터 UPDATE 시도
+	    int updatedRows = am.insertUserRole(companyNo, roleName, roleLevel, userNoList);
+
+	    // 만약 ROLE 테이블에 해당 user_no 행이 없어서 0건 수정되었다면 INSERT 실행
+	    if (updatedRows == 0) {
+	        System.out.println(">>> UPDATE 0건 발생: ROLE 테이블에 데이터가 없어 INSERT 진행");
+	        updatedRows = am.insertUserRoleDirect(companyNo, roleName, roleLevel, userNoList);
+	    }
+
+	    return updatedRows > 0;
 	}
 	
 	// 구성원 권한 삭제

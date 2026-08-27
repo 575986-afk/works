@@ -86,25 +86,37 @@ function openAddressPopup(url) {
 }
 
 // 주소록 팝업 콜백 함수
+// 주소록 팝업 콜백 함수
 window.addRepresentative = function(userName, userNo) {
     if (!userNo) {
         console.warn("userNo가 전달되지 않았습니다.");
         return;
     }
     
+    // userNo를 공백 제거된 깔끔한 배열로 정제
+    let userNoArray = [];
+    if (Array.isArray(userNo)) {
+        userNoArray = userNo.map(item => String(item).trim()).filter(Boolean);
+    } else if (typeof userNo === "string") {
+        userNoArray = userNo.split(",").map(item => item.trim()).filter(Boolean);
+    } else {
+        userNoArray = [String(userNo).trim()];
+    }
+    
     $.ajax({
         url: "/adminUser/security/addNewUserRole",
         type: "POST",
+        traditional: true, // 배열 파라미터 전송
         data: {
             roleName: selectedRoleName,
             roleLevel: selectedRoleLevel,
-            userNo: userNo
+            userNo: userNoArray // 정제된 배열 전달
         },
         success: function(result) {
             if (result === "success") {
                 loadMember(selectedRoleName);
             } else {
-                alert(userName + " 님 관리자 추가에 실패했습니다.");
+                alert("관리자 추가에 실패했습니다.");
             }
         },
         error: function(xhr) {

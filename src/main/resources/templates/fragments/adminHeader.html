@@ -9,7 +9,7 @@
 
     <!-- 헤더 우측 -->
     <div class="headerRight">
-        <span class="groupName" th:text="${session.companyName ?: '연습'}">연습</span>
+        <span class="groupName" th:text="${session.user.companyName}">연습</span>
         
         <!-- 고객센터 -->
         <a th:href="@{/user/notices}" class="headerIconBtn" title="고객센터">

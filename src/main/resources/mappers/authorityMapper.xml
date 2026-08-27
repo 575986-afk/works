@@ -55,8 +55,10 @@
          FROM ROLE
          WHERE company_no = #{companyNo}
            AND role_level NOT IN (98, 99)
+           AND role_level >= 50
          GROUP BY role_name, role_level
      )
+     WHERE roleLevel >= 50
      ORDER BY roleLevel DESC
     </select>
     <!-- 권한 구성원 조회 -->
@@ -95,13 +97,22 @@
 	 where role_no=#{roleNo} and company_no=#{companyNo}
 	</update>
 	<!-- 권한 삭제 -->
-	<update id="deleteRole">
+	<!-- 1. 해당 권한을 가진 구성원들을 '일반사용자'로 변경 -->
+	<update id="updateUserRoleToDefault">
      UPDATE ROLE
-     SET role_name = '일반사용자',
-         role_level = 1
+        SET role_name = '일반사용자',
+            role_level = 1
      WHERE role_name = #{roleName}
-       AND company_no = #{companyNo}
+        AND company_no = #{companyNo}
+        AND user_no IS NOT NULL
 	</update>
+	<!-- 2. 권한 자체(user_no가 NULL인 템플릿 행) 삭제 -->
+	<delete id="deleteRoleTemplate">
+     DELETE FROM ROLE
+     WHERE role_name = #{roleName}
+        AND company_no = #{companyNo}
+        AND user_no IS NULL
+	</delete>
 	<!-- 권한 위임 받는 사람 -->
 	<update id="updateDelegationReceiver">
      UPDATE ROLE
@@ -177,11 +188,28 @@
 	<update id="insertUserRole">
      UPDATE ROLE
         SET role_name = #{roleName},
-            role_level = #{roleLevel},
-            company_no = #{companyNo}
-     WHERE user_no = #{userNo}
-	    AND company_no = #{companyNo}
+            role_level = #{roleLevel}
+     WHERE company_no = #{companyNo}
+        AND user_no IN
+        <foreach item="userNo" collection="userNoList" open="(" separator="," close=")">
+            #{userNo}
+        </foreach>
 	</update>
+	<!-- 2. ROLE 테이블에 유저 데이터가 없을 경우 신규 INSERT -->
+	<insert id="insertUserRoleDirect">
+     INSERT INTO ROLE (role_no, role_name, role_level, company_no, user_no)
+     SELECT 
+        'R' || LPAD(SEQ_ROLE_NO.NEXTVAL, 6, '0'),
+        #{roleName},
+        #{roleLevel},
+        #{companyNo},
+        user_no
+     FROM USERS
+     WHERE user_no IN
+        <foreach item="userNo" collection="userNoList" open="(" separator="," close=")">
+            #{userNo}
+        </foreach>
+	</insert>
 	<!-- 권한 구성원 삭제 -->
 	<update id="deleteUserRole">
      UPDATE ROLE
