@@ -79,7 +79,10 @@ public class CalendarService {
 
 	// 즐겨찾기(중요) 수정
 	@Transactional
-	public int updateFavorite(CalendarDTO cDTO) {
+	public int updateFavorite(CalendarDTO cDTO, int roleLevel) {
+		if (isCompanyEventEditForbidden(cDTO.getScheduleNo(), roleLevel)) {
+			return 0;
+		}
 		int result = cDAO.updateFavorite(cDTO);
 		if (result == 1 && logService != null) {
 			String duty = "Y".equals(cDTO.getFavoriteYn()) ? "중요 일정으로 표시" : "중요 일정 해제";
@@ -88,9 +91,21 @@ public class CalendarService {
 		return result;
 	}
 
+	// 회사 일정(공개여부='1') 수정/삭제는 role_level 98 이상만 허용
+	private static final int COMPANY_EVENT_EDIT_MIN_ROLE_LEVEL = 98;
+
+	private boolean isCompanyEventEditForbidden(String calendarId, int roleLevel) {
+		if (roleLevel >= COMPANY_EVENT_EDIT_MIN_ROLE_LEVEL) return false;
+		CalendarDTO existing = cDAO.selectOne(calendarId);
+		return existing != null && "1".equals(existing.getDisclosureStatus());
+	}
+
 	// 일정 수정
 	@Transactional
-	public int update(CalendarDTO cDTO) {
+	public int update(CalendarDTO cDTO, int roleLevel) {
+		if (isCompanyEventEditForbidden(cDTO.getScheduleNo(), roleLevel)) {
+			return 0;
+		}
 		int result = cDAO.update(cDTO);
 		if (result == 1 && logService != null) {
 			logService.updateCalLog(toLogDTO("일정 수정", cDTO));
@@ -100,7 +115,10 @@ public class CalendarService {
 
 	// 일정 삭제
 	@Transactional
-	public int delete(String scheduleNo) {
+	public int delete(String scheduleNo, int roleLevel) {
+		if (isCompanyEventEditForbidden(scheduleNo, roleLevel)) {
+			return 0;
+		}
 		// CALENDERLOG.CALENDER_NO -> CALENDER.CALENDER_NO FK 때문에, 로그가
 		// 남아있으면 CALENDER 삭제가 거부된다(ORA-02292). 먼저 로그를 정리한다.
 		// (그 결과 이 일정의 등록/수정 이력도 함께 사라짐 - 알려진 트레이드오프)

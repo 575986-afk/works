@@ -346,6 +346,7 @@
 </div>
 </div>
 <div class="px-5 py-4 space-y-3">
+<div class="hidden text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded px-3 py-2" id="eventModalLockNotice">회사 일정은 관리자(권한 98 이상)만 수정/삭제할 수 있습니다.</div>
 <div>
 <label class="block text-xs font-medium text-gray-600 mb-1">제목</label>
 <input class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-blue-400 focus:border-blue-400" id="eventTitleInput" placeholder="일정 제목을 입력하세요" type="text">
@@ -537,6 +538,7 @@
 <!-- 서버에서 내려주는 초기 데이터 (화면에는 보이지 않음) -->
 <div class="hidden" id="serverEventsData" th:text="${eventListJson}"></div>
 <div class="hidden" id="currentUserNo" th:text="${session.userNo}"></div>
+<div class="hidden" id="currentUserRoleLevel" th:text="${roleLevel}"></div>
 
 <script>
 (function() {
@@ -566,6 +568,8 @@
   // 숨겨진 엘리먼트에 그대로 심어두고, 여기서 읽어 events에 반영한다.
   const SERVER_EVENTS_RAW = (document.getElementById('serverEventsData') || {}).textContent || '[]';
   const CURRENT_USER_NO = (document.getElementById('currentUserNo') || {}).textContent || '';
+  const CURRENT_USER_ROLE_LEVEL = parseInt((document.getElementById('currentUserRoleLevel') || {}).textContent, 10) || 0;
+  const COMPANY_EVENT_EDIT_MIN_ROLE_LEVEL = 98; // 회사 일정 수정/삭제 최소 권한
 
   const TODAY = new Date(); // 실제 오늘 날짜
   let currentDate = new Date(); // 현재 보고 있는 날짜(기준일)
@@ -582,13 +586,26 @@
   // CalendarDTO(JSON) -> 화면에서 쓰는 로컬 이벤트 객체로 변환
   function dtoToLocalEvent(dto) {
     return {
+      id: dto.scheduleNo,
       scheduleNo: dto.scheduleNo,
       title: dto.title,
       time: dto.startTime || '',
       category: dto.category || 'default',
       important: dto.favoriteYn === 'Y',
+      isCompany: dto.disclosureStatus === '1',
       _date: dto.startDate
     };
+  }
+
+  // 화면 표시용 제목: 회사 일정이면 뒤에 "(회사)"를 붙여준다.
+  // (저장/수정 시 서버로 보내는 title은 항상 ev.title 원본을 그대로 써야 함 - 이 함수는 렌더링 전용)
+  function displayTitle(ev) {
+    return ev.title + (ev.isCompany ? ' (회사)' : '');
+  }
+
+  // 회사 일정이고 현재 사용자 권한이 98 미만이면 수정/삭제 불가
+  function isEditLocked(ev) {
+    return !!(ev && ev.isCompany && CURRENT_USER_ROLE_LEVEL < COMPANY_EVENT_EDIT_MIN_ROLE_LEVEL);
   }
 
   function setEventsFromServerList(list) {
@@ -777,7 +794,7 @@
           const evEl = document.createElement('div');
           evEl.className = 'text-[10px] px-1 py-0.5 rounded truncate text-white cursor-pointer hover:opacity-80';
           evEl.style.backgroundColor = CATEGORIES[ev.category].color;
-          evEl.textContent = (ev.important ? '★ ' : '') + (ev.time ? `${ev.time} ${ev.title}` : ev.title);
+          evEl.textContent = (ev.important ? '★ ' : '') + (ev.time ? `${ev.time} ${displayTitle(ev)}` : displayTitle(ev));
           evEl.addEventListener('click', (e) => {
             e.stopPropagation();
             openEventModal(key, ev.id);
@@ -827,7 +844,7 @@
         <div class="w-16 text-xs text-gray-400">${ev.time || '종일'}</div>
         <div class="flex-1 flex items-center">
           <span class="w-2 h-2 rounded-full mr-2" style="background-color:${color}"></span>
-          <span class="text-sm text-gray-800">${ev.title}</span>
+          <span class="text-sm text-gray-800">${displayTitle(ev)}</span>
         </div>
       `;
       item.addEventListener('click', () => openEventModal(key, ev.id));
@@ -913,7 +930,7 @@
       const el = document.createElement('div');
       el.className = 'text-xs px-2 py-1.5 rounded text-white cursor-pointer hover:opacity-80 truncate flex items-center';
       el.style.backgroundColor = CATEGORIES[ev.category].color;
-      el.textContent = (ev.important ? '★ ' : '') + (ev.time ? `${ev.time} ${ev.title}` : ev.title);
+      el.textContent = (ev.important ? '★ ' : '') + (ev.time ? `${ev.time} ${displayTitle(ev)}` : displayTitle(ev));
       el.addEventListener('click', (e) => {
         e.stopPropagation();
         openEventModal(key, ev.id);
@@ -1032,7 +1049,7 @@
           const el = document.createElement('div');
           el.className = 'text-[10px] px-1 py-0.5 rounded truncate text-white';
           el.style.backgroundColor = isMe && CATEGORIES[ev.category] ? CATEGORIES[ev.category].color : mem.color;
-          el.textContent = ev.time ? `${ev.time} ${ev.title}` : ev.title;
+          el.textContent = ev.time ? `${ev.time} ${displayTitle(ev)}` : displayTitle(ev);
           cell.appendChild(el);
         });
         row.appendChild(cell);
@@ -1125,6 +1142,23 @@
     }
   });
 
+  const saveBtn = document.getElementById('eventSaveBtn');
+  const modalLockNotice = document.getElementById('eventModalLockNotice');
+
+  // 잠금 여부에 따라 입력/저장/삭제/즐겨찾기 버튼을 켜고 끈다.
+  function setModalLockUI(locked) {
+    titleInput.disabled = locked;
+    dateInput.disabled = locked;
+    timeInput.disabled = locked;
+    categorySelect.disabled = locked;
+    importantBtn.disabled = locked;
+    importantBtn.classList.toggle('pointer-events-none', locked);
+    importantBtn.classList.toggle('opacity-40', locked);
+    saveBtn.classList.toggle('hidden', locked);
+    if (modalLockNotice) modalLockNotice.classList.toggle('hidden', !locked);
+    if (locked) deleteBtn.classList.add('hidden');
+  }
+
   function openEventModal(key, eventId) {
     editingDateKey = key;
     editingEventId = eventId || null;
@@ -1133,12 +1167,14 @@
     if (eventId) {
       const ev = (events[key] || []).find(e => e.id === eventId);
       if (!ev) return;
+      const locked = isEditLocked(ev);
       titleInput.value = ev.title;
       timeInput.value = ev.time || '';
       categorySelect.value = ev.category;
-      deleteBtn.classList.remove('hidden');
-      modalHeading.textContent = '일정 수정';
+      deleteBtn.classList.toggle('hidden', locked);
+      modalHeading.textContent = locked ? '회사 일정 (읽기 전용)' : '일정 수정';
       setImportantUI(!!ev.important);
+      setModalLockUI(locked);
     } else {
       titleInput.value = '';
       timeInput.value = '';
@@ -1146,6 +1182,7 @@
       deleteBtn.classList.add('hidden');
       modalHeading.textContent = '새 일정';
       setImportantUI(false);
+      setModalLockUI(false);
     }
     modal.classList.remove('hidden');
     setTimeout(() => titleInput.focus(), 0);
@@ -1181,19 +1218,28 @@
     form.set('favoriteYn', editingImportant ? 'Y' : 'N');
 
     try {
+      let res;
       if (editingEventId) {
         form.set('scheduleNo', editingEventId);
-        await fetch('/calendar/update', {
+        res = await fetch('/calendar/update', {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: form
         });
       } else {
-        await fetch('/calendar/insert', {
+        res = await fetch('/calendar/insert', {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: form
         });
+      }
+      // 서버가 500 등 에러를 던지거나 result:"fail"을 내려줘도 이전에는
+      // 여기서 아무 것도 확인하지 않고 그대로 성공 처리를 해버렸다.
+      // 응답 상태와 result 값을 실제로 확인하도록 수정.
+      let data = null;
+      try { data = await res.json(); } catch (parseErr) { /* 응답이 JSON이 아닌 경우 */ }
+      if (!res.ok || !data || data.result !== 'success') {
+        throw new Error('서버 응답 실패: ' + res.status + (data ? ' / ' + data.result : ''));
       }
       closeEventModal();
       invalidateAndReload();
@@ -1455,7 +1501,7 @@
     upcoming.slice(0, 6).forEach(({ key, ev }) => {
       const li = document.createElement('li');
       li.className = 'px-4 py-2 hover:bg-gray-50 cursor-pointer';
-      li.innerHTML = `<div class="font-medium text-gray-800 truncate">${ev.title}</div><div class="text-gray-400 mt-0.5">${key}${ev.time ? ' · ' + ev.time : ''}</div>`;
+      li.innerHTML = `<div class="font-medium text-gray-800 truncate">${displayTitle(ev)}</div><div class="text-gray-400 mt-0.5">${key}${ev.time ? ' · ' + ev.time : ''}</div>`;
       li.addEventListener('click', (e) => {
         e.stopPropagation();
         const d = new Date(key + 'T00:00:00');
@@ -1491,7 +1537,7 @@
       results.forEach(({ key, ev }) => {
         const div = document.createElement('div');
         div.className = 'px-4 py-2 text-xs hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-b-0';
-        div.innerHTML = `<div class="font-medium text-gray-800 truncate">${ev.title}</div><div class="text-gray-400 mt-0.5">${key}${ev.time ? ' · ' + ev.time : ''} · ${CATEGORIES[ev.category] ? CATEGORIES[ev.category].label : ''}</div>`;
+        div.innerHTML = `<div class="font-medium text-gray-800 truncate">${displayTitle(ev)}</div><div class="text-gray-400 mt-0.5">${key}${ev.time ? ' · ' + ev.time : ''} · ${CATEGORIES[ev.category] ? CATEGORIES[ev.category].label : ''}</div>`;
         div.addEventListener('click', (e) => {
           e.stopPropagation();
           const d = new Date(key + 'T00:00:00');
@@ -1561,7 +1607,7 @@
         li.className = 'flex items-center px-3 py-2 rounded hover:bg-gray-50 cursor-pointer text-xs';
         const color = CATEGORIES[ev.category] ? CATEGORIES[ev.category].color : '#999';
         li.innerHTML = `<span class="w-2 h-2 rounded-full mr-2 flex-shrink-0" style="background-color:${color}"></span>
-          <span class="flex-1 truncate text-gray-800">${ev.title}</span>
+          <span class="flex-1 truncate text-gray-800">${displayTitle(ev)}</span>
           <span class="text-gray-400 ml-2 flex-shrink-0">${key}${ev.time ? ' ' + ev.time : ''}</span>`;
         li.addEventListener('click', async () => {
           closeAllEventsModal();
@@ -1581,7 +1627,7 @@
     li.className = 'flex items-center px-3 py-2 rounded hover:bg-gray-50 cursor-pointer text-xs';
     const color = CATEGORIES[ev.category] ? CATEGORIES[ev.category].color : '#999';
     li.innerHTML = `${ev.important ? '<span class="text-amber-400 mr-1">★</span>' : ''}<span class="w-2 h-2 rounded-full mr-2 flex-shrink-0" style="background-color:${color}"></span>
-      <span class="flex-1 truncate text-gray-800">${ev.title}</span>
+      <span class="flex-1 truncate text-gray-800">${displayTitle(ev)}</span>
       <span class="text-gray-400 ml-2 flex-shrink-0">${key}${ev.time ? ' ' + ev.time : ''}</span>`;
     li.addEventListener('click', onClick);
     return li;
@@ -1751,7 +1797,7 @@
         li.innerHTML = `
           <div class="flex items-center flex-1 truncate">
             <span class="w-2 h-2 rounded-full mr-2 flex-shrink-0" style="background-color:${color}"></span>
-            <span class="truncate text-gray-800 line-through mr-2">${ev.title}</span>
+            <span class="truncate text-gray-800 line-through mr-2">${displayTitle(ev)}</span>
             <span class="text-gray-400 flex-shrink-0">${key}${ev.time ? ' ' + ev.time : ''}</span>
           </div>
           <button class="px-2 py-1 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 flex-shrink-0">복구</button>

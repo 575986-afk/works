@@ -15,6 +15,7 @@
 		<result property="endTime" column="endTime"/>
 		<result property="category" column="category"/>
 		<result property="favoriteYn" column="favoriteYn"/>
+		<result property="disclosureStatus" column="disclosureStatus"/>
 		<result property="userNo" column="userNo"/>
 		<result property="userName" column="userName"
 				typeHandler="kr.co.sist.login.EncryptTypeHandler"/>
@@ -32,7 +33,8 @@
 			TO_CHAR(c.END_DATE, 'YYYY-MM-DD')   AS endDate,
 			TO_CHAR(c.END_DATE, 'HH24:MI')      AS endTime,
 			c.CATEGORY      AS category,
-			c.FAVORITE_YN   AS favoriteYn
+			c.FAVORITE_YN   AS favoriteYn,
+			c.DISCLOSURE_STATUS AS disclosureStatus
 		FROM CALENDER c
 		INNER JOIN CALENDERCONNECTION cc
 			ON c.CALENDER_NO = cc.CALENDER_NO
@@ -55,7 +57,8 @@
 			TO_CHAR(c.END_DATE, 'YYYY-MM-DD')   AS endDate,
 			TO_CHAR(c.END_DATE, 'HH24:MI')      AS endTime,
 			c.CATEGORY      AS category,
-			c.FAVORITE_YN   AS favoriteYn
+			c.FAVORITE_YN   AS favoriteYn,
+			c.DISCLOSURE_STATUS AS disclosureStatus
 		FROM CALENDER c
 		INNER JOIN CALENDERCONNECTION cc
 			ON c.CALENDER_NO = cc.CALENDER_NO
@@ -102,7 +105,8 @@
 			TO_CHAR(c.END_DATE, 'YYYY-MM-DD')   AS endDate,
 			TO_CHAR(c.END_DATE, 'HH24:MI')      AS endTime,
 			c.CATEGORY      AS category,
-			c.FAVORITE_YN   AS favoriteYn
+			c.FAVORITE_YN   AS favoriteYn,
+			c.DISCLOSURE_STATUS AS disclosureStatus
 		FROM CALENDER c
 		WHERE c.CALENDER_NO = #{calendarId}
 			AND NVL(c.IS_DELETED, 'N') = 'N'
@@ -154,7 +158,7 @@
 	<!-- 캘린더-작성자 연결 (insert 직후 호출) -->
 	<insert id="insertConnection">
 		INSERT INTO CALENDERCONNECTION (CALENDER_NO, USER_NO)
-		VALUES (#{scheduleNo}, #{userNo})
+		VALUES (#{calendarId}, #{userNo})
 	</insert>
 
 	<!-- 즐겨찾기(중요) 등록 -->
