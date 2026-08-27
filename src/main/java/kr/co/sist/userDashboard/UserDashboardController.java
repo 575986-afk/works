@@ -31,13 +31,9 @@ public class UserDashboardController {
 	@GetMapping("/userDashboard")
 	public String userDashboard(HttpSession session, Model model) {
 	    UserDTO loginUser = (UserDTO) session.getAttribute("user");
-	    if (loginUser == null) {
-	        return "redirect:/login"; 
-	    }
 	    String userName = loginUser.getName();
 	    model.addAttribute("userName", userName != null ? userName : "사용자");
 	    
-	    // 알람 설정 정보
 	    AlarmSettingDTO alarmDTO = uds.getAlarm(loginUser.getUserNo());
 	    int isAlarmOn = (alarmDTO != null) ? alarmDTO.getIsAlarmOn() : 1;
 	    model.addAttribute("isAlarmOn", isAlarmOn);

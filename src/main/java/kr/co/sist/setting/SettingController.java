@@ -76,9 +76,6 @@ public class SettingController {
 	public String updateProfile(UserDTO uDTO,HttpSession session,RedirectAttributes rttr) {
 		
 		UserDTO loginUser = (UserDTO) session.getAttribute("user");
-		if (loginUser == null) {
-			return "redirect:/login";
-		}
 		
 		uDTO.setUserNo(loginUser.getUserNo());
 		
@@ -100,9 +97,6 @@ public class SettingController {
     @GetMapping("/profileChg")
     public String profileChg(Model model, HttpSession session) {
         UserDTO loginUser = (UserDTO) session.getAttribute("user");
-        if (loginUser == null) {
-            return "redirect:/login"; 
-        }
         
         UserDTO currentUser = ss.selectProfile(loginUser.getUserNo());
         TitleDTO currentTitle=ss.selectRankPosition(loginUser.getUserNo());
@@ -151,9 +145,6 @@ public class SettingController {
     @GetMapping("/statusSetting")
     public String statusSetting(Model model, HttpSession session) {
         UserDTO loginUser = (UserDTO) session.getAttribute("user");
-        if (loginUser == null) {
-            return "redirect:/login";
-        }
         
         List<StatusDTO> statusList = ss.getStatusList();
         
@@ -171,7 +162,7 @@ public class SettingController {
     public int userStatus(@RequestParam("statusNo") String statusNo, HttpSession session) {
         UserDTO loginUser = (UserDTO) session.getAttribute("user");
         if (loginUser == null) {
-            return 0; // 세션 만료
+            return 0; 
         }
         
         if ("".equals(statusNo) || "none".equals(statusNo)) {
@@ -186,14 +177,9 @@ public class SettingController {
     @GetMapping("/alarmSetting")
     public String alarmSetting(Model model,HttpSession session) {
     	UserDTO loginUser = (UserDTO) session.getAttribute("user");
-        if (loginUser == null) {
-            return "redirect:/login";
-        }
         
-        // DB에서 현재 유저의 알림 설정 조회
         AlarmSettingDTO alarmDTO = ss.getAlarm(loginUser.getUserNo());
         
-        // 만약 설정 데이터가 아직 없다면 기본값(0 또는 1) 세팅
         if (alarmDTO == null) {
             alarmDTO = new AlarmSettingDTO();
             alarmDTO.setUserNo(loginUser.getUserNo());
@@ -221,9 +207,6 @@ public class SettingController {
     @GetMapping("/inquiry")
     public String inquiry(Model model,HttpSession session) {
     	UserDTO loginUser = (UserDTO) session.getAttribute("user");
-        if (loginUser == null) {
-            return "redirect:/login";
-        }
         
        List<InquiryDomain> inquiryList=ss.showInquiry(loginUser.getUserNo());
         
