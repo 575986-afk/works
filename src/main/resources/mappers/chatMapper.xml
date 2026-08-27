@@ -35,7 +35,6 @@
 		cr.chatroom_no AS chatRoomNo,
 		cr.chatroom_name AS chatRoomName,
 		
-		<!-- 📌 해당 채팅방의 총 참여자 수 구하는 서브쿼리 추가 -->
 		(SELECT COUNT(*) 
 		 FROM chatparticipant cp_cnt 
 		 WHERE cp_cnt.chatroom_no = cr.chatroom_no

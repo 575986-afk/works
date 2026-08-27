@@ -189,6 +189,10 @@
     });
 
     function connectWebSocket() {
+        if (stompClient !== null && stompClient.connected) {
+            stompClient.disconnect();
+        }
+
         let socket = new SockJS('/ws-chat');
         stompClient = Stomp.over(socket);
 
@@ -205,16 +209,21 @@
         });
     }
 
-    $('.chat-input-area textarea').on('keydown', function(e) {
+    $('.chat-input-area textarea').off('keydown').on('keydown', function(e) {
+        if (e.isComposing || e.keyCode === 229) {
+            return;
+        }
+
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
+            
             if (isSubmitting) return;
             
             const content = $(this).val().trim();
             if (!content && !attachedFile) return;
             if (!currentRoomNo) { alert('채팅방을 먼저 선택해주세요.'); return; }
 
-            isSubmitting = true;
+            isSubmitting = true; 
 
             if (attachedFile) {
                 const formData = new FormData();
@@ -241,11 +250,11 @@
                         } else {
                             alert('파일 전송에 실패했습니다.');
                         }
-                        isSubmitting = false;
+                        isSubmitting = false; // 해제
                     },
                     error: function() {
                         alert('파일 전송 중 오류가 발생했습니다.');
-                        isSubmitting = false;
+                        isSubmitting = false; // 해제
                     }
                 });
             } else {
@@ -264,7 +273,10 @@
 
                 stompClient.send("/pub/chat/message/" + currentRoomNo, {}, JSON.stringify(messageData));
                 $(this).val('');
-                isSubmitting = false;
+                
+                setTimeout(function() {
+                    isSubmitting = false;
+                }, 100);
             }
         }
     });
