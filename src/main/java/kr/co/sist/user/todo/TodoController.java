@@ -90,7 +90,6 @@ public class TodoController {
         
         // 서비스 호출
         List<TodoLogDomain> todoLog = ts.getTodoLog(todoNo, userNo);
-        
         return todoLog; // JSON 형태로 클라이언트에 응답됩니다.
     }
 
