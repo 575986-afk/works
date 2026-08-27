@@ -98,7 +98,7 @@
     cursor: pointer;
 }
 .headerLeft:hover{
-	color: white;
+    color: white;
 }
 .adminLogo {
     width: 26px; height: 26px;
@@ -135,6 +135,7 @@
     cursor:pointer;
     color:#666;
 }
+
 /* ---- 헤더 우측 & 프로필 드롭다운 ---- */
 .headerRight {
     display: flex;
@@ -171,6 +172,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden; /* 이미지 원형 이탈 방지 */
+    padding: 0;
+}
+
+/* 프로필 이미지 (추가됨) */
+.avatarImg {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
 }
 
 /* 드롭다운 박스 (첨부 이미지 디자인 적용) */
@@ -212,6 +224,7 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    overflow: hidden; /* 이미지 원형 이탈 방지 */
 }
 
 .profileName {

@@ -9,7 +9,7 @@
 
     <!-- 헤더 우측 -->
     <div class="headerRight">
-        <span class="groupName" th:text="${session.user.companyName}">연습</span>
+        <span class="groupName" th:text="${session.user?.companyName}">연습</span>
         
         <!-- 고객센터 -->
         <a th:href="@{/user/notices}" class="headerIconBtn" title="고객센터">
@@ -19,12 +19,25 @@
         <!-- 프로필 드롭다운 영역 -->
         <div class="profileWrapper">
             <button type="button" id="profileBtn" class="profileAvatarBtn">
-                <span th:text="${not #strings.isEmpty(session.user?.name) ? #strings.substring(session.user?.name, 0, 1) : 'U'}">U</span>
+                <!-- 프로필 이미지가 있을 때 -->
+                <img th:if="${session.user != null and session.user.profileImage != null and session.user.profileImage != ''}"
+                     th:src="@{'/images/profile/' + ${session.user.profileImage}}"
+                     alt="프로필" class="avatarImg">
+                <!-- 프로필 이미지가 없을 때 -->
+                <span th:unless="${session.user != null and session.user.profileImage != null and session.user.profileImage != ''}"
+                      th:text="${not #strings.isEmpty(session.user?.name) ? #strings.substring(session.user?.name, 0, 1) : 'U'}">U</span>
             </button>
+
             <div id="profileDropdown" class="profileDropdown hidden" style="display: none;">
                 <div class="dropdownHeader">
                     <div class="profileAvatarLarge">
-                        <span th:text="${not #strings.isEmpty(session.user?.name) ? #strings.substring(session.user?.name, 0, 1) : 'U'}">U</span>
+                        <!-- 프로필 이미지가 있을 때 -->
+                        <img th:if="${session.user != null and session.user.profileImage != null and session.user.profileImage != ''}"
+                             th:src="@{'/images/profile/' + ${session.user.profileImage}}"
+                             alt="프로필" class="avatarImg">
+                        <!-- 프로필 이미지가 없을 때 -->
+                        <span th:unless="${session.user != null and session.user.profileImage != null and session.user.profileImage != ''}"
+                              th:text="${not #strings.isEmpty(session.user?.name) ? #strings.substring(session.user?.name, 0, 1) : 'U'}">U</span>
                     </div>
                     <div class="profileName" th:text="${session.user?.name ?: '로그인 필요'}">홍길동</div>
                 </div>
