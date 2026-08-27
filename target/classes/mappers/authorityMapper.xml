@@ -83,6 +83,9 @@
         ON t.rank_no = k.rank_no
 	 WHERE r.company_no = #{companyNo}
 	   AND r.role_level = #{roleLevel}
+	   <if test="roleName != null and roleName != ''">
+	   AND r.role_name = #{roleName}
+	   </if>
 	   AND r.user_no IS NOT NULL
 	</select>
 	<!-- 권한 추가 -->

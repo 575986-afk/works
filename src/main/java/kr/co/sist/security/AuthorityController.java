@@ -46,16 +46,17 @@ public class AuthorityController {
 	}
 	
     // 권한 구성원 조회
- 	@GetMapping("/findRoleMember")
- 	public String findRoleMember(@RequestParam(name="roleLevel") String roleLevel,
- 								HttpSession session, Model model) {
- 		String companyNo=(String)session.getAttribute("companyNo");
- 		
- 		List<UserDomain> roleMemberList=as.getRoleMember(companyNo, roleLevel);
- 		model.addAttribute("roleMemberList", roleMemberList);
- 		
- 		return "adminUser/security/memberFragment";
- 	}
+    @GetMapping("/findRoleMember")
+    public String findRoleMember(@RequestParam(name="roleLevel") int roleLevel,
+                                 @RequestParam(name="roleName", required=false) String roleName,
+                                 HttpSession session, Model model) {
+        String companyNo = (String) session.getAttribute("companyNo");
+        
+        List<UserDomain> roleMemberList = as.getRoleMember(companyNo, roleLevel, roleName);
+        model.addAttribute("roleMemberList", roleMemberList);
+        
+        return "adminUser/security/memberFragment";
+    }
 	
 	// 권한 추가
  	@PostMapping("/addRole")

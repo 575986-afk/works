@@ -10,7 +10,7 @@ public interface AuthorityMapper {
 	public List<RoleDomain> selectRole(@Param("companyNo") String companyNo);
 
     public List<UserDomain> selectRoleMember(@Param("companyNo") String companyNo, 
-    		@Param("roleLevel") String roleLevel);
+    		@Param("roleLevel") int roleLevel, @Param("roleName") String roleName);
     
     public int insertRole(RoleDTO rDTO);
     

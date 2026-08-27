@@ -378,7 +378,8 @@ function loadMember(roleName) {
         url: "/adminUser/security/findRoleMember",
         type: "GET",
         data: {
-            roleLevel: selectedRoleLevel
+            roleLevel: selectedRoleLevel,
+            roleName: roleName
         },
         success: function(result) {
             $("#contentArea").html(result);

@@ -19,8 +19,8 @@ public class AuthorityService {
 	}
 	
 	// 권한 구성원 조회
-	public List<UserDomain> getRoleMember(String companyNo, String roleLevel){
-		List<UserDomain> list=am.selectRoleMember(companyNo, roleLevel);
+	public List<UserDomain> getRoleMember(String companyNo, int roleLevel, String roleName){
+		List<UserDomain> list=am.selectRoleMember(companyNo, roleLevel, roleName);
 		return list;
 	}
 	
