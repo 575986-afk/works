@@ -78,7 +78,7 @@
             width: 70px;
             height: 70px;
             border-radius: 50%;
-            background-color: #3b82f6;
+            background-color: #3b82f6; /* 파란색 배경 */
             color: #fff;
             display: flex;
             align-items: center;
@@ -370,13 +370,14 @@ $(function(){
                 <div class="profile-summary">
                     <div class="avatar-wrapper">
 					    <div class="avatar-circle" style="overflow: hidden; position: relative;">
+					       <!-- 프로필 이미지가 있는 경우 -->
 					       <img th:if="${profileImage != null and profileImage != ''}" 
-							     th:src="@{'/images/profile/' + ${profileImage}}" 
+							     th:src="@{'/upload/' + ${profileImage}}" 
 							     alt="프로필 이미지" 
 							     style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 2;">
 					             
 					        <span th:unless="${profileImage != null and profileImage != ''}" 
-					              th:text="${userName != null ? #strings.substring(userName, 0, 1) : '?'}"
+					              th:text="${not #strings.isEmpty(userName) ? #strings.substring(userName, 0, 1) : 'U'}"
 					              style="position: relative; z-index: 1;"></span>
 					    </div>
 					    

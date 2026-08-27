@@ -26,6 +26,7 @@ public class WebConfig implements WebMvcConfigurer{
 		.addResourceLocations("file:///C:/upload/");
 	}
 	
+	
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
 

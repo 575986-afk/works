@@ -86,11 +86,10 @@
 
         <!-- 프로필 -->
         <div class="relative ml-2">
-            <!-- 상단 프로필 버튼 (이미지 지원) -->
             <button id="profileBtn"
-                class="w-8 h-8 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold text-sm focus:outline-none overflow-hidden relative">
+                class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm focus:outline-none overflow-hidden relative">
                 <img th:if="${session.user != null and session.user.profileImage != null and session.user.profileImage != ''}"
-                     th:src="@{'/images/profile/' + ${session.user.profileImage}}"
+                     th:src="@{'/upload/' + ${session.user.profileImage}}"
                      alt="프로필" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
                 <span th:unless="${session.user != null and session.user.profileImage != null and session.user.profileImage != ''}"
                       th:text="${not #strings.isEmpty(session.user?.name) ? #strings.substring(session.user?.name, 0, 1) : 'U'}">
@@ -100,8 +99,8 @@
             <!-- 프로필 드롭다운 메뉴 -->
             <div id="profileDropdown" class="hidden absolute top-full right-0 mt-3 w-64 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden">
                <div class="p-4 flex items-center gap-3 border-b border-gray-100 bg-gray-50">
-                  <!-- 드롭다운 내부 큰 아바타 (이미지 지원) -->
-                  <div class="w-11 h-11 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold text-lg overflow-hidden relative shrink-0">
+                  <!-- 드롭다운 내부 큰 아바타 (이미지 지원, 없으면 파란 배경 + 첫 글자) -->
+                  <div class="w-11 h-11 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-lg overflow-hidden relative shrink-0">
                     <img th:if="${session.user != null and session.user.profileImage != null and session.user.profileImage != ''}"
                          th:src="@{'/images/profile/' + ${session.user.profileImage}}"
                          alt="프로필" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
