@@ -197,11 +197,13 @@
 	<insert id="insertMemberOrganization">
 	    INSERT INTO ORGANIZATIONMEMBER (
 	        organization_no,
-	        orgmember_no
+	        orgmember_no,
+	        is_leader
 	    )
 	    VALUES (
 	        #{organizationNo, jdbcType=VARCHAR},
-	        #{userNo}
+	        #{userNo},
+	        0
 	    )
 	</insert>
 	
@@ -236,20 +238,44 @@
 	    <foreach collection="organizationNos" item="orgNo">
 	        INTO ORGANIZATIONMEMBER (
 	            organization_no,
-	            orgmember_no
+	            orgmember_no,
+	            is_leader
 	        ) VALUES (
 	            #{orgNo},
-	            #{userNo}
+	            #{userNo},
+	            0
 	        )
 	    </foreach>
 	    SELECT * FROM DUAL
 	</insert>
 	
 	<!-- 구성원 삭제 -->
-	<delete id="deleteMember">
-	    DELETE FROM USERS
+	<!-- 직급/직책 정보 삭제 -->
+	<delete id="deleteMemberTitle">
+	    DELETE FROM TITLE
 	    WHERE user_no = #{userNo}
-	    	AND company_no = #{companyNo}
 	</delete>
+	<!-- 소속 그룹 데이터 삭제 -->
+	<delete id="deleteMemberGroups">
+	    DELETE FROM GROUPSMEMBER
+	    WHERE GRP_MEMBER_NO = #{userNo}
+	</delete>
+	<!-- 사용자 권한 초기화 -->
+	<update id="updateMemberRoleToDefault">
+	    UPDATE ROLE
+	    SET company_no = NULL,
+	        role_name = '일반사용자',
+	        role_level = 1
+	    WHERE user_no = #{userNo}
+	</update>
+	<!-- USERS 테이블 회사 소속 해제 -->
+	<update id="updateUserRemoveCompany">
+	    UPDATE USERS
+	    SET company_no = NULL,
+	        workplace = NULL,
+	        jobtask = NULL
+	    WHERE user_no = #{userNo}
+	      AND company_no = #{companyNo}
+	</update>
     
 </mapper>

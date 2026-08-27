@@ -34,11 +34,12 @@ public interface MemberMapper {
     public List<PositionDomain> selectPositionList(@Param("companyNo") String companyNo);
     
     // 구성원 등록
-    // 구성원 정보 등록
     public int updateUserForMember(MemberDTO memberDTO);
     public int updateUserForMemberatRole(MemberDTO memberDTO);
+    
     // 직급 / 직책 등록
     public int insertMemberTitle(MemberDTO memberDTO);
+    
     // 조직 등록
     public int insertMemberOrganization(MemberDTO memberDTO);
 
@@ -48,6 +49,10 @@ public interface MemberMapper {
     public int deleteMemberOrganizations(@Param("userNo") String userNo);
     public int insertMemberOrganizations(MemberDTO memberDTO);
 
-    // 구성원 삭제
-    public int deleteMember(@Param("userNo") String userNo, @Param("companyNo") String companyNo);
+    // 구성원 삭제 관련 메서드
+    public int deleteMemberTitle(@Param("userNo") String userNo);
+    public int updateMemberRoleToDefault(@Param("userNo") String userNo);
+    // 소속 그룹 삭제
+ 	public int deleteMemberGroups(@Param("userNo") String userNo);
+    public int updateUserRemoveCompany(@Param("companyNo") String companyNo, @Param("userNo") String userNo);
 }

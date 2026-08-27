@@ -92,7 +92,25 @@ public class MemberService {
 
     // 구성원 삭제
     @Transactional
-    public void deleteMember(String userNo, String companyNo) {
-        mm.deleteMember(userNo, companyNo);
+    public boolean removeMemberFromCompany(String companyNo, String userNo) {
+        if (userNo == null || companyNo == null) {
+            return false;
+        }
+
+        // 직급/직책 정보 삭제
+        mm.deleteMemberTitle(userNo);
+
+        // 소속 조직 데이터 삭제
+        mm.deleteMemberOrganizations(userNo);
+        // 소속 그룹 데이터 삭제
+        mm.deleteMemberGroups(userNo);
+
+        // 회사 권한 제거 및 일반사용자 변경
+        mm.updateMemberRoleToDefault(userNo);
+
+        // USERS 테이블 회사 정보 NULL 처리
+        int result = mm.updateUserRemoveCompany(companyNo, userNo);
+
+        return result > 0;
     }
 }

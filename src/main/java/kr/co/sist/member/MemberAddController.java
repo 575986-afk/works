@@ -129,7 +129,7 @@ public class MemberAddController {
             @RequestParam("userNo") String userNo,
             HttpSession session) {
         String companyNo = (String) session.getAttribute("companyNo");
-        ms.deleteMember(userNo, companyNo);
+        ms.removeMemberFromCompany(companyNo, userNo);
 
         return "redirect:/adminUser/member/member";
     }
