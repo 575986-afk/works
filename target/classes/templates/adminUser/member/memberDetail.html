@@ -260,25 +260,26 @@ $(function(){
                         </button>
                     </div>
                 </div>
-                <div class="profileArea">
-                    <div class="profileImage">
-                        <!-- 프로필 이미지가 존재하는 경우 -->
-                        <img th:if="${member?.profileImage != null and !#strings.isEmpty(member?.profileImage)}"
-                             th:src="@{'/upload/profile/' + ${member?.profileImage}}" 
-                             alt="프로필 이미지" 
-                             style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
-                        <!-- 프로필 이미지가 없는 경우 기본 아이콘 출력 -->
-                        <i th:unless="${member?.profileImage != null and !#strings.isEmpty(member?.profileImage)}" 
-                           class="fa-solid fa-user"></i>
-                    </div>
-                    <div class="profileInfo">
-                        <h3 th:text="${member?.userName ?: '-'}">홍길동</h3>
-                        <p th:text="${(member?.rankName ?: '-') + ' / ' + (member?.positionName ?: '-') + ' / ' + (member?.organizationName ?: '-') + ' / ' + (member?.email ?: '-')}">
-                            직책 / 조직 1 / 직급 / test1@practice-6.by-works.net
-                        </p>
-                        <span class="statusText" th:text="${member?.status ?: '-'}">사용중</span>
-                    </div>
-                </div>
+                <!-- ---- 프로필 영역 ---- -->
+				<div class="profileArea">
+				    <div class="profileImage">
+				        <!-- 해당 구성원의 프로필 이미지가 존재할 때 -->
+						<img th:if="${member != null and member.profileImage != null and member.profileImage != ''}"
+						     th:src="@{'/upload/' + ${member.profileImage}}"
+						     alt="프로필" 
+						     style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+				        <!-- 프로필 이미지가 없을 때 -->
+				        <i th:unless="${member != null and member.profileImage != null and member.profileImage != ''}" 
+				           class="fa-solid fa-user"></i>
+				    </div>
+				    <div class="profileInfo">
+				        <h3 th:text="${member?.userName ?: '-'}">홍길동</h3>
+				        <p th:text="${(member?.rankName ?: '-') + ' / ' + (member?.positionName ?: '-') + ' / ' + (member?.organizationName ?: '-') + ' / ' + (member?.email ?: '-')}">
+				            직책 / 조직 1 / 직급 / test1@practice-6.by-works.net
+				        </p>
+				        <span class="statusText" th:text="${member?.status ?: '-'}">사용중</span>
+				    </div>
+				</div>
 
                 <hr class="my-3" />
 
