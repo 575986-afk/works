@@ -31,6 +31,7 @@
                u.account_status,
                r.rank_name,
                u.workplace,
+               u.profileimage,
                u.jobtask,
                p.position_name,
                c.company_name AS companyName
@@ -83,6 +84,12 @@
       SET status_no = #{statusNo, jdbcType=VARCHAR}
       WHERE user_no = #{userNo}
   </update>
+  
+  <update id="chgImg">
+	UPDATE USERS
+	SET PROFILEIMAGE = #{profileImage}
+	WHERE USER_NO = #{userNo}
+    </update>
     
     <!-- 알람 설정  -->
     <select id="selectAlarmSetting" parameterType="String" resultType="kr.co.sist.setting.AlarmSettingDTO">

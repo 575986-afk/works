@@ -1,12 +1,16 @@
 package kr.co.sist.setting;
 
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -21,6 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpSession;
@@ -32,6 +37,10 @@ import lombok.RequiredArgsConstructor;
 public class SettingController {
 	
 	private final SettingService ss;
+	
+	@Value("${user.upload-dir}")
+	private String uploadDir;
+	
 	//설정 메인화면 출력 
 	@GetMapping("/userInfo")
     public String userInfo(Model model,HttpSession session) {
@@ -66,7 +75,6 @@ public class SettingController {
 	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
 	    }
 	    
-	    // userId가 제대로 들어있는지 확인하고 리턴
 	    String userId = loginUser.getUserId();
 	    
 	    return ResponseEntity.ok(userId != null ? userId : "");
@@ -99,7 +107,7 @@ public class SettingController {
         UserDTO loginUser = (UserDTO) session.getAttribute("user");
         
         UserDTO currentUser = ss.selectProfile(loginUser.getUserNo());
-        TitleDTO currentTitle=ss.selectRankPosition(loginUser.getUserNo());
+        TitleDTO currentTitle = ss.selectRankPosition(loginUser.getUserNo());
         
         if (currentUser != null) {
             model.addAttribute("userName", currentUser.getName());
@@ -108,6 +116,7 @@ public class SettingController {
             model.addAttribute("workplace", currentUser.getWorkplace());
             model.addAttribute("jobtask", currentUser.getJobtask());
             model.addAttribute("companyName", currentUser.getCompanyName());
+            model.addAttribute("profileImage", currentUser.getProfileImage());
         } else {
             model.addAttribute("userName", loginUser.getName());
             model.addAttribute("Tel", loginUser.getTel());
@@ -115,11 +124,13 @@ public class SettingController {
             model.addAttribute("workplace", loginUser.getWorkplace());
             model.addAttribute("jobtask", loginUser.getJobtask());
             model.addAttribute("companyName", "회사가 없습니다.");
+            model.addAttribute("profileImage", loginUser.getProfileImage());
         }
-        if(currentTitle!=null) {
+        
+        if(currentTitle != null) {
         	model.addAttribute("rank", currentTitle.getRankName());
         	model.addAttribute("position", currentTitle.getPositionName());
-        }else {
+        } else {
         	model.addAttribute("rank", "직급이 없습니다.");
         	model.addAttribute("position", "직책이 없습니다.");
         }
@@ -138,8 +149,74 @@ public class SettingController {
     }
     
     
-    
-    
+    @PostMapping("/setting/updateProfileImage")
+    @ResponseBody
+    public String updateProfileImage(@RequestParam("profileImgFile") MultipartFile file, 
+                                     HttpSession session) {
+        
+        UserDTO loginUser = (UserDTO) session.getAttribute("user");
+        if (loginUser == null) {
+            return "FAIL_UNAUTHORIZED";
+        }
+        
+        String userNo = loginUser.getUserNo();
+
+        if (file.isEmpty()) {
+            return "FAIL_EMPTY_FILE";
+        }
+
+        try {
+            File dir = new File(uploadDir);
+            if (!dir.exists()) {
+                dir.mkdirs(); 
+            }
+
+            String originalFilename = file.getOriginalFilename();
+            String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            String savedFilename = UUID.randomUUID().toString() + extension;
+
+            File dest = new File(uploadDir + savedFilename);
+            file.transferTo(dest);
+
+            int cnt = ss.updateProfileImage(userNo, savedFilename);
+
+            if (cnt > 0) {
+                loginUser.setProfileImage(savedFilename);
+                session.setAttribute("user", loginUser);
+                
+                return "SUCCESS";
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return "FAIL";
+    }
+
+ // 프로필 이미지 출력 매핑
+    @GetMapping("/images/profile/{fileName}")
+    @ResponseBody
+    public ResponseEntity<Resource> getProfileImage(@org.springframework.web.bind.annotation.PathVariable("fileName") String fileName) {
+        try {
+            if (fileName == null || fileName.isEmpty() || fileName.equals("null")) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Path path = Paths.get(uploadDir + fileName);
+            Resource resource = new UrlResource(path.toUri());
+
+            if (!resource.exists() || !resource.isReadable()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_JPEG) 
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
     
     //상태 설정화면 
     @GetMapping("/statusSetting")

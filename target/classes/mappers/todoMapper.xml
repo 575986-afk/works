@@ -160,6 +160,7 @@ delete from REPRESENTATIVE where todo_no = #{todoNo}
 	from todolog t
 	left join users u on t.user_no = u.user_no
 	where t.todo_no = #{todoNo} and t.user_no = #{userNo}
+	order by inputdate desc
 	</select>
 	
 </mapper>

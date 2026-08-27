@@ -244,8 +244,15 @@ body{
     <!-- 프로필 카드 -->
     <div class="home-card">
         <div class="profile-top">
-            <div class="profile-avatar">
-                <span th:text="${#strings.substring(userName, 0, 1)}"></span>
+            <!-- 프로필 아바타 영역 수정 -->
+            <div class="profile-avatar" style="overflow: hidden; padding: 0; position: relative;">
+                <img th:if="${profileImage != null and profileImage != ''}" 
+				     th:src="@{'/images/profile/' + ${profileImage}}" 
+				     alt="프로필 이미지" 
+				     style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
+                
+                <span th:unless="${profileImage != null and profileImage != ''}" 
+                      th:text="${userName != null ? #strings.substring(userName, 0, 1) : '?'}"></span>
             </div>
 
             <div class="profile-greeting">

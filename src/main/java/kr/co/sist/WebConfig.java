@@ -23,7 +23,7 @@ public class WebConfig implements WebMvcConfigurer{
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
 		registry.addResourceHandler("/upload/**")
-		.addResourceLocations("file:///c:/spring/upload/");
+		.addResourceLocations("file:///C:/upload/");
 	}
 	
     @Override
@@ -60,7 +60,8 @@ public class WebConfig implements WebMvcConfigurer{
                     "/css/**",
                     "/js/**",
                     "/images/**",
-                    "/common/**"
+                    "/common/**",
+                    "/upload/**"
                 );
 
         // 권한 레벨 인터셉터

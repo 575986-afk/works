@@ -72,26 +72,37 @@
             <i class="fa-solid fa-gear"></i>
         </a>
 
-        <!-- 프로필 (에러 방지 ?. 적용) -->
+        <!-- 프로필 (세션 이미지 지원 적용) -->
         <div class="relative ml-2">
-           
-			<button id="profileBtn"
-				class="w-8 h-8 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold text-sm focus:outline-none"
-				th:text="${not #strings.isEmpty(session.user?.name) ? #strings.substring(session.user?.name, 0, 1) : 'U'}">
-			</button>
-			<div id="profileDropdown" class="hidden absolute top-full right-0 mt-3 w-64 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden">
+            <!-- 상단 프로필 버튼 -->
+            <button id="profileBtn"
+                class="w-8 h-8 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold text-sm focus:outline-none overflow-hidden relative">
+                <img th:if="${session.user != null and session.user.profileImage != null and session.user.profileImage != ''}"
+                     th:src="@{'/images/profile/' + ${session.user.profileImage}}"
+                     alt="프로필" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
+                <span th:unless="${session.user != null and session.user.profileImage != null and session.user.profileImage != ''}"
+                      th:text="${not #strings.isEmpty(session.user?.name) ? #strings.substring(session.user?.name, 0, 1) : 'U'}">
+                </span>
+            </button>
+
+            <!-- 프로필 드롭다운 메뉴 -->
+            <div id="profileDropdown" class="hidden absolute top-full right-0 mt-3 w-64 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden">
                <div class="p-4 flex items-center gap-3 border-b border-gray-100 bg-gray-50">
-                  
-				<div
-					class="w-11 h-11 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold text-lg"
-					th:text="${not #strings.isEmpty(session.user?.name) ? #strings.substring(session.user?.name, 0, 1) : 'U'}">
-					U</div>
-				<div class="font-bold text-gray-800 text-base" th:text="${session.user?.name != null ? session.user?.name : '로그인 필요'}">이름</div>
+                  <!-- 드롭다운 내부 큰 아바타 -->
+                  <div class="w-11 h-11 rounded-full bg-gray-400 text-white flex items-center justify-center font-bold text-lg overflow-hidden relative shrink-0">
+                    <img th:if="${session.user != null and session.user.profileImage != null and session.user.profileImage != ''}"
+                         th:src="@{'/images/profile/' + ${session.user.profileImage}}"
+                         alt="프로필" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
+                    <span th:unless="${session.user != null and session.user.profileImage != null and session.user.profileImage != ''}"
+                          th:text="${not #strings.isEmpty(session.user?.name) ? #strings.substring(session.user?.name, 0, 1) : 'U'}">
+                    U</span>
+                  </div>
+                  <div class="font-bold text-gray-800 text-base" th:text="${session.user?.name != null ? session.user?.name : '로그인 필요'}">이름</div>
                 </div>
                 <div class="p-2">
-                    <button class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2">
+                    <a href="/statusSetting" class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2">
                         <i class="fa-solid fa-plus border border-gray-400 rounded-full p-0.5 text-[10px]"></i>상태 설정
-                    </button>
+                    </a>
                     <button class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md flex items-center gap-2">
                         <i class="fa-solid fa-bell-slash text-gray-500"></i>알림 일시 정지
                     </button>
@@ -129,17 +140,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 알림 클릭
-if(notiBtn) {
+    if(notiBtn) {
         notiBtn.addEventListener('click', async function(e) {
-            e.stopPropagation(); // 1. 이벤트 전파 방지 (바깥 영역 클릭 이벤트와 충돌 방지)
+            e.stopPropagation(); 
 
-            // 2. 드롭다운이 현재 닫혀있는지 상태 확인
             const isHidden = notiDropdown.classList.contains('hidden');
-            
-            // 3. 일단 모든 드롭다운을 닫음 (다른 창이 열려있을 수 있으므로)
             closeAllDropdowns();
             
-            // 4. 원래 닫혀있던 상태였다면 알림창을 열고 데이터 조회 시작
             if (isHidden) {
                 notiDropdown.classList.remove('hidden');
                 notiDropdown.innerHTML = '<div class="text-center text-gray-400 py-4"><i class="fa-solid fa-spinner fa-spin"></i> 알림을 불러오는 중...</div>';

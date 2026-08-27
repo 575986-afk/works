@@ -266,19 +266,16 @@
     </style>
 <script type="text/javascript">
 $(function(){
-    // 비밀번호 변경 버튼 클릭 시 모달창 열기
     $("#pwchg").click(function(e){
         e.preventDefault();
         $("#passwordModal").css("display","flex");
     });
 
-    // 모달 취소 버튼
     $("#cancelBtn").click(function(){
         $("#passwordModal").hide();
         $("#newPw, #newPwConfirm").val("");
     });
 
-    // 모달 확인 버튼 (비밀번호 일치 여부 확인)
     $("#okBtn").click(function(){
         let newPwd = $("#newPw").val();
         let confirmPwd = $("#newPwConfirm").val();
@@ -294,11 +291,10 @@ $(function(){
         }
 
         $.ajax({
-            url: "/updatePw", // 비밀번호 변경을 처리할 컨트롤러 매핑 주소
+            url: "/updatePw",
             type: "POST",
             data: { newPw: newPwd },
             success: function(response) {
-                // 서버에서 정상적으로 수정되어 1이 넘어온 경우
                 if(response === 1 || response === "1") {
                     alert("비밀번호가 성공적으로 변경되었습니다.");
                     $("#passwordModal").hide();
@@ -312,6 +308,45 @@ $(function(){
                 alert("서버 오류가 발생했습니다.");
             }
         });
+    });
+
+    $("#profile-img-input").change(function(){
+        let fileInput = this;
+        
+        if (fileInput.files && fileInput.files[0]) {
+            let formData = new FormData();
+            formData.append("profileImgFile", fileInput.files[0]);
+
+            $.ajax({
+                url: "/setting/updateProfileImage",
+                type: "POST",
+                data: formData,
+                processData: false, 
+                contentType: false, 
+                success: function(response) {
+                    if (response === "SUCCESS") {
+                        alert("프로필 이미지가 변경되었습니다.");
+                        
+                        let reader = new FileReader();
+                        reader.onload = function(e) {
+                            let $circle = $(".avatar-circle");
+                            $circle.html('<img src="' + e.target.result + '" alt="프로필 이미지" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 2;">');
+                        }
+                        reader.readAsDataURL(fileInput.files[0]);
+                        
+                    } else if (response === "FAIL_UNAUTHORIZED") {
+                        alert("로그인 정보가 만료되었습니다. 다시 로그인해주세요.");
+                        location.href = "/login";
+                    } else {
+                        alert("프로필 이미지 변경에 실패했습니다.");
+                    }
+                },
+                error: function(err) {
+                    console.log(err);
+                    alert("서버 오류가 발생했습니다.");
+                }
+            });
+        }
     });
 });
 </script>
@@ -334,26 +369,30 @@ $(function(){
 
                 <div class="profile-summary">
                     <div class="avatar-wrapper">
-                        <div class="avatar-circle">
-                           <span th:text="${#strings.substring(userName, 0, 1)}"></span>
-                        </div>
-                        <label for="profile-img-input" class="camera-badge">
-                            <svg class="camera-icon" viewBox="0 0 24 24">
-                                <path d="M12 9c2.21 0 4 1.79 4 4s-1.79 4-4 4-4-1.79-4-4 1.79-4 4-4zm0-2c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z"/>
-                                <path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h4.05l1.83-2h4.24l1.83 2H20v12z"/>
-                            </svg>
-                        </label>
-                        <input type="file" id="profile-img-input" style="display: none;" accept="image/*">
-                    </div>
+					    <div class="avatar-circle" style="overflow: hidden; position: relative;">
+					       <img th:if="${profileImage != null and profileImage != ''}" 
+							     th:src="@{'/images/profile/' + ${profileImage}}" 
+							     alt="프로필 이미지" 
+							     style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 2;">
+					             
+					        <span th:unless="${profileImage != null and profileImage != ''}" 
+					              th:text="${userName != null ? #strings.substring(userName, 0, 1) : '?'}"
+					              style="position: relative; z-index: 1;"></span>
+					    </div>
+					    
+					    <label for="profile-img-input" class="camera-badge" style="z-index: 10;">
+					        <svg class="camera-icon" viewBox="0 0 24 24">
+					            <path d="M12 9c2.21 0 4 1.79 4 4s-1.79 4-4 4-4-1.79-4-4 1.79-4 4-4zm0-2c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z"/>
+					            <path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h4.05l1.83-2h4.24l1.83 2H20v12z"/>
+					        </svg>
+					    </label>
+					    <input type="file" id="profile-img-input" name="profileImgFile" style="display: none;" accept="image/*">
+					</div>
                     <span th:text="${userName}"></span>
                 </div>
 
                 <form th:action="@{/updateProfile}" method="post" class="profile-form">
                     <div class="form-row">
-                        <!-- <div class="form-group half">
-                            <label>닉네임</label>
-                            <input type="text" class="form-input">
-                        </div> -->
                         <div class="form-group half password-row">
                             <label>비밀번호</label>
                             <button type="button" class="btn-secondary" id="pwchg">비밀번호 변경</button>

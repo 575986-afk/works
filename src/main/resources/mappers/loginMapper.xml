@@ -20,6 +20,7 @@
            u.phoneNumber,
            u.company_no AS companyNo,
            u.signup_date AS signupDate,
+           u.profileimage,
            r.role_level,
            c.company_name AS companyName
     FROM users u

@@ -27,12 +27,26 @@ import lombok.RequiredArgsConstructor;
 public class UserDashboardController {
 	
 	private final UserDashboardService uds;
+	
+	
 
 	@GetMapping("/userDashboard")
 	public String userDashboard(HttpSession session, Model model) {
 	    UserDTO loginUser = (UserDTO) session.getAttribute("user");
 	    String userName = loginUser.getName();
 	    model.addAttribute("userName", userName != null ? userName : "사용자");
+	    
+	    TitleDTO rankPosition = uds.selectRankPosition(loginUser.getUserNo());
+	    if (rankPosition == null) {
+	        rankPosition = new TitleDTO();
+	        rankPosition.setRankName("");       
+	        rankPosition.setPositionName(""); 
+	    } else {
+	        model.addAttribute("profileImage", rankPosition.getProfileimage());
+	    }
+	    
+	    model.addAttribute("rank", rankPosition.getRankName());    
+	    model.addAttribute("position", rankPosition.getPositionName());
 	    
 	    AlarmSettingDTO alarmDTO = uds.getAlarm(loginUser.getUserNo());
 	    int isAlarmOn = (alarmDTO != null) ? alarmDTO.getIsAlarmOn() : 1;
@@ -41,20 +55,11 @@ public class UserDashboardController {
 	    String currentStatusName = uds.getCurrentStatusName(loginUser.getUserNo());
 	    model.addAttribute("currentStatusName", currentStatusName); 
 	    
-	    TitleDTO rankPosition = uds.selectRankPosition(loginUser.getUserNo());
-	    if (rankPosition == null) {
-	        rankPosition = new TitleDTO();
-	        rankPosition.setRankName("");      
-	        rankPosition.setPositionName(""); 
-	    }
-	    model.addAttribute("rank", rankPosition.getRankName());   
-	    model.addAttribute("position", rankPosition.getPositionName());
+	    List<TodoDomain> list = uds.getTodo(loginUser.getUserNo());
+	    model.addAttribute("todoList", list);
 	    
-	    List<TodoDomain> list=uds.getTodo(loginUser.getUserNo());
-	    model.addAttribute("todoList",list);
-	    
-	    List<OrganizationDomain> list2=uds.getOrganization(loginUser.getUserNo());
-	    model.addAttribute("organizationList",list2);
+	    List<OrganizationDomain> list2 = uds.getOrganization(loginUser.getUserNo());
+	    model.addAttribute("organizationList", list2);
 	    
 	    return "works/userDashboard";
 	}

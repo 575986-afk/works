@@ -67,6 +67,11 @@ public class SettingService {
     public int updateUserStatus(String userNo, String statusNo) {
         return settingMapper.updateUserStatus(userNo, statusNo);
     }
+    
+    @Transactional
+    public int updateProfileImage(String userNo, String profileImage) {
+        return settingMapper.chgImg(profileImage, userNo);
+    }
 //	=================================알람 ==============================================
 	
 	public AlarmSettingDTO getAlarm(String userNo) {

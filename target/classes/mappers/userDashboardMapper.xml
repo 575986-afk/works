@@ -5,6 +5,7 @@
   <mapper namespace="kr.co.sist.userDashboard.UserDashboardMapper">
   <select id="selectRankPosition" parameterType="String" resultType="kr.co.sist.setting.TitleDTO">
     SELECT 
+    	u.profileimage,
         r.rank_name AS rankName, 
         p.position_name AS positionName
     FROM users u

@@ -3,6 +3,7 @@ package kr.co.sist.setting;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import kr.co.sist.signup.UserDTO;
 
@@ -19,6 +20,7 @@ public interface SettingMapper {
 	List<StatusDTO> selectStatusList();
 	String selectUserStatus(String userNo);
 	int updateUserStatus(String userNo, String statusNo);
+	int chgImg(@Param("profileImage") String profileImage, @Param("userNo") String userNo);
 //	알람 =======================================================
 	AlarmSettingDTO selectAlarmSetting(String userNo);
 	int updateAlarmSetting(AlarmSettingDTO asDTO);
