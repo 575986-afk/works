@@ -58,7 +58,7 @@
          TO_CHAR(end_date, 'YYYY-MM-DD') AS end_date, 
          bookmark 
   from todo 
-  where user_no=#{userNo} 
+  where user_no=#{userNo} and isdeleted=0
   order by end_date desc
 </select>
   
