@@ -200,24 +200,13 @@
 
             <!-- Action Buttons -->
             <div class="flex justify-center gap-8 py-5 border-y border-gray-100">
-                <button class="flex flex-col items-center gap-2 text-blue-600 hover:text-blue-700">
+                <a class="flex flex-col items-center gap-2 text-blue-600 hover:text-blue-700" th:href="@{/chatting}">
                     <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-lg">
                         <i class="fa-solid fa-comment"></i>
                     </div>
                     <span class="text-xs">메시지</span>
-                </button>
-                <button class="flex flex-col items-center gap-2 text-blue-600 hover:text-blue-700">
-                    <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-lg">
-                        <i class="fa-solid fa-envelope"></i>
-                    </div>
-                    <span class="text-xs">메일</span>
-                </button>
-                <button class="flex flex-col items-center gap-2 text-blue-600 hover:text-blue-700">
-                    <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-lg">
-                        <i class="fa-solid fa-calendar-check"></i>
-                    </div>
-                    <span class="text-xs">캘린더</span>
-                </button>
+                </a>
+                
             </div>
 
             <!-- Details Information -->
