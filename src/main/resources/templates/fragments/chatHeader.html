@@ -89,7 +89,7 @@
             <button id="profileBtn"
                 class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm focus:outline-none overflow-hidden relative">
                 <img th:if="${session.user != null and session.user.profileImage != null and session.user.profileImage != ''}"
-                     th:src="@{'/upload/' + ${session.user.profileImage}}"
+                     th:src="@{'/images/profile/' + ${session.user.profileImage}}"
                      alt="프로필" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
                 <span th:unless="${session.user != null and session.user.profileImage != null and session.user.profileImage != ''}"
                       th:text="${not #strings.isEmpty(session.user?.name) ? #strings.substring(session.user?.name, 0, 1) : 'U'}">

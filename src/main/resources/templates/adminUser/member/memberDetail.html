@@ -265,7 +265,7 @@ $(function(){
 				    <div class="profileImage">
 				        <!-- 해당 구성원의 프로필 이미지가 존재할 때 -->
 						<img th:if="${member != null and member.profileImage != null and member.profileImage != ''}"
-						     th:src="@{'/upload/' + ${member.profileImage}}"
+						     th:src="@{'/images/profile/' + ${member.profileImage}}"
 						     alt="프로필" 
 						     style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
 				        <!-- 프로필 이미지가 없을 때 -->

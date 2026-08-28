@@ -17,6 +17,7 @@
                U.PROFILEIMAGE profileImage, 
                R.RANK_NAME rankName, 
                P.POSITION_NAME positionName, 
+               U.PHONENUMBER phoneNumber, 
                O.ORGANIZATION_NAME organizaionName, 
                C.company_Name companyName,
                (SELECT COUNT(1) 

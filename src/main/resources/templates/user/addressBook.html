@@ -141,13 +141,19 @@
 </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
-                                    <!-- 이니셜을 session이 아닌 현재 반복되는 user의 이름 첫 글자로 변경 -->
-                                    <div class="w-8 h-8 rounded-full text-white flex items-center justify-center font-medium text-xs"
-                                         th:classappend="${user.profileImage != null ? user.profileImage : 'bg-gray-400'}"
-                    					 th:text="${user.userName != null and user.userName.length() > 0 ? #strings.substring(user.userName, 0, 1) : ''}">이</div>
-                                    <span class="font-medium" th:text="${user.userName}">이름</span>
-                                </div>
-                            </td>
+									<!-- 이니셜을 session이 아닌 현재 반복되는 user의 이름 첫 글자로 변경 -->
+									<img th:if="${not #strings.isEmpty(user.profileImage)}"
+										th:src="@{'/images/profile/'+${user.profileImage}}"
+										class="w-8 h-8 rounded-full object-cover" alt="Profile Image" />
+
+									<!-- 2. 프로필 이미지가 없을 때 (기본 회색 배경 + 이름 첫 글자) -->
+									<div th:unless="${not #strings.isEmpty(user.profileImage)}"
+										class="w-8 h-8 rounded-full bg-gray-400 text-white flex items-center justify-center font-medium text-xs"
+										th:text="${not #strings.isEmpty(user.userName) ? #strings.substring(user.userName, 0, 1) : 'U'}">
+									</div>
+									<span class="font-medium" th:text="${user.userName}">이름</span>
+								</div>
+							</td>
                             <td class="px-4 py-3" th:text="|${user.positionName != null ? user.positionName : ''} / ${user.rankName != null ? user.rankName : ''}|">직책/직급</td>
                             <td class="px-4 py-3" th:text="${user.organizaionName}">조직</td>
                             <td class="px-4 py-3" th:text="${user.companyName}">회사명</td>
