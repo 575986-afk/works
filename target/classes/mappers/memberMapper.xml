@@ -107,6 +107,7 @@
 	        u.user_name AS userName,
 	        u.email AS email,
 	        u.phonenumber AS phone,
+	        u.PROFILEIMAGE AS profileImage,
 	        u.account_status AS status,
 	        u.workplace AS workplace,
 	        u.jobtask AS jobtask,
